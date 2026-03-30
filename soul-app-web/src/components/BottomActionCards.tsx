@@ -1,41 +1,87 @@
 import { motion } from 'framer-motion';
 
 export default function BottomActionCards() {
+
   const cards = [
     {
       id: 'meet',
       title: '灵魂匹配',
       subtitle: '剩余 3 次',
-      bg: 'bg-[#55778a]',
-      iconUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=meet&backgroundColor=transparent',
-      width: 'min-w-[140px]'
+      bg: 'bg-gradient-to-br from-[#537685] to-[#2B404E]',
+      svg: (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-lg">
+          <circle cx="50" cy="50" r="40" fill="#FFCDB2"/>
+          {/* Hat */}
+          <path d="M10 50 Q50 30 90 50 L80 60 Q50 40 20 60 Z" fill="#E29578"/>
+          <path d="M30 40 Q50 10 70 40" fill="#E29578"/>
+          <circle cx="35" cy="55" r="4" fill="#6B705C"/>
+          <circle cx="65" cy="55" r="4" fill="#6B705C"/>
+          <path d="M45 70 Q50 75 55 70" stroke="#B5838D" strokeWidth="3" fill="none" strokeLinecap="round"/>
+        </svg>
+      ),
+      width: 'min-w-[130px]'
     },
     {
       id: 'audio',
       title: '语音匹配',
       subtitle: '',
-      bg: 'bg-[#407e74]',
-      iconUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=audio&backgroundColor=transparent',
-      width: 'min-w-[140px]',
+      bg: 'bg-gradient-to-br from-[#4A8F85] to-[#2A5C54]',
+      svg: (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-lg">
+          <rect x="35" y="20" width="30" height="45" rx="15" fill="#A3E4D7"/>
+          <path d="M25 45 v10 a25 25 0 0 0 50 0 v-10" stroke="#A3E4D7" strokeWidth="6" fill="none" strokeLinecap="round"/>
+          <line x1="50" y1="80" x2="50" y2="90" stroke="#A3E4D7" strokeWidth="6" strokeLinecap="round"/>
+          <line x1="35" y1="90" x2="65" y2="90" stroke="#A3E4D7" strokeWidth="6" strokeLinecap="round"/>
+          {/* Audio Waves */}
+          <line x1="15" y1="40" x2="15" y2="60" stroke="#A3E4D7" strokeWidth="4" strokeLinecap="round"/>
+          <line x1="5" y1="45" x2="5" y2="55" stroke="#A3E4D7" strokeWidth="4" strokeLinecap="round"/>
+          <line x1="85" y1="40" x2="85" y2="60" stroke="#A3E4D7" strokeWidth="4" strokeLinecap="round"/>
+          <line x1="95" y1="45" x2="95" y2="55" stroke="#A3E4D7" strokeWidth="4" strokeLinecap="round"/>
+          <circle cx="43" cy="35" r="3" fill="#17202A"/>
+          <circle cx="57" cy="35" r="3" fill="#17202A"/>
+          <path d="M47 45 Q50 48 53 45" stroke="#17202A" strokeWidth="2" fill="none"/>
+        </svg>
+      ),
+      width: 'min-w-[130px]',
       floatingBadge: '收到来电~'
     },
     {
       id: 'party',
       title: '群聊派对',
       subtitle: '快来抢麦',
-      bg: 'bg-[#834996]',
-      iconUrl: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=party&backgroundColor=transparent',
-      width: 'min-w-[140px]'
+      bg: 'bg-gradient-to-br from-[#8E5E99] to-[#482855]',
+      svg: (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-lg">
+          <path d="M30 80 Q30 20 50 20 Q70 20 70 80 Q65 75 60 80 Q55 75 50 80 Q45 75 40 80 Q35 75 30 80" fill="#F4ECF7"/>
+          <circle cx="42" cy="45" r="4" fill="#4A235A"/>
+          <circle cx="58" cy="45" r="4" fill="#4A235A"/>
+          <ellipse cx="50" cy="55" rx="5" ry="6" fill="#4A235A"/>
+          {/* Glowsticks */}
+          <line x1="15" y1="70" x2="25" y2="50" stroke="#F5B041" strokeWidth="4" strokeLinecap="round"/>
+          <line x1="85" y1="70" x2="75" y2="50" stroke="#F5B041" strokeWidth="4" strokeLinecap="round"/>
+        </svg>
+      ),
+      width: 'min-w-[130px]'
     },
     {
       id: 'soul',
       title: '脸基尼匹配',
       subtitle: '立即体验',
-      bg: 'bg-[#8f5d4e]',
-      iconUrl: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=smile&backgroundColor=transparent',
-      width: 'min-w-[140px]'
+      bg: 'bg-gradient-to-br from-[#9F7A6E] to-[#51362E]',
+      svg: (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-lg">
+          <circle cx="50" cy="50" r="35" fill="#FAD7A1"/>
+          <circle cx="35" cy="45" r="5" fill="#5D4037"/>
+          <circle cx="65" cy="45" r="5" fill="#5D4037"/>
+          <path d="M35 60 Q50 75 65 60" stroke="#5D4037" strokeWidth="4" fill="none" strokeLinecap="round"/>
+          <circle cx="20" cy="50" r="8" fill="#FAD7A1"/>
+          <circle cx="80" cy="50" r="8" fill="#FAD7A1"/>
+        </svg>
+      ),
+      width: 'min-w-[130px]'
     }
   ];
+
 
   return (
     <div className="absolute bottom-[80px] w-full z-40 px-4">
@@ -81,7 +127,7 @@ export default function BottomActionCards() {
           >
             {/* Background Graphic / Icon */}
             <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-16 opacity-90 flex justify-center items-center">
-               <img src={card.iconUrl} alt={card.title} className="w-full h-full object-contain drop-shadow-md" />
+               {card.svg}
             </div>
 
             <div className="relative z-10 text-center w-full">
