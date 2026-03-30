@@ -45,14 +45,14 @@ export default function BottomActionCards() {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="absolute right-2 -top-16 w-14 h-14 rounded-full bg-gradient-to-tr from-[#146a67] to-[#3BBCA2] flex items-center justify-center border border-white/20 shadow-lg z-50"
+          className="absolute right-2 -top-16 w-14 h-14 rounded-full bg-gradient-to-tr from-[#146a67] to-[#3BBCA2] flex items-center justify-center border border-white/20 shadow-[0_4px_20px_rgba(59,188,162,0.4)] z-50"
         >
           {/* Radar target circles */}
           <div className="w-6 h-6 rounded-full border border-white/80 flex items-center justify-center">
             <div className="w-2 h-2 bg-white rounded-full"></div>
           </div>
           {/* Ping effect */}
-          <span className="absolute inset-0 rounded-full border-2 border-[#3BBCA2] animate-ping opacity-75 duration-1000"></span>
+          <span className="absolute inset-0 rounded-full border-2 border-[#3BBCA2] animate-ping opacity-60"></span>
         </motion.button>
 
         {/* Floating "Incoming call~" badge for the second card */}
@@ -76,7 +76,8 @@ export default function BottomActionCards() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1, duration: 0.4 }}
-            className={`relative flex-shrink-0 ${card.width} h-[130px] ${card.bg} rounded-2xl p-4 flex flex-col justify-end snap-start shadow-md overflow-hidden`}
+            whileHover={{ scale: 0.98, y: -2 }} whileTap={{ scale: 0.92 }}
+            className={`relative flex-shrink-0 cursor-pointer ${card.width} h-[130px] ${card.bg} rounded-2xl p-4 flex flex-col justify-end snap-start shadow-md overflow-hidden`}
           >
             {/* Background Graphic / Icon */}
             <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-16 opacity-90 flex justify-center items-center">

@@ -1,5 +1,6 @@
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { animated, useSpring } from '@react-spring/three';
 import { OrbitControls, Text } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -54,6 +55,14 @@ const generateNodes = (): NodeData[] => {
 const UserNode = ({ node }: { node: NodeData }) => {
   const { camera } = useThree();
   const textRef = useRef<THREE.Group>(null);
+  const [hovered, setHover] = useState(false);
+
+  // Spring animation for scale and opacity on hover
+  const { scale, opacity } = useSpring({
+    scale: hovered ? 1.4 : 1,
+    opacity: hovered ? 1 : 0.8,
+    config: { mass: 1, tension: 280, friction: 20 }
+  });
 
   useFrame(() => {
     if (textRef.current) {
@@ -63,7 +72,7 @@ const UserNode = ({ node }: { node: NodeData }) => {
 
   if (node.isSelf) {
     return (
-      <group position={node.position}>
+      <animated.group position={node.position} scale={scale} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
         {/* Glow inner */}
         <mesh>
           <sphereGeometry args={[0.35, 32, 32]} />
@@ -71,36 +80,48 @@ const UserNode = ({ node }: { node: NodeData }) => {
         </mesh>
         {/* Glow outer ring */}
         <mesh>
-          <sphereGeometry args={[0.45, 32, 32]} />
-          <meshBasicMaterial color="#a1c4fd" transparent opacity={0.4} />
+          <sphereGeometry args={[0.55, 32, 32]} />
+          <animated.meshBasicMaterial color="#a1c4fd" transparent opacity={opacity.to(o => o * 0.4)} />
         </mesh>
         <group ref={textRef}>
           {/* Planet rings simulate icon */}
           <mesh rotation={[Math.PI / 4, 0, Math.PI / 4]}>
             <ringGeometry args={[0.45, 0.5, 32]} />
-            <meshBasicMaterial color="#ff9a9e" side={THREE.DoubleSide} transparent opacity={0.7} />
+            <meshBasicMaterial color="#ff9a9e" side={THREE.DoubleSide} transparent opacity={0.8} />
           </mesh>
+          <Text position={[0, -0.7, 0]} fontSize={0.2} color="#ffffff" font="https://fonts.gstatic.com/ea/notosanssc/v1/NotoSansSC-Regular.otf" anchorX="center" anchorY="middle" outlineWidth={0.01} outlineColor="#000">
+            {node.name}
+          </Text>
         </group>
-      </group>
+      </animated.group>
     );
   }
 
   return (
-    <group position={node.position}>
+    <animated.group
+      position={node.position}
+      scale={scale}
+      onPointerOver={(e) => { e.stopPropagation(); setHover(true); }}
+      onPointerOut={() => setHover(false)}
+      onClick={(e) => { e.stopPropagation(); alert(`点击了 ${node.name}，匹配度 ${node.match}%`); }}
+    >
       <mesh>
-        <sphereGeometry args={[0.04, 16, 16]} />
+        <sphereGeometry args={[0.05, 16, 16]} />
         <meshBasicMaterial color={node.color} />
       </mesh>
       <group ref={textRef}>
-        <Text position={[0, 0.15, 0]} fontSize={0.16} font="https://fonts.gstatic.com/ea/notosanssc/v1/NotoSansSC-Regular.otf" color="white" anchorX="center" anchorY="middle" fillOpacity={0.9} outlineWidth={0.01} outlineColor="#000">
-          {node.name}
-        </Text>
-        <Text position={[0, -0.15, 0]} fontSize={0.12} font="https://fonts.gstatic.com/ea/notosanssc/v1/NotoSansSC-Regular.otf" color="#888" anchorX="center" anchorY="middle">
-          {node.match}%
-        </Text>
+        <animated.group>
+          <Text position={[0, 0.18, 0]} fontSize={0.16} color="white" font="https://fonts.gstatic.com/ea/notosanssc/v1/NotoSansSC-Regular.otf" anchorX="center" anchorY="middle" fillOpacity={opacity} outlineWidth={0.015} outlineColor="#171822">
+            {node.name}
+          </Text>
+          <Text position={[0, -0.15, 0]} fontSize={0.12} color={node.color} anchorX="center" anchorY="middle" fillOpacity={opacity}>
+            {node.match}%
+          </Text>
+        </animated.group>
       </group>
-    </group>
+    </animated.group>
   );
+
 };
 
 const Galaxy = () => {
@@ -126,7 +147,7 @@ const Galaxy = () => {
 export default function Planet3D() {
   return (
     <div className="w-full h-full absolute inset-0 z-0 bg-transparent">
-      <Canvas camera={{ position: [0, 0, 8.5], fov: 60 }}>
+      <Canvas camera={{ position: [0, 0, 8], fov: 55 }}>
         {/* Deep blue/black background color */}
         <color attach="background" args={['#171822']} />
         {/* Fog to hide back nodes and create depth */}
