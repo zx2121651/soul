@@ -6,7 +6,7 @@ export default function TopBar() {
       {/* Planet Boost Button */}
       <button className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full text-sm font-medium">
         <Zap size={16} className="text-cyan-400 fill-cyan-400" />
-        <span>Planet Boost</span>
+        <span>星球加速</span>
       </button>
 
       {/* Soul Logo placeholder */}
@@ -17,7 +17,7 @@ export default function TopBar() {
       {/* Filter Button */}
       <button className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full text-sm font-medium">
         <Filter size={16} className="text-cyan-400" />
-        <span>Filter</span>
+        <span>筛选</span>
       </button>
     </div>
   );

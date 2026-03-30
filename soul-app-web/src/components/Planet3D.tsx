@@ -15,7 +15,7 @@ interface NodeData {
   isSelf?: boolean;
 }
 
-const mockNames = ["Angel", "Yao", "Stephen", "Xiin", "陈子豪", "BLUE", "Kristy", "tuan", "Obito", "布丁", "月尊", "My Age 40"];
+const mockNames = ["陈子豪", "半岛铁盒", "一只小橘猫", "夏天", "云吞面", "星空", "晚风", "林深见鹿", "迷路的小熊", "冰美式", "芥末可可", "无心", "小花", "月尊", "布丁", "大笨钟"];
 const colors = ["#ff9a9e", "#fecfef", "#a1c4fd", "#c2e9fb", "#d4fc79", "#96e6a1"];
 
 const generateNodes = (): NodeData[] => {
@@ -24,7 +24,7 @@ const generateNodes = (): NodeData[] => {
   nodes.push({
     id: 0,
     position: new THREE.Vector3(0, 0, SPHERE_RADIUS * 1.05),
-    name: "Me",
+    name: "自己",
     match: 100,
     color: "#ffffff",
     isSelf: true
@@ -92,10 +92,10 @@ const UserNode = ({ node }: { node: NodeData }) => {
         <meshBasicMaterial color={node.color} />
       </mesh>
       <group ref={textRef}>
-        <Text position={[0, 0.15, 0]} fontSize={0.16} color="white" anchorX="center" anchorY="middle" fillOpacity={0.9} outlineWidth={0.01} outlineColor="#000">
+        <Text position={[0, 0.15, 0]} fontSize={0.16} font="https://fonts.gstatic.com/ea/notosanssc/v1/NotoSansSC-Regular.otf" color="white" anchorX="center" anchorY="middle" fillOpacity={0.9} outlineWidth={0.01} outlineColor="#000">
           {node.name}
         </Text>
-        <Text position={[0, -0.15, 0]} fontSize={0.12} color="#888" anchorX="center" anchorY="middle">
+        <Text position={[0, -0.15, 0]} fontSize={0.12} font="https://fonts.gstatic.com/ea/notosanssc/v1/NotoSansSC-Regular.otf" color="#888" anchorX="center" anchorY="middle">
           {node.match}%
         </Text>
       </group>

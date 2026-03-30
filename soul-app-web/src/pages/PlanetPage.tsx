@@ -16,7 +16,7 @@ export default function PlanetPage() {
           transition={{ duration: 0.5, delay: 0.5 }}
           className="relative bg-black/50 backdrop-blur-md border border-cyan-500/30 text-cyan-400 text-sm px-5 py-2 rounded-full flex items-center gap-2 whitespace-nowrap font-medium"
         >
-          Boosting. Try it now! <span className="text-white">&gt;</span>
+          加速中，立即体验！ <span className="text-white">&gt;</span>
         </motion.div>
       </div>
 

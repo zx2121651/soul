@@ -7,13 +7,13 @@ export default function BottomNavBar() {
       {/* Planet (Active) */}
       <button className="flex flex-col items-center gap-1 text-cyan-400">
         <Globe size={24} />
-        <span className="text-[10px] font-medium">Planet</span>
+        <span className="text-[10px] font-medium">星球</span>
       </button>
 
       {/* Explore */}
       <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors">
         <Compass size={24} />
-        <span className="text-[10px] font-medium">Explore</span>
+        <span className="text-[10px] font-medium">广场</span>
       </button>
 
       {/* Center Plus Button */}
@@ -27,13 +27,13 @@ export default function BottomNavBar() {
            <MessageSquare size={24} />
            <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-[#171822]"></div>
         </div>
-        <span className="text-[10px] font-medium">Chat</span>
+        <span className="text-[10px] font-medium">聊天</span>
       </button>
 
       {/* Me */}
       <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors">
         <User size={24} />
-        <span className="text-[10px] font-medium">Me</span>
+        <span className="text-[10px] font-medium">自己</span>
       </button>
 
     </div>

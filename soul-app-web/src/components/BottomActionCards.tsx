@@ -4,33 +4,33 @@ export default function BottomActionCards() {
   const cards = [
     {
       id: 'meet',
-      title: 'Meet Me',
-      subtitle: '3 matches left',
+      title: '灵魂匹配',
+      subtitle: '剩余 3 次',
       bg: 'bg-[#55778a]',
       iconUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=meet&backgroundColor=transparent',
       width: 'min-w-[140px]'
     },
     {
       id: 'audio',
-      title: 'Audio Call',
+      title: '语音匹配',
       subtitle: '',
       bg: 'bg-[#407e74]',
       iconUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=audio&backgroundColor=transparent',
       width: 'min-w-[140px]',
-      floatingBadge: 'Incoming call~'
+      floatingBadge: '收到来电~'
     },
     {
       id: 'party',
-      title: 'Virtual Party',
-      subtitle: 'Take Your Mic',
+      title: '群聊派对',
+      subtitle: '快来抢麦',
       bg: 'bg-[#834996]',
       iconUrl: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=party&backgroundColor=transparent',
       width: 'min-w-[140px]'
     },
     {
       id: 'soul',
-      title: 'Soul Cam',
-      subtitle: 'Try it now',
+      title: '脸基尼匹配',
+      subtitle: '立即体验',
       bg: 'bg-[#8f5d4e]',
       iconUrl: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=smile&backgroundColor=transparent',
       width: 'min-w-[140px]'
