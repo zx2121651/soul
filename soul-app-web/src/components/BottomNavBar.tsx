@@ -1,7 +1,7 @@
 
 
 
-import { TabName } from '../App';
+import type { TabName } from '../App';
 
 interface BottomNavBarProps {
   activeTab: TabName;
