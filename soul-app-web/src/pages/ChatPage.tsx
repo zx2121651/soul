@@ -48,6 +48,15 @@ const mockChats = [
   }
 ];
 
+
+const pinnedUsers = [
+  { id: 101, name: '夏天🌿', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=summer&backgroundColor=c0aede', isOnline: true },
+  { id: 102, name: '陈子豪', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=chen&backgroundColor=b6e3f4', isOnline: true },
+  { id: 103, name: '晚风', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=wind&backgroundColor=d4fc79', isOnline: false },
+  { id: 104, name: '冰美式☕', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=coffee&backgroundColor=ffd5dc', isOnline: true },
+  { id: 105, name: '月尊🌙', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=moon&backgroundColor=ffdfbf', isOnline: false },
+];
+
 export default function ChatPage() {
   return (
     <div className="w-full h-full bg-[#12141d] flex flex-col pt-12 pb-24">
@@ -71,6 +80,35 @@ export default function ChatPage() {
           />
         </div>
       </div>
+
+      {/* Pinned / Online Users (Story style) */}
+      <div className="px-4 py-3 shrink-0">
+        <div className="flex overflow-x-auto gap-4 no-scrollbar">
+          {/* Add Story Button */}
+          <div className="flex flex-col items-center gap-1 shrink-0">
+            <div className="relative w-14 h-14 rounded-full bg-[#1c1e2b] border border-dashed border-gray-600 flex items-center justify-center cursor-pointer active:scale-95 transition-transform">
+               <span className="text-gray-400 text-xl">+</span>
+            </div>
+            <span className="text-xs text-gray-500">发瞬间</span>
+          </div>
+
+          {pinnedUsers.map(user => (
+            <div key={user.id} className="flex flex-col items-center gap-1 shrink-0 cursor-pointer active:scale-95 transition-transform">
+              <div className={`relative w-14 h-14 rounded-full p-[2px] ${user.isOnline ? 'bg-gradient-to-tr from-cyan-400 to-blue-500' : 'bg-transparent'}`}>
+                <div className="w-full h-full bg-[#12141d] rounded-full p-[2px]">
+                  <img src={user.avatar} alt="avatar" className="w-full h-full rounded-full object-cover bg-gray-800" />
+                </div>
+                {/* Online Indicator */}
+                {user.isOnline && (
+                  <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#12141d] rounded-full"></div>
+                )}
+              </div>
+              <span className="text-xs text-gray-400 max-w-[56px] truncate text-center">{user.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
 
       {/* Heartbeat Match Banner */}
       <div className="px-4 py-2 shrink-0">

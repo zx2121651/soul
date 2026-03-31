@@ -40,21 +40,32 @@ export default function MePage() {
         </div>
 
         {/* Name and Tags */}
+
         <div className="mt-4">
-          <h2 className="text-white text-2xl font-bold mb-2">自己 (Me)</h2>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="bg-[#8E5E99]/30 text-[#D7BDE2] px-2 py-1 rounded-md font-medium border border-[#8E5E99]/50">
-              # INTJ 建筑师
+          <h2 className="text-white text-2xl font-bold mb-2 flex items-center gap-2">
+            自己 (Me)
+            <span className="bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[10px] px-1.5 py-0.5 rounded font-black tracking-widest italic shadow-sm transform -skew-x-6">VIP</span>
+          </h2>
+
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="flex items-center gap-1 bg-[#8E5E99]/20 text-[#D7BDE2] px-2 py-1 rounded-md font-medium border border-[#8E5E99]/40">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#D7BDE2]"></div>
+              INTJ 建筑师
             </span>
-            <span className="bg-[#4A8F85]/30 text-[#A3E4D7] px-2 py-1 rounded-md font-medium border border-[#4A8F85]/50">
+            <span className="flex items-center gap-1 bg-[#4A8F85]/20 text-[#A3E4D7] px-2 py-1 rounded-md font-medium border border-[#4A8F85]/40">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#A3E4D7]"></div>
               引力签: 艺术控
             </span>
             <span className="text-gray-400 bg-white/5 px-2 py-1 rounded-md">
               ♀ 22岁 · 杭州
             </span>
+            <span className="text-gray-400 bg-white/5 px-2 py-1 rounded-md flex items-center gap-1">
+              🎮 蒸汽平台 1k+h
+            </span>
           </div>
-          <p className="text-gray-400 text-sm mt-3">宇宙很大，生活更大。探索中...</p>
+          <p className="text-gray-400 text-sm mt-3 leading-relaxed">宇宙很大，生活更大。探索中... ✨</p>
         </div>
+
 
         {/* Stats */}
         <div className="flex gap-8 mt-6 pb-6 border-b border-white/10">
@@ -83,16 +94,16 @@ export default function MePage() {
 
          {/* Grid Gallery */}
          <div className="grid grid-cols-3 gap-1">
-            <div className="aspect-square bg-[#1c1e2b] relative overflow-hidden">
-               <img src="https://images.unsplash.com/photo-1517849845537-4d257902454a?w=400&h=400&fit=crop" className="w-full h-full object-cover" alt="moment" />
+            <div className="aspect-square bg-[#1c1e2b] relative overflow-hidden group cursor-pointer">
+               <img src="https://images.unsplash.com/photo-1517849845537-4d257902454a?w=400&h=400&fit=crop" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" alt="moment" />
             </div>
             <div className="aspect-square bg-[#1c1e2b] relative overflow-hidden flex items-center justify-center p-2 text-center text-xs text-white bg-gradient-to-br from-[#8E5E99] to-[#4A235A]">
-               "今天天气真好，去西湖边喝了咖啡。"
+               &quot;今天天气真好，去西湖边喝了咖啡。&quot;
             </div>
-            <div className="aspect-square bg-[#1c1e2b] relative overflow-hidden">
-               <img src="https://images.unsplash.com/photo-1536924940846-227afb31e2a5?w=400&h=400&fit=crop" className="w-full h-full object-cover" alt="moment" />
+            <div className="aspect-square bg-[#1c1e2b] relative overflow-hidden group cursor-pointer">
+               <img src="https://images.unsplash.com/photo-1536924940846-227afb31e2a5?w=400&h=400&fit=crop" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" alt="moment" />
             </div>
-            <div className="aspect-square bg-[#1c1e2b] relative overflow-hidden flex flex-col items-center justify-center gap-2 p-2 text-center text-xs text-white border border-dashed border-white/20">
+            <div className="aspect-square bg-[#1c1e2b] relative overflow-hidden flex flex-col items-center justify-center gap-2 p-2 text-center text-xs text-white border border-dashed border-white/20 cursor-pointer hover:bg-white/5 transition-colors active:scale-95">
                <span className="text-gray-500 text-2xl">+</span>
                <span className="text-gray-500">发布瞬间</span>
             </div>
