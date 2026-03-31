@@ -1,12 +1,35 @@
+
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import Planet3D from '../components/Planet3D';
+import Planet3D, { NodeData } from '../components/Planet3D';
 import BottomActionCards from '../components/BottomActionCards';
+import UserProfileModal, { UserProfileData } from '../components/UserProfileModal';
+
 
 export default function PlanetPage() {
+
+  const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(null);
+
+  const handleNodeClick = (node: NodeData) => {
+    if (node.isSelf) return; // Optional: do not show modal for self
+
+    // Transform NodeData to UserProfileData
+    setSelectedUser({
+      id: node.id,
+      name: node.name,
+      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + node.name + '&backgroundColor=b6e3f4', // mock avatar
+      match: node.match,
+      gender: Math.random() > 0.5 ? 'male' : 'female',
+      age: Math.floor(18 + Math.random() * 10),
+      location: '银河系',
+      isOnline: Math.random() > 0.3
+    });
+  };
+
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center bg-[#171822]">
       {/* 3D Background */}
-      <Planet3D />
+      <Planet3D onNodeClick={handleNodeClick} />
 
       {/* Center Floating Prompt (above the self-planet) */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-24 z-30 pointer-events-none">
@@ -28,6 +51,13 @@ export default function PlanetPage() {
 
       {/* Bottom Horizontal Scrolling Cards */}
       <BottomActionCards />
+
+      {/* User Profile Modal Overlay */}
+      <UserProfileModal
+        isOpen={!!selectedUser}
+        user={selectedUser}
+        onClose={() => setSelectedUser(null)}
+      />
 
     </div>
   );

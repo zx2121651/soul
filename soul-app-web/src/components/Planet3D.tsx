@@ -7,7 +7,7 @@ import * as THREE from 'three';
 const NUM_NODES = 80;
 const SPHERE_RADIUS = 3.5;
 
-interface NodeData {
+export interface NodeData {
   id: number;
   position: THREE.Vector3;
   name: string;
@@ -68,7 +68,7 @@ const generateNodes = (): NodeData[] => {
   return nodes;
 };
 
-const UserNode = ({ node }: { node: NodeData }) => {
+const UserNode = ({ node, onClick }: { node: NodeData; onClick?: () => void }) => {
 
   const { camera } = useThree();
 
@@ -122,7 +122,7 @@ const UserNode = ({ node }: { node: NodeData }) => {
       scale={scale}
       onPointerOver={(e) => { e.stopPropagation(); setHover(true); }}
       onPointerOut={() => setHover(false)}
-      onClick={(e) => { e.stopPropagation(); alert(`点击了 ${node.name}，匹配度 ${node.match}%`); }}
+      onClick={(e) => { e.stopPropagation(); if(onClick) onClick(); }}
     >
       <mesh>
         <sphereGeometry args={[0.05, 16, 16]} />
@@ -144,7 +144,7 @@ const UserNode = ({ node }: { node: NodeData }) => {
 };
 
 
-const Galaxy = () => {
+const Galaxy = ({ onNodeClick }: { onNodeClick?: (node: NodeData) => void }) => {
   const groupRef = useRef<THREE.Group>(null);
   const nodes = useMemo(() => generateNodes(), []);
 
@@ -167,14 +167,16 @@ const Galaxy = () => {
     <animated.group scale={entranceScale}>
     <group ref={groupRef}>
       {nodes.map(node => (
-        <UserNode key={node.id} node={node} />
+        <UserNode key={node.id} node={node} onClick={() => onNodeClick && onNodeClick(node)} />
       ))}
     </group>
     </animated.group>
   );
 };
 
-export default function Planet3D() {
+interface Planet3DProps { onNodeClick?: (node: NodeData) => void; }
+
+export default function Planet3D({ onNodeClick }: Planet3DProps) {
   return (
     <div className="w-full h-full absolute inset-0 z-0 bg-transparent">
       <Canvas camera={{ position: [0, 0, 8], fov: 55 }}>
@@ -183,7 +185,7 @@ export default function Planet3D() {
         {/* Fog to hide back nodes and create depth */}
         <fog attach="fog" args={['#171822', 5, 12]} />
         <ambientLight intensity={0.5} />
-        <Galaxy />
+        <Galaxy onNodeClick={onNodeClick} />
         <OrbitControls
           enableZoom={false}
           enablePan={false}

@@ -1,5 +1,8 @@
+
 import { useState } from 'react';
 import { Heart, MessageSquare, Share2, MoreHorizontal } from 'lucide-react';
+import UserProfileModal, { UserProfileData } from '../components/UserProfileModal';
+
 
 
 const mockPosts = [
@@ -65,9 +68,23 @@ const trendingTopics = [
 ];
 
 
+
 export default function ExplorePage() {
   const [activeTab, setActiveTab] = useState('推荐');
   const tabs = ['关注', '推荐', '最新'];
+  const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(null);
+
+  const handleUserClick = (user: any) => {
+    setSelectedUser({
+      id: user.name,
+      name: user.name,
+      avatar: user.avatar,
+      gender: Math.random() > 0.5 ? 'male' : 'female',
+      age: Math.floor(18 + Math.random() * 10),
+      isOnline: true
+    });
+  };
+
 
   return (
     <div className="w-full h-full bg-[#12141d] flex flex-col pt-12 pb-24">
@@ -111,7 +128,7 @@ export default function ExplorePage() {
               {/* Header */}
               <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="relative">
+                  <div className="relative cursor-pointer" onClick={() => handleUserClick(post.user)}>
                     <img src={post.user.avatar} alt="avatar" className="w-10 h-10 rounded-full bg-gray-800 object-cover" />
                     {/* Tiny online dot */}
                     <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-[#1c1e2b] rounded-full"></div>
