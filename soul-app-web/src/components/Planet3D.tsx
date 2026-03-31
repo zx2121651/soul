@@ -14,6 +14,9 @@ interface NodeData {
   match: number;
   color: string;
   isSelf?: boolean;
+  phase: number;
+  speed: number;
+  amplitude: number;
 }
 
 const mockNames = ["陈子豪", "半岛铁盒🌸", "一只小橘猫🐱", "夏天🌿", "云吞面", "星空✨", "晚风", "林深见鹿🦌", "迷路的小熊", "冰美式☕", "芥末可可", "无心", "小花", "月尊🌙", "布丁", "大笨钟"];
@@ -28,7 +31,10 @@ const generateNodes = (): NodeData[] => {
     name: "自己",
     match: 100,
     color: "#ffffff",
-    isSelf: true
+    isSelf: true,
+    phase: 0,
+    speed: 1,
+    amplitude: 0.1
   });
 
   const phi = Math.PI * (3 - Math.sqrt(5));
@@ -53,14 +59,19 @@ const generateNodes = (): NodeData[] => {
       position: new THREE.Vector3(x * SPHERE_RADIUS, jitterY * SPHERE_RADIUS, z * SPHERE_RADIUS),
       name: mockNames[Math.floor(Math.random() * mockNames.length)],
       match: Math.floor(60 + Math.random() * 39),
-      color: colors[Math.floor(Math.random() * colors.length)]
+      color: colors[Math.floor(Math.random() * colors.length)],
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.5 + Math.random() * 1.5,
+      amplitude: 0.05 + Math.random() * 0.15
     });
   }
   return nodes;
 };
 
 const UserNode = ({ node }: { node: NodeData }) => {
+
   const { camera } = useThree();
+
   const textRef = useRef<THREE.Group>(null);
   const [hovered, setHover] = useState(false);
 
@@ -71,7 +82,7 @@ const UserNode = ({ node }: { node: NodeData }) => {
     config: { mass: 1, tension: 280, friction: 20 }
   });
 
-  useFrame(() => {
+  useFrame((_state) => {
     if (textRef.current) {
       textRef.current.quaternion.copy(camera.quaternion);
     }
@@ -132,9 +143,18 @@ const UserNode = ({ node }: { node: NodeData }) => {
 
 };
 
+
 const Galaxy = () => {
   const groupRef = useRef<THREE.Group>(null);
   const nodes = useMemo(() => generateNodes(), []);
+
+  // Entrance animation for the entire galaxy
+  const { entranceScale } = useSpring({
+    from: { entranceScale: 0.01 },
+    to: { entranceScale: 1 },
+    config: { mass: 1, tension: 180, friction: 12 } // Bouncy
+  });
+
 
   useFrame((_state, delta) => {
     if (groupRef.current) {
@@ -144,11 +164,13 @@ const Galaxy = () => {
   });
 
   return (
+    <animated.group scale={entranceScale}>
     <group ref={groupRef}>
       {nodes.map(node => (
         <UserNode key={node.id} node={node} />
       ))}
     </group>
+    </animated.group>
   );
 };
 
@@ -165,7 +187,9 @@ export default function Planet3D() {
         <OrbitControls
           enableZoom={false}
           enablePan={false}
-          rotateSpeed={0.6}
+          rotateSpeed={0.8}
+          enableDamping={true}
+          dampingFactor={0.05}
         />
       </Canvas>
     </div>
