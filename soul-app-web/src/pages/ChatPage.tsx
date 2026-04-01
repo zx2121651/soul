@@ -135,12 +135,12 @@ export default function ChatPage() {
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 mt-2">
         {mockChats.map((chat) => (
           <div key={chat.id} onClick={() => setActiveChat(chat)}
-            className="flex items-center gap-3 py-3 border-b border-white/5 cursor-pointer active:bg-white/5 transition-colors">
+            className="flex items-center gap-3.5 py-4 border-b border-white/5 cursor-pointer active:bg-white/5 hover:bg-white/[0.02] transition-colors">
             {/* Avatar container */}
             <div className="relative shrink-0">
               <img src={chat.avatar} alt="avatar" className="w-12 h-12 rounded-full object-cover bg-gray-800" />
               {chat.isOfficial && (
-                <div className="absolute -bottom-1 -right-1 bg-yellow-500 text-white text-[8px] font-bold px-1 rounded-sm border border-[#12141d]">
+                <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-[9px] font-black px-1.5 py-[1px] rounded-full border-2 border-[#12141d] shadow-sm tracking-wider transform scale-90">
                   官方
                 </div>
               )}
@@ -149,10 +149,10 @@ export default function ChatPage() {
             {/* Message content */}
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-center mb-1">
-                <h4 className="text-white text-sm font-medium truncate pr-2">{chat.name}</h4>
-                <span className="text-gray-500 text-xs shrink-0">{chat.time}</span>
+                <h4 className="text-white text-[15px] font-bold truncate pr-2">{chat.name}</h4>
+                <span className="text-gray-500 text-[11px] font-medium shrink-0">{chat.time}</span>
               </div>
-              <p className="text-gray-400 text-xs truncate pr-4">{chat.lastMessage}</p>
+              <p className="text-gray-400/80 text-[13px] truncate pr-4 leading-relaxed">{chat.lastMessage}</p>
             </div>
 
             {/* Unread badge */}
