@@ -1,7 +1,8 @@
 
 import { useState } from 'react';
 import { Heart, MessageSquare, Share2, MoreHorizontal } from 'lucide-react';
-import UserProfileModal, { UserProfileData } from '../components/UserProfileModal';
+import UserProfileModal from '../components/UserProfileModal';
+import type { UserProfileData } from '../components/UserProfileModal';
 
 
 

@@ -1,9 +1,11 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import Planet3D, { NodeData } from '../components/Planet3D';
+import Planet3D from '../components/Planet3D';
+import type { NodeData } from '../components/Planet3D';
 import BottomActionCards from '../components/BottomActionCards';
-import UserProfileModal, { UserProfileData } from '../components/UserProfileModal';
+import UserProfileModal from '../components/UserProfileModal';
+import type { UserProfileData } from '../components/UserProfileModal';
 
 
 export default function PlanetPage() {
