@@ -1,8 +1,7 @@
 
 import { useState } from 'react';
 import { Heart, MessageSquare, Share2, MoreHorizontal } from 'lucide-react';
-import UserProfileModal from '../components/UserProfileModal';
-import type { UserProfileData } from '../components/UserProfileModal';
+
 
 
 
@@ -70,21 +69,11 @@ const trendingTopics = [
 
 
 
-export default function ExplorePage() {
+export default function ExplorePage({ onOpenEditor }: { onOpenEditor?: () => void }) {
   const [activeTab, setActiveTab] = useState('推荐');
   const tabs = ['关注', '推荐', '最新'];
-  const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(null);
 
-  const handleUserClick = (user: any) => {
-    setSelectedUser({
-      id: user.name,
-      name: user.name,
-      avatar: user.avatar,
-      gender: Math.random() > 0.5 ? 'male' : 'female',
-      age: Math.floor(18 + Math.random() * 10),
-      isOnline: true
-    });
-  };
+
 
 
   return (

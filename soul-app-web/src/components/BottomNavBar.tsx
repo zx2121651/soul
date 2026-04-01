@@ -4,11 +4,12 @@
 import type { TabName } from '../App';
 
 interface BottomNavBarProps {
+  onOpenEditor?: () => void;
   activeTab: TabName;
   onTabChange: (tab: TabName) => void;
 }
 
-export default function BottomNavBar({ activeTab, onTabChange }: BottomNavBarProps) {
+export default function BottomNavBar({ activeTab, onTabChange, onOpenEditor }: BottomNavBarProps) {
 
   return (
     <div className="absolute bottom-0 w-full pb-6 pt-4 px-6 bg-transparent flex justify-between items-center z-50">
@@ -35,7 +36,7 @@ export default function BottomNavBar({ activeTab, onTabChange }: BottomNavBarPro
       </button>
 
       {/* Center Plus Button */}
-      <button className="relative -top-3 w-14 h-14 bg-cyan-300 rounded-full flex items-center justify-center text-black shadow-[0_0_15px_rgba(103,232,249,0.5)]">
+      <button onClick={onOpenEditor} className="relative -top-3 w-14 h-14 bg-cyan-300 rounded-full flex items-center justify-center text-black shadow-[0_0_15px_rgba(103,232,249,0.5)] transition-transform active:scale-95 hover:scale-105">
 
 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
   <line x1="12" y1="5" x2="12" y2="19"></line>

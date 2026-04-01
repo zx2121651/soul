@@ -8,17 +8,21 @@ import ExplorePage from './pages/ExplorePage';
 import ChatPage from './pages/ChatPage';
 import MePage from './pages/MePage';
 
+import PostMomentEditor from './components/PostMomentEditor';
+
+
 export type TabName = 'Planet' | 'Explore' | 'Chat' | 'Me';
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabName>('Planet');
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
 
   const renderPage = () => {
     switch (activeTab) {
       case 'Planet': return <PlanetPage />;
-      case 'Explore': return <ExplorePage />;
+      case 'Explore': return <ExplorePage onOpenEditor={() => setIsEditorOpen(true)} />;
       case 'Chat': return <ChatPage />;
-      case 'Me': return <MePage />;
+      case 'Me': return <MePage onOpenEditor={() => setIsEditorOpen(true)} />;
       default: return <PlanetPage />;
     }
   };
@@ -43,7 +47,9 @@ function App() {
       </AnimatePresence>
 
       {/* Persistent Bottom Nav */}
-      <BottomNavBar activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNavBar activeTab={activeTab} onTabChange={setActiveTab} onOpenEditor={() => setIsEditorOpen(true)} />
+          {/* Global Post Moment Editor Fullscreen Overlay */}
+      <PostMomentEditor isOpen={isEditorOpen} onClose={() => setIsEditorOpen(false)} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { Settings, PenSquare, Eye } from 'lucide-react';
 
-export default function MePage() {
+export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) {
   return (
     <div className="w-full h-full bg-[#12141d] overflow-y-auto no-scrollbar pb-24 relative">
 
@@ -103,7 +103,7 @@ export default function MePage() {
             <div className="aspect-square bg-[#1c1e2b] relative overflow-hidden group cursor-pointer">
                <img src="https://images.unsplash.com/photo-1536924940846-227afb31e2a5?w=400&h=400&fit=crop" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" alt="moment" />
             </div>
-            <div className="aspect-square bg-[#1c1e2b] relative overflow-hidden flex flex-col items-center justify-center gap-2 p-2 text-center text-xs text-white border border-dashed border-white/20 cursor-pointer hover:bg-white/5 transition-colors active:scale-95">
+            <div onClick={onOpenEditor} className="aspect-square bg-[#1c1e2b] relative overflow-hidden flex flex-col items-center justify-center gap-2 p-2 text-center text-xs text-white border border-dashed border-white/20 cursor-pointer hover:bg-white/5 transition-colors active:scale-95">
                <span className="text-gray-500 text-2xl">+</span>
                <span className="text-gray-500">发布瞬间</span>
             </div>
