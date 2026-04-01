@@ -1,16 +1,20 @@
 
+
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Planet3D from '../components/Planet3D';
 import type { NodeData } from '../components/Planet3D';
 import BottomActionCards from '../components/BottomActionCards';
-import UserProfileModal from '../components/UserProfileModal';
 import type { UserProfileData } from '../components/UserProfileModal';
+import MatchRadarOverlay from '../components/MatchRadarOverlay';
+import UserProfileModal from '../components/UserProfileModal';
+
 
 
 export default function PlanetPage() {
 
   const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(null);
+  const [isRadarOpen, setRadarOpen] = useState(false);
 
   const handleNodeClick = (node: NodeData) => {
     if (node.isSelf) return; // Optional: do not show modal for self
@@ -52,7 +56,7 @@ export default function PlanetPage() {
       </div>
 
       {/* Bottom Horizontal Scrolling Cards */}
-      <BottomActionCards />
+      <BottomActionCards onMatchClick={() => setRadarOpen(true)} />
 
       {/* User Profile Modal Overlay */}
       <UserProfileModal
@@ -61,6 +65,8 @@ export default function PlanetPage() {
         onClose={() => setSelectedUser(null)}
       />
 
+          {/* Radar Overlay */}
+      <MatchRadarOverlay isOpen={isRadarOpen} onClose={() => setRadarOpen(false)} />
     </div>
   );
 }

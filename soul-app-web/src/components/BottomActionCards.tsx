@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-export default function BottomActionCards() {
+export default function BottomActionCards({ onMatchClick }: { onMatchClick?: () => void }) {
 
   const cards = [
     {
@@ -89,6 +89,7 @@ export default function BottomActionCards() {
       <div className="relative w-full mb-3 h-8">
         {/* Radar Button (Right aligned, floating above cards) */}
         <motion.button
+          onClick={onMatchClick}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className="absolute right-2 -top-16 w-14 h-14 rounded-full bg-gradient-to-tr from-[#146a67] to-[#3BBCA2] flex items-center justify-center border border-white/20 shadow-[0_4px_20px_rgba(59,188,162,0.4)] z-50"
@@ -123,6 +124,7 @@ export default function BottomActionCards() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1, duration: 0.4 }}
             whileHover={{ scale: 0.98, y: -2 }} whileTap={{ scale: 0.92 }}
+            onClick={() => card.id === 'meet' && onMatchClick && onMatchClick()}
             className={`relative flex-shrink-0 cursor-pointer ${card.width} h-[130px] ${card.bg} rounded-2xl p-4 flex flex-col justify-end snap-start shadow-md overflow-hidden`}
           >
             {/* Background Graphic / Icon */}
