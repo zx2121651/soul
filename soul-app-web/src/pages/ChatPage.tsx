@@ -1,10 +1,15 @@
 
+
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import ChatRoom from '../components/ChatRoom';
+import SwipeableChatItem from '../components/SwipeableChatItem';
+import type { ChatData } from '../components/SwipeableChatItem';
 
 
-const mockChats = [
+
+
+export const initialChats = [
   {
     id: 1,
     name: "Soul官方助手",
@@ -53,6 +58,7 @@ const mockChats = [
 ];
 
 
+
 const pinnedUsers = [
   { id: 101, name: '夏天🌿', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=summer&backgroundColor=c0aede', isOnline: true },
   { id: 102, name: '陈子豪', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=chen&backgroundColor=b6e3f4', isOnline: true },
@@ -61,8 +67,19 @@ const pinnedUsers = [
   { id: 105, name: '月尊🌙', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=moon&backgroundColor=ffdfbf', isOnline: false },
 ];
 
+
 export default function ChatPage() {
-  const [activeChat, setActiveChat] = useState<typeof mockChats[0] | null>(null);
+  const [chats, setChats] = useState<ChatData[]>(initialChats);
+  const [activeChat, setActiveChat] = useState<ChatData | null>(null);
+
+  const handleDelete = (id: number) => {
+    setChats(prev => prev.filter(c => c.id !== id));
+  };
+
+  const handleMarkRead = (id: number) => {
+    setChats(prev => prev.map(c => c.id === id ? { ...c, unread: 0 } : c));
+  };
+
   return (
     <div className="w-full h-full bg-[#12141d] flex flex-col pt-12 pb-24">
 
