@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Phone, Video, Mic, Smile, Plus, Send } from 'lucide-react';
+import { ChevronLeft, Phone, Video, Mic, Smile, Plus, Send, Camera } from 'lucide-react';
 
 interface ChatRoomProps {
   user: {

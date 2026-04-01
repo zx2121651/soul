@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { motion, useAnimation, PanInfo } from 'framer-motion';
+import { motion, useAnimation } from 'framer-motion';
+import type { PanInfo } from 'framer-motion';
 import { Trash2, CheckCheck } from 'lucide-react';
 
 export interface ChatData {
@@ -27,7 +28,7 @@ export default function SwipeableChatItem({ chat, onClick, onDelete, onMarkRead 
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     // If we dragged past the threshold to the left, or we swiped fast to the left
     if (info.offset.x < -THRESHOLD || info.velocity.x < -500) {
       controls.start({ x: -ACTION_WIDTH, transition: { type: 'spring', stiffness: 300, damping: 30 } });

@@ -4,7 +4,6 @@ import { Search, Heart, MessageSquare, Play, Plus } from 'lucide-react';
 import UserProfileModal from '../components/UserProfileModal';
 import type { UserProfileData } from '../components/UserProfileModal';
 import { mockPosts, trendingTopics, banners } from '../data/mockExploreData';
-import type { ExplorePost } from '../data/mockExploreData';
 
 interface LikeButtonProps {
   initialLikes: number;

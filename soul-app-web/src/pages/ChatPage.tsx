@@ -150,7 +150,7 @@ export default function ChatPage() {
 
       {/* Chat List */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 mt-2">
-        {mockChats.map((chat) => (
+        {chats.map((chat) => (
           <div key={chat.id} onClick={() => setActiveChat(chat)}
             className="flex items-center gap-3.5 py-4 border-b border-white/5 cursor-pointer active:bg-white/5 hover:bg-white/[0.02] transition-colors">
             {/* Avatar container */}
