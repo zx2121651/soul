@@ -1,4 +1,8 @@
+
+import { useState } from 'react';
 import { Search } from 'lucide-react';
+import ChatRoom from '../components/ChatRoom';
+
 
 const mockChats = [
   {
@@ -58,6 +62,7 @@ const pinnedUsers = [
 ];
 
 export default function ChatPage() {
+  const [activeChat, setActiveChat] = useState<typeof mockChats[0] | null>(null);
   return (
     <div className="w-full h-full bg-[#12141d] flex flex-col pt-12 pb-24">
 
@@ -129,7 +134,8 @@ export default function ChatPage() {
       {/* Chat List */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 mt-2">
         {mockChats.map((chat) => (
-          <div key={chat.id} className="flex items-center gap-3 py-3 border-b border-white/5 cursor-pointer active:bg-white/5 transition-colors">
+          <div key={chat.id} onClick={() => setActiveChat(chat)}
+            className="flex items-center gap-3 py-3 border-b border-white/5 cursor-pointer active:bg-white/5 transition-colors">
             {/* Avatar container */}
             <div className="relative shrink-0">
               <img src={chat.avatar} alt="avatar" className="w-12 h-12 rounded-full object-cover bg-gray-800" />
@@ -161,7 +167,15 @@ export default function ChatPage() {
         <div className="text-center text-gray-600 text-xs py-6">
           没有更多聊天记录了
         </div>
-      </div>
+            </div>
+
+      {/* Slide-in Chat Room Overlay */}
+      {activeChat && (
+        <ChatRoom
+          user={{...activeChat, isOnline: true}}
+          onBack={() => setActiveChat(null)}
+        />
+      )}
     </div>
   );
 }
