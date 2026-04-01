@@ -1,190 +1,169 @@
-
 import { useState } from 'react';
-import { Heart, MessageSquare, Share2, MoreHorizontal } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Search, Heart, MessageSquare, Play, Plus } from 'lucide-react';
+import UserProfileModal from '../components/UserProfileModal';
+import type { UserProfileData } from '../components/UserProfileModal';
+import { mockPosts, trendingTopics, banners } from '../data/mockExploreData';
+import type { ExplorePost } from '../data/mockExploreData';
 
+interface LikeButtonProps {
+  initialLikes: number;
+}
 
+const LikeButton = ({ initialLikes }: LikeButtonProps) => {
+  const [liked, setLiked] = useState(false);
+  const [likes, setLikes] = useState(initialLikes);
 
+  const toggleLike = () => {
+    setLiked(!liked);
+    setLikes(prev => liked ? prev - 1 : prev + 1);
+  };
 
-const mockPosts = [
-  {
-    id: 1,
-    user: { name: '一只小橘猫🐱', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=cat&backgroundColor=ffdfbf' },
-    time: '刚刚',
-    content: '今天的天气真好，适合出去散步~ 🌞',
-    tags: ['#日常', '#好天气'],
-    images: ['https://images.unsplash.com/photo-1517849845537-4d257902454a?w=400&h=300&fit=crop'],
-    likes: 12,
-    comments: 3,
-    likers: ['https://api.dicebear.com/7.x/avataaars/svg?seed=1', 'https://api.dicebear.com/7.x/avataaars/svg?seed=2']
-  },
-  {
-    id: 2,
-    user: { name: '陈子豪', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=chen&backgroundColor=b6e3f4' },
-    time: '1小时前',
-    content: '又熬夜写代码了，这已经是这个月的第三次了。不过看到跑通的瞬间还是很开心的！💻✨',
-    tags: ['#程序员', '#熬夜修仙'],
-    images: [
-      'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=300&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=300&h=300&fit=crop'
-    ],
-    likes: 45,
-    comments: 12,
-    likers: ['https://api.dicebear.com/7.x/avataaars/svg?seed=3', 'https://api.dicebear.com/7.x/avataaars/svg?seed=4', 'https://api.dicebear.com/7.x/avataaars/svg?seed=5']
-  },
-  {
-    id: 3,
-    user: { name: '夏天🌿', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=summer&backgroundColor=c0aede' },
-    time: '3小时前',
-    content: '求推荐好听的独立音乐，最近歌荒了...',
-    tags: ['#独立音乐', '#歌荒求助'],
-    images: [],
-    likes: 8,
-    comments: 20,
-    likers: ['https://api.dicebear.com/7.x/avataaars/svg?seed=6']
-  },
-  {
-    id: 4,
-    user: { name: '半岛铁盒🌸', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=box&backgroundColor=ffd5dc' },
-    time: '昨天',
-    content: '周末去看了画展，虽然不太懂艺术，但是感受到了色彩的魅力。',
-    tags: ['#画展', '#周末碎片'],
-    images: [
-      'https://images.unsplash.com/photo-1536924940846-227afb31e2a5?w=300&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=300&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1543857778-c4a1a3e0b2eb?w=300&h=300&fit=crop'
-    ],
-    likes: 128,
-    comments: 15,
-    likers: ['https://api.dicebear.com/7.x/avataaars/svg?seed=7', 'https://api.dicebear.com/7.x/avataaars/svg?seed=8', 'https://api.dicebear.com/7.x/avataaars/svg?seed=9', 'https://api.dicebear.com/7.x/avataaars/svg?seed=10']
-  }
-];
-
-const trendingTopics = [
-  { id: 1, name: '#MBTI性格', icon: '🔮' },
-  { id: 2, name: '#今日穿搭', icon: '👗' },
-  { id: 3, name: '#无语子瞬间', icon: '🙄' },
-  { id: 4, name: '#干饭人', icon: '🍚' },
-  { id: 5, name: '#治愈系', icon: '🩹' },
-];
-
-
+  return (
+    <motion.button
+      onClick={(e) => { e.stopPropagation(); toggleLike(); }}
+      whileTap={{ scale: 0.8 }}
+      className="flex items-center gap-1 hover:text-pink-500 transition-colors"
+    >
+      <motion.div
+        animate={liked ? { scale: [1, 1.3, 1] } : {}}
+        transition={{ duration: 0.3 }}
+      >
+        <Heart size={16} className={liked ? "fill-pink-500 text-pink-500" : "text-gray-400"} />
+      </motion.div>
+      <span className={`text-[11px] font-medium ${liked ? 'text-pink-500' : 'text-gray-500'}`}>{likes}</span>
+    </motion.button>
+  );
+};
 
 export default function ExplorePage({ onOpenEditor }: { onOpenEditor?: () => void }) {
   const [activeTab, setActiveTab] = useState('推荐');
   const tabs = ['关注', '推荐', '最新'];
+  const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(null);
 
-
-
+  const handleUserClick = (user: any) => {
+    setSelectedUser({
+      id: user.name,
+      name: user.name,
+      avatar: user.avatar,
+      gender: Math.random() > 0.5 ? 'male' : 'female',
+      age: Math.floor(18 + Math.random() * 10),
+      isOnline: user.isOnline
+    });
+  };
 
   return (
     <div className="w-full h-full bg-[#12141d] flex flex-col pt-12 pb-24">
       {/* Top Tabs */}
-      <div className="flex justify-center items-center gap-6 px-4 pb-4 shrink-0">
+      <div className="flex justify-center items-center gap-6 px-4 pb-2 shrink-0">
         {tabs.map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`text-lg font-medium transition-colors relative ${
+            className={`text-lg font-bold transition-colors relative pb-2 ${
               activeTab === tab ? 'text-white' : 'text-gray-400'
             }`}
           >
             {tab}
             {activeTab === tab && (
-              <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-1 bg-cyan-400 rounded-full"></span>
+              <motion.span
+                layoutId="exploreTabIndicator"
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-1 bg-cyan-400 rounded-full"
+              />
             )}
           </button>
         ))}
       </div>
 
-      {/* Feed List */}
+      {/* Search Bar */}
+      <div className="px-4 py-2 shrink-0">
+        <div className="bg-[#1c1e2b] rounded-full flex items-center px-4 py-2 gap-2 border border-white/5">
+          <Search size={16} className="text-gray-500" />
+          <input
+            type="text"
+            placeholder="搜索有趣的灵魂或瞬间"
+            className="bg-transparent border-none outline-none text-white text-sm w-full placeholder-gray-500"
+          />
+        </div>
+      </div>
 
       <div className="flex-1 overflow-y-auto no-scrollbar">
-        {/* Trending Topics Scroll */}
-        <div className="px-4 mb-4">
-          <div className="flex overflow-x-auto gap-3 no-scrollbar pb-2">
-            {trendingTopics.map(topic => (
-              <div key={topic.id} className="flex-shrink-0 flex items-center gap-1.5 bg-[#1c1e2b] px-3 py-1.5 rounded-full border border-white/5 whitespace-nowrap text-sm text-gray-300">
-                <span>{topic.icon}</span>
-                <span>{topic.name}</span>
+        {/* Banner Carousel */}
+        <div className="px-4 pt-2 pb-4">
+          <div className="flex overflow-x-auto gap-3 no-scrollbar snap-x snap-mandatory">
+            {banners.map(banner => (
+              <div key={banner.id} className={`snap-start shrink-0 w-64 h-24 rounded-2xl bg-gradient-to-r ${banner.bg} p-4 flex flex-col justify-center relative overflow-hidden shadow-lg`}>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-4xl opacity-50">{banner.emoji}</div>
+                <h3 className="text-white font-bold text-lg relative z-10">{banner.title}</h3>
+                <button className="text-white/80 text-xs font-medium mt-1 w-fit bg-black/20 px-2 py-0.5 rounded-full relative z-10">
+                  点击参与 &gt;
+                </button>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Feed List */}
-        <div className="px-4 space-y-4 pb-4">
+        {/* Trending Topics Scroll */}
+        <div className="px-4 mb-4">
+          <div className="flex overflow-x-auto gap-3 no-scrollbar pb-2">
+            {trendingTopics.map(topic => (
+              <div key={topic.id} className="flex-shrink-0 flex items-center gap-1.5 bg-[#1c1e2b] px-3 py-1.5 rounded-full border border-white/5 whitespace-nowrap text-sm text-gray-300 shadow-sm cursor-pointer hover:bg-white/5">
+                <span>{topic.icon}</span>
+                <span className="font-medium">{topic.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Masonry Layout Grid */}
+        <div className="px-3 pb-4 columns-2 gap-3 space-y-3">
           {mockPosts.map((post) => (
-            <div key={post.id} className="bg-[#1c1e2b] rounded-2xl p-4 shadow-sm border border-white/5">
-              {/* Header */}
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="relative cursor-pointer" onClick={() => handleUserClick(post.user)}>
-                    <img src={post.user.avatar} alt="avatar" className="w-10 h-10 rounded-full bg-gray-800 object-cover" />
-                    {/* Tiny online dot */}
-                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-[#1c1e2b] rounded-full"></div>
-                  </div>
-                  <div>
-                    <h4 className="text-white text-sm font-bold">{post.user.name}</h4>
-                    <p className="text-gray-500 text-xs">{post.time}</p>
-                  </div>
+            <div key={post.id} className="break-inside-avoid bg-[#1c1e2b] rounded-2xl shadow-sm border border-white/5 overflow-hidden flex flex-col">
+
+              {/* Cover Image or Voice Visualizer */}
+              {post.type === 'image' && post.coverImage && (
+                <div className="relative w-full aspect-[4/5] bg-gray-800">
+                  <img src={post.coverImage} alt="cover" className="w-full h-full object-cover" />
                 </div>
-                <button className="text-gray-500 hover:text-gray-300">
-                  <MoreHorizontal size={20} />
-                </button>
-              </div>
-
-              {/* Content */}
-              <p className="text-gray-200 text-sm mb-2 leading-relaxed whitespace-pre-wrap">
-                {post.content}
-              </p>
-
-              {/* Tags */}
-              <div className="flex flex-wrap gap-2 mb-3">
-                {post.tags.map((tag, idx) => (
-                  <span key={idx} className="text-cyan-400 text-xs font-medium bg-cyan-400/10 px-1.5 py-0.5 rounded">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              {/* Multi-Image Grid */}
-              {post.images.length > 0 && (
-                <div className={`mb-3 grid gap-1 rounded-xl overflow-hidden ${
-                  post.images.length === 1 ? 'grid-cols-1 max-h-48' :
-                  post.images.length === 2 ? 'grid-cols-2 aspect-[2/1]' :
-                  'grid-cols-3 aspect-square'
-                }`}>
-                  {post.images.map((img, idx) => (
-                    <img key={idx} src={img} alt="post media" className="w-full h-full object-cover" />
-                  ))}
+              )}
+              {post.type === 'voice' && (
+                <div className="w-full h-24 bg-gradient-to-tr from-[#2B404E] to-[#4A8F85] flex items-center justify-center relative overflow-hidden">
+                   <button className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center z-10 hover:scale-105 transition-transform">
+                     <Play size={18} fill="white" className="text-white ml-1" />
+                   </button>
+                   <div className="absolute inset-0 flex items-center justify-center opacity-30 gap-1">
+                      {[...Array(10)].map((_,i) => (
+                        <div key={i} className="w-1 bg-white rounded-full" style={{ height: `${Math.random() * 60 + 20}%` }}></div>
+                      ))}
+                   </div>
+                   <span className="absolute bottom-2 right-2 text-white text-[10px] font-bold bg-black/30 px-1.5 rounded">{post.voiceDuration}s</span>
                 </div>
               )}
 
-              {/* Actions & Likers */}
-              <div className="flex justify-between items-center text-gray-400 mt-2 pt-3 border-t border-white/5">
-                <div className="flex items-center gap-2">
-                   {/* Likers Stack */}
-                   {post.likers.length > 0 && (
-                     <div className="flex -space-x-2 mr-2">
-                       {post.likers.slice(0,3).map((avatar, idx) => (
-                         <img key={idx} src={avatar} className="w-5 h-5 rounded-full border border-[#1c1e2b] bg-gray-700" alt="liker" />
-                       ))}
-                     </div>
-                   )}
-                   <span className="text-xs text-gray-500">{post.likes} 赞</span>
-                </div>
+              {/* Card Content */}
+              <div className="p-3 flex flex-col flex-1">
+                <p className="text-gray-200 text-xs mb-2 leading-relaxed line-clamp-3">
+                  {post.content}
+                </p>
 
-                <div className="flex gap-5">
-                  <button className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors">
-                    <Heart size={18} />
-                  </button>
-                  <button className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors">
-                    <MessageSquare size={18} />
-                    <span className="text-xs">{post.comments}</span>
-                  </button>
-                  <button className="hover:text-cyan-400 transition-colors">
-                    <Share2 size={18} />
-                  </button>
+                {/* Tags */}
+                {post.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    <span className="text-cyan-400 text-[10px] font-bold bg-cyan-400/10 px-1.5 py-0.5 rounded">
+                      {post.tags[0]}
+                    </span>
+                  </div>
+                )}
+
+                <div className="mt-auto pt-2 flex items-center justify-between">
+                  <div
+                    className="flex items-center gap-1.5 cursor-pointer"
+                    onClick={() => handleUserClick(post.user)}
+                  >
+                    <img src={post.user.avatar} className="w-5 h-5 rounded-full bg-gray-700" alt="avatar" />
+                    <span className="text-gray-400 text-[10px] truncate max-w-[50px] font-medium">{post.user.name}</span>
+                  </div>
+                  <LikeButton initialLikes={post.likes} />
                 </div>
               </div>
             </div>
@@ -192,6 +171,20 @@ export default function ExplorePage({ onOpenEditor }: { onOpenEditor?: () => voi
         </div>
       </div>
 
+      {/* Floating Action Button for Posting */}
+      <button
+        onClick={onOpenEditor}
+        className="absolute right-6 bottom-[100px] w-14 h-14 bg-gradient-to-tr from-[#8E5E99] to-[#C39BD3] rounded-full flex items-center justify-center text-white shadow-[0_4px_20px_rgba(142,94,153,0.5)] z-40 active:scale-95 transition-transform"
+      >
+        <Plus size={28} strokeWidth={2.5} />
+      </button>
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        isOpen={!!selectedUser}
+        user={selectedUser}
+        onClose={() => setSelectedUser(null)}
+      />
     </div>
   );
 }
