@@ -150,7 +150,7 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
                 {mockMoments.map((moment) => (
                   <div
                     key={moment.id}
-                    onClick={() => moment.type === 'image' && setSelectedImage(moment.url)}
+                    onClick={() => moment.type === 'image' && setSelectedImage(moment.url || null)}
                     className={`aspect-square bg-[#1c1e2b] relative overflow-hidden group ${moment.type === 'image' ? 'cursor-pointer' : ''} ${moment.type === 'text' ? 'flex items-center justify-center p-2 text-center text-[10px] text-white bg-gradient-to-br from-[#8E5E99] to-[#4A235A]' : ''}`}
                   >
                      {moment.type === 'image' && (

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import ChatRoom from '../components/ChatRoom';
-import SwipeableChatItem from '../components/SwipeableChatItem';
+// import SwipeableChatItem from '../components/SwipeableChatItem';
 import type { ChatData } from '../components/SwipeableChatItem';
 
 
@@ -69,16 +69,12 @@ const pinnedUsers = [
 
 
 export default function ChatPage() {
-  const [chats, setChats] = useState<ChatData[]>(initialChats);
+  const [chats] = useState<ChatData[]>(initialChats);
   const [activeChat, setActiveChat] = useState<ChatData | null>(null);
 
-  const handleDelete = (id: number) => {
-    setChats(prev => prev.filter(c => c.id !== id));
-  };
+  //
 
-  const handleMarkRead = (id: number) => {
-    setChats(prev => prev.map(c => c.id === id ? { ...c, unread: 0 } : c));
-  };
+  //
 
   return (
     <div className="w-full h-full bg-[#12141d] flex flex-col pt-12 pb-24">

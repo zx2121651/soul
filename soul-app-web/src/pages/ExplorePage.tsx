@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Heart, MessageSquare, Play, Plus } from 'lucide-react';
+import { Search, Heart, Play, Plus } from 'lucide-react';
 import UserProfileModal from '../components/UserProfileModal';
 import type { UserProfileData } from '../components/UserProfileModal';
 import { mockPosts, trendingTopics, banners } from '../data/mockExploreData';

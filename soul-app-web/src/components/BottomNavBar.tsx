@@ -1,6 +1,4 @@
 
-
-
 import type { TabName } from '../App';
 
 interface BottomNavBarProps {
@@ -25,7 +23,7 @@ export default function BottomNavBar({ activeTab, onTabChange, onOpenEditor }: B
       </button>
 
       {/* Explore */}
-      <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors">
+      <button onClick={() => onTabChange('Explore')} className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'Explore' ? 'text-cyan-400' : 'text-gray-400 hover:text-white'}`}>
 
 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
   <path d="M4 10C4 5.58 7.58 2 12 2V4C8.69 4 6 6.69 6 10H4ZM4 6C4 2.69 6.69 0 10 0V2C7.79 2 6 3.79 6 6H4ZM19.29 15.29L16 12L12.71 15.29L14.12 16.71L15 15.83V20H17V15.83L17.88 16.71L19.29 15.29ZM12 22C6.48 22 2 17.52 2 12H0C0 18.63 5.37 24 12 24C18.63 24 24 18.63 24 12H22C22 17.52 17.52 22 12 22Z"/>
@@ -45,7 +43,7 @@ export default function BottomNavBar({ activeTab, onTabChange, onOpenEditor }: B
       </button>
 
       {/* Chat */}
-      <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors">
+      <button onClick={() => onTabChange('Chat')} className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'Chat' ? 'text-cyan-400' : 'text-gray-400 hover:text-white'}`}>
         <div className="relative">
 
 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -59,7 +57,7 @@ export default function BottomNavBar({ activeTab, onTabChange, onOpenEditor }: B
       </button>
 
       {/* Me */}
-      <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors">
+      <button onClick={() => onTabChange('Me')} className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'Me' ? 'text-cyan-400' : 'text-gray-400 hover:text-white'}`}>
 
 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
   <circle cx="12" cy="12" r="10" fill="#FFCC80"/>
