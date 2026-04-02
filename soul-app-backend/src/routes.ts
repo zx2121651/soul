@@ -2,13 +2,22 @@ import { Router } from 'express';
 
 const router = Router();
 
+
 // --- Planet Data ---
 router.get('/planet', (req, res) => {
+  // Generate some random node data for the planet view
+  const nodes = [];
+  const names = ['Alice', 'Bob', 'Charlie', 'Dave', 'Eve', 'Frank', 'Grace', 'Heidi', 'Ivan', 'Judy', 'Mallory'];
+  for (let i = 0; i < 20; i++) {
+      nodes.push({
+          id: i + 1,
+          name: names[i % names.length] + (i > names.length ? i.toString() : ''),
+          match: Math.floor(60 + Math.random() * 40)
+      });
+  }
+
   res.json({
-    nodes: [
-      { id: 1, name: 'Alice', match: 95 },
-      { id: 2, name: 'Bob', match: 80 },
-    ]
+    nodes
   });
 });
 
@@ -56,6 +65,7 @@ router.get('/chat', (req, res) => {
   });
 });
 
+
 // --- Me Data ---
 router.get('/me', (req, res) => {
   res.json({
@@ -68,14 +78,31 @@ router.get('/me', (req, res) => {
       visitors: 342,
       bio: '寻找宇宙中的同频共振'
     },
-    moments: [
-      {
-        id: 1,
-        type: 'text',
-        content: '保持热爱，奔赴山海'
-      }
-    ]
+    moments: globalMoments
   });
+});
+
+
+// --- State for Moments ---
+let globalMoments = [
+  {
+    id: 1,
+    type: 'text',
+    content: '保持热爱，奔赴山海'
+  }
+];
+
+// --- Moment Post logic ---
+router.post('/moments', (req, res) => {
+    const { content, type, url } = req.body;
+    const newMoment = {
+        id: globalMoments.length + 1,
+        type: type || 'text',
+        content: content || '',
+        url: url
+    };
+    globalMoments.unshift(newMoment);
+    res.json({ success: true, moment: newMoment });
 });
 
 export default router;

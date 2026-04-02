@@ -1,11 +1,9 @@
-import { useRef, useMemo, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { animated, useSpring } from '@react-spring/three';
 import { OrbitControls, Text, Html } from '@react-three/drei';
 import * as THREE from 'three';
 
-const NUM_NODES = 80;
-const SPHERE_RADIUS = 3.5;
 
 export interface NodeData {
   id: number;
@@ -19,54 +17,10 @@ export interface NodeData {
   amplitude: number;
 }
 
-const mockNames = ["陈子豪", "半岛铁盒🌸", "一只小橘猫🐱", "夏天🌿", "云吞面", "星空✨", "晚风", "林深见鹿🦌", "迷路的小熊", "冰美式☕", "芥末可可", "无心", "小花", "月尊🌙", "布丁", "大笨钟"];
-const colors = ["#ff9a9e", "#fecfef", "#a1c4fd", "#c2e9fb", "#d4fc79", "#96e6a1"];
-
-const generateNodes = (): NodeData[] => {
-  const nodes: NodeData[] = [];
-
-  nodes.push({
-    id: 0,
-    position: new THREE.Vector3(0, 0, SPHERE_RADIUS * 1.05),
-    name: "自己",
-    match: 100,
-    color: "#ffffff",
-    isSelf: true,
-    phase: 0,
-    speed: 1,
-    amplitude: 0.1
-  });
-
-  const phi = Math.PI * (3 - Math.sqrt(5));
-
-  for (let i = 1; i < NUM_NODES; i++) {
-    const y = 1 - (i / (NUM_NODES - 1)) * 2;
-    const radius = Math.sqrt(1 - y * y);
-
-    const theta = phi * i;
-    const jitterRadius = radius + (Math.random() - 0.5) * 0.8;
-    const jitterTheta = theta + (Math.random() - 0.5) * 0.5;
-    const jitterY = y + (Math.random() - 0.5) * 0.5;
-    const x = Math.cos(jitterTheta) * jitterRadius;
-    const z = Math.sin(jitterTheta) * jitterRadius;
 
 
 
 
-
-    nodes.push({
-      id: i,
-      position: new THREE.Vector3(x * SPHERE_RADIUS, jitterY * SPHERE_RADIUS, z * SPHERE_RADIUS),
-      name: mockNames[Math.floor(Math.random() * mockNames.length)],
-      match: Math.floor(60 + Math.random() * 39),
-      color: colors[Math.floor(Math.random() * colors.length)],
-      phase: Math.random() * Math.PI * 2,
-      speed: 0.5 + Math.random() * 1.5,
-      amplitude: 0.05 + Math.random() * 0.15
-    });
-  }
-  return nodes;
-};
 
 const UserNode = ({ node, onClick }: { node: NodeData; onClick?: () => void }) => {
 
@@ -144,9 +98,9 @@ const UserNode = ({ node, onClick }: { node: NodeData; onClick?: () => void }) =
 };
 
 
-const Galaxy = ({ onNodeClick }: { onNodeClick?: (node: NodeData) => void }) => {
+
+const Galaxy = ({ onNodeClick, nodes }: { onNodeClick?: (node: NodeData) => void, nodes: NodeData[] }) => {
   const groupRef = useRef<THREE.Group>(null);
-  const nodes = useMemo(() => generateNodes(), []);
 
   // Entrance animation for the entire galaxy
   const { entranceScale } = useSpring({
@@ -174,9 +128,9 @@ const Galaxy = ({ onNodeClick }: { onNodeClick?: (node: NodeData) => void }) => 
   );
 };
 
-interface Planet3DProps { onNodeClick?: (node: NodeData) => void; }
+interface Planet3DProps { onNodeClick?: (node: NodeData) => void; nodes?: NodeData[]; }
 
-export default function Planet3D({ onNodeClick }: Planet3DProps) {
+export default function Planet3D({ onNodeClick, nodes = [] }: Planet3DProps) {
   return (
     <div className="w-full h-full absolute inset-0 z-0 bg-transparent">
       <Canvas camera={{ position: [0, 0, 8], fov: 55 }}>
@@ -185,7 +139,7 @@ export default function Planet3D({ onNodeClick }: Planet3DProps) {
         {/* Fog to hide back nodes and create depth */}
         <fog attach="fog" args={['#171822', 5, 12]} />
         <ambientLight intensity={0.5} />
-        <Galaxy onNodeClick={onNodeClick} />
+        <Galaxy onNodeClick={onNodeClick} nodes={nodes} />
         <OrbitControls
           enableZoom={false}
           enablePan={false}

@@ -1,9 +1,12 @@
 
 
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Planet3D from '../components/Planet3D';
 import type { NodeData } from '../components/Planet3D';
+import * as THREE from 'three';
+
 import BottomActionCards from '../components/BottomActionCards';
 import type { UserProfileData } from '../components/UserProfileModal';
 import MatchRadarOverlay from '../components/MatchRadarOverlay';
@@ -11,10 +14,64 @@ import UserProfileModal from '../components/UserProfileModal';
 
 
 
+
 export default function PlanetPage() {
 
   const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(null);
   const [isRadarOpen, setRadarOpen] = useState(false);
+  const [nodes, setNodes] = useState<NodeData[]>([]);
+
+  useEffect(() => {
+    fetch('http://localhost:3001/api/planet')
+      .then(res => res.json())
+      .then(data => {
+        const fetchedNodes = data.nodes || [];
+        const SPHERE_RADIUS = 3.5;
+        const colors = ["#ff9a9e", "#fecfef", "#a1c4fd", "#c2e9fb", "#d4fc79", "#96e6a1"];
+
+        const newNodes: NodeData[] = [];
+        newNodes.push({
+          id: 0,
+          position: new THREE.Vector3(0, 0, SPHERE_RADIUS * 1.05),
+          name: "自己",
+          match: 100,
+          color: "#ffffff",
+          isSelf: true,
+          phase: 0,
+          speed: 1,
+          amplitude: 0.1
+        });
+
+        const NUM_NODES = fetchedNodes.length + 1;
+        const phi = Math.PI * (3 - Math.sqrt(5));
+
+        fetchedNodes.forEach((n: any, idx: number) => {
+          const i = idx + 1;
+          const y = 1 - (i / (NUM_NODES - 1)) * 2;
+          const radius = Math.sqrt(1 - y * y);
+          const theta = phi * i;
+          const jitterRadius = radius + (Math.random() - 0.5) * 0.8;
+          const jitterTheta = theta + (Math.random() - 0.5) * 0.5;
+          const jitterY = y + (Math.random() - 0.5) * 0.5;
+          const x = Math.cos(jitterTheta) * jitterRadius;
+          const z = Math.sin(jitterTheta) * jitterRadius;
+
+          newNodes.push({
+            id: n.id,
+            position: new THREE.Vector3(x * SPHERE_RADIUS, jitterY * SPHERE_RADIUS, z * SPHERE_RADIUS),
+            name: n.name,
+            match: n.match,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            phase: Math.random() * Math.PI * 2,
+            speed: 0.5 + Math.random() * 1.5,
+            amplitude: 0.05 + Math.random() * 0.15
+          });
+        });
+
+        setNodes(newNodes);
+      });
+  }, []);
+
 
   const handleNodeClick = (node: NodeData) => {
     if (node.isSelf) return; // Optional: do not show modal for self
@@ -35,7 +92,7 @@ export default function PlanetPage() {
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center bg-[#171822]">
       {/* 3D Background */}
-      <Planet3D onNodeClick={handleNodeClick} />
+      <Planet3D onNodeClick={handleNodeClick} nodes={nodes} />
 
       {/* Center Floating Prompt (above the self-planet) */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-24 z-30 pointer-events-none">
