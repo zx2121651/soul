@@ -46,3 +46,5 @@
 12:15:07 PM [vite] (client) hmr update /src/pages/ChatPage.tsx, /src/index.css
 12:15:07 PM [vite] (client) hmr update /src/pages/PlanetPage.tsx, /src/index.css
 12:15:07 PM [vite] (client) hmr update /src/App.tsx, /src/index.css
+12:52:00 PM [vite] .env changed, restarting server...
+12:52:01 PM [vite] server restarted.

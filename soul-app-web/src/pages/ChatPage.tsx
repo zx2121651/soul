@@ -1,6 +1,7 @@
 
 
 
+import { api } from '../api/client';
 import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import ChatRoom from '../components/ChatRoom';
@@ -76,10 +77,7 @@ export default function ChatPage() {
   // const [pinnedUsers, setPinnedUsers] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/chat')
-      .then(res => res.json())
-      .then(resJson => resJson.data)
-      .then(data => {
+    api.get<any>('/chat').then(data => {
         setChats(data.chats || []);
         // setPinnedUsers(data.pinnedUsers || []);
       })

@@ -653,3 +653,24 @@ src/routes/index.ts(43,5): error TS1005: ',' expected.
    Will skip DB initialization for now.
 Server is running on port 3001
 [32m[nodemon] clean exit - waiting for changes before restart[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+◇ injecting env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+⚠️ Could not connect to PostgreSQL database. Please make sure PostgreSQL is running.
+   You can start it using: docker-compose up -d
+   Will skip DB initialization for now.
+Server is running on port 3001
+[32m[nodemon] clean exit - waiting for changes before restart[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+◇ injecting env (3) from .env // tip: ⌘ override existing { override: true }
+⚠️ Could not connect to PostgreSQL database. Please make sure PostgreSQL is running.
+   You can start it using: docker-compose up -d
+   Will skip DB initialization for now.
+Server is running on port 3001
+[32m[nodemon] clean exit - waiting for changes before restart[39m
