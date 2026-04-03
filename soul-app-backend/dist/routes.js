@@ -1,6 +1,16 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const db_1 = require("./db");
 const router = (0, express_1.Router)();
 // --- Planet Data ---
 router.get('/planet', (req, res) => {
@@ -60,21 +70,33 @@ router.get('/chat', (req, res) => {
         ]
     });
 });
-// --- Me Data ---
-router.get('/me', (req, res) => {
-    res.json({
-        profile: {
-            name: '一只小透明',
-            id: 'soul_123456',
-            avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=me&backgroundColor=f4b6c2',
-            followers: 128,
-            following: 56,
-            visitors: 342,
-            bio: '寻找宇宙中的同频共振'
-        },
-        moments: globalMoments
-    });
-});
+// --- Me Data (Powered by SQLite DB) ---
+router.get('/me', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const db = yield (0, db_1.getDb)();
+        const user = yield db.get(`SELECT * FROM users WHERE uuid = ?`, ['soul_123456']);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        const moments = yield db.all(`SELECT id, type, content, url, created_at FROM moments WHERE user_id = ? ORDER BY id DESC`, [user.id]);
+        res.json({
+            profile: {
+                name: user.name,
+                id: user.uuid,
+                avatar: user.avatar,
+                followers: user.followers,
+                following: user.following,
+                visitors: user.visitors,
+                bio: user.bio
+            },
+            moments: moments
+        });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}));
 // --- State for Moments ---
 let globalMoments = [
     {
@@ -83,18 +105,28 @@ let globalMoments = [
         content: '保持热爱，奔赴山海'
     }
 ];
-// --- Moment Post logic ---
-router.post('/moments', (req, res) => {
-    const { content, type, url } = req.body;
-    const newMoment = {
-        id: globalMoments.length + 1,
-        type: type || 'text',
-        content: content || '',
-        url: url
-    };
-    globalMoments.unshift(newMoment);
-    res.json({ success: true, moment: newMoment });
-});
+// --- Moment Post logic (Powered by SQLite DB) ---
+router.post('/moments', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { content, type, url } = req.body;
+        const db = yield (0, db_1.getDb)();
+        // Get current user id
+        const user = yield db.get(`SELECT id FROM users WHERE uuid = ?`, ['soul_123456']);
+        if (!user)
+            return res.status(404).json({ error: 'User not found' });
+        const result = yield db.run(`
+      INSERT INTO moments (user_id, type, content, url)
+      VALUES (?, ?, ?, ?)
+    `, [user.id, type || 'text', content || '', url || null]);
+        const newMoment = yield db.get(`SELECT id, type, content, url, created_at FROM moments WHERE id = ?`, [result.lastID]);
+        res.json({ success: true, moment: newMoment });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}));
+;
 // --- Auth Data (Mock) ---
 router.post('/auth/login', (req, res) => {
     res.json({ success: true, token: 'mock-jwt-token-123', user: { id: 1, name: '一只小透明' } });

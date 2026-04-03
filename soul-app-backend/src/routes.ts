@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { getDb } from './db';
 
 const router = Router();
 
@@ -66,20 +67,34 @@ router.get('/chat', (req, res) => {
 });
 
 
-// --- Me Data ---
-router.get('/me', (req, res) => {
-  res.json({
-    profile: {
-      name: '一只小透明',
-      id: 'soul_123456',
-      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=me&backgroundColor=f4b6c2',
-      followers: 128,
-      following: 56,
-      visitors: 342,
-      bio: '寻找宇宙中的同频共振'
-    },
-    moments: globalMoments
-  });
+
+// --- Me Data (Powered by SQLite DB) ---
+router.get('/me', async (req, res) => {
+  try {
+    const db = await getDb();
+    const user = await db.get(`SELECT * FROM users WHERE uuid = ?`, ['soul_123456']);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const moments = await db.all(`SELECT id, type, content, url, created_at FROM moments WHERE user_id = ? ORDER BY id DESC`, [user.id]);
+
+    res.json({
+      profile: {
+        name: user.name,
+        id: user.uuid,
+        avatar: user.avatar,
+        followers: user.followers,
+        following: user.following,
+        visitors: user.visitors,
+        bio: user.bio
+      },
+      moments: moments
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 
@@ -92,17 +107,31 @@ let globalMoments = [
   }
 ];
 
-// --- Moment Post logic ---
-router.post('/moments', (req, res) => {
+
+// --- Moment Post logic (Powered by SQLite DB) ---
+router.post('/moments', async (req, res) => {
+  try {
     const { content, type, url } = req.body;
-    const newMoment = {
-        id: globalMoments.length + 1,
-        type: type || 'text',
-        content: content || '',
-        url: url
-    };
-    globalMoments.unshift(newMoment);
+    const db = await getDb();
+
+    // Get current user id
+    const user = await db.get(`SELECT id FROM users WHERE uuid = ?`, ['soul_123456']);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const result = await db.run(`
+      INSERT INTO moments (user_id, type, content, url)
+      VALUES (?, ?, ?, ?)
+    `, [user.id, type || 'text', content || '', url || null]);
+
+    const newMoment = await db.get(`SELECT id, type, content, url, created_at FROM moments WHERE id = ?`, [result.lastID]);
+
     res.json({ success: true, moment: newMoment });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 });
 
 

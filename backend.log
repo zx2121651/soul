@@ -56,3 +56,53 @@ Server is running on port 3001
 ◇ injecting env (0) from .env // tip: ⌘ override existing { override: true }
 Server is running on port 3001
 [32m[nodemon] clean exit - waiting for changes before restart[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+◇ injecting env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+Server is running on port 3001
+[32m[nodemon] clean exit - waiting for changes before restart[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+◇ injecting env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+Server is running on port 3001
+[32m[nodemon] clean exit - waiting for changes before restart[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+◇ injecting env (0) from .env // tip: ⌘ enable debugging { debug: true }
+Server is running on port 3001
+[32m[nodemon] clean exit - waiting for changes before restart[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+◇ injecting env (0) from .env // tip: ⌘ enable debugging { debug: true }
+Seeding initial data into database...
+Database seeding complete.
+Server is running on port 3001
+[32m[nodemon] clean exit - waiting for changes before restart[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+/app/soul-app-backend/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/routes.ts(135,1): error TS1128: Declaration or statement expected.
+src/routes.ts(135,2): error TS1128: Declaration or statement expected.
+
+    at createTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1838:10
+    at Object.require.extensions.<computed> [as .ts] (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [ 1128, 1128 ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
