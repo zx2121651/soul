@@ -1,7 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import apiRoutes from './routes';
+import apiRoutes from './routes/index';
+import { errorMiddleware } from './middlewares/error.middleware';
 import { initDb } from './db';
 
 dotenv.config();
@@ -18,6 +19,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api', apiRoutes);
+app.use(errorMiddleware);
 
 // Initialize DB then start server
 initDb().then(() => {
