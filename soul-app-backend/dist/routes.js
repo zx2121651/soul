@@ -70,15 +70,23 @@ router.get('/chat', (req, res) => {
         ]
     });
 });
-// --- Me Data (Powered by SQLite DB) ---
+// --- Me Data (Powered by PostgreSQL DB) ---
 router.get('/me', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const db = yield (0, db_1.getDb)();
-        const user = yield db.get(`SELECT * FROM users WHERE uuid = ?`, ['soul_123456']);
-        if (!user) {
+        const db = (0, db_1.getDb)();
+        // Quick fallback if DB is not connected yet during testing
+        try {
+            yield db.query('SELECT 1');
+        }
+        catch (e) {
+            return res.json({ profile: { name: 'DB Not Connected' }, moments: [] });
+        }
+        const userResult = yield db.query(`SELECT * FROM users WHERE uuid = $1`, ['soul_123456']);
+        if (userResult.rowCount === 0) {
             return res.status(404).json({ error: 'User not found' });
         }
-        const moments = yield db.all(`SELECT id, type, content, url, created_at FROM moments WHERE user_id = ? ORDER BY id DESC`, [user.id]);
+        const user = userResult.rows[0];
+        const momentsResult = yield db.query(`SELECT id, type, content, url, created_at FROM moments WHERE user_id = $1 ORDER BY id DESC`, [user.id]);
         res.json({
             profile: {
                 name: user.name,
@@ -89,7 +97,7 @@ router.get('/me', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 visitors: user.visitors,
                 bio: user.bio
             },
-            moments: moments
+            moments: momentsResult.rows
         });
     }
     catch (error) {
@@ -105,28 +113,27 @@ let globalMoments = [
         content: '保持热爱，奔赴山海'
     }
 ];
-// --- Moment Post logic (Powered by SQLite DB) ---
+// --- Moment Post logic (Powered by PostgreSQL DB) ---
 router.post('/moments', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { content, type, url } = req.body;
-        const db = yield (0, db_1.getDb)();
-        // Get current user id
-        const user = yield db.get(`SELECT id FROM users WHERE uuid = ?`, ['soul_123456']);
-        if (!user)
+        const db = (0, db_1.getDb)();
+        const userResult = yield db.query(`SELECT id FROM users WHERE uuid = $1`, ['soul_123456']);
+        if (userResult.rowCount === 0)
             return res.status(404).json({ error: 'User not found' });
-        const result = yield db.run(`
+        const userId = userResult.rows[0].id;
+        const insertResult = yield db.query(`
       INSERT INTO moments (user_id, type, content, url)
-      VALUES (?, ?, ?, ?)
-    `, [user.id, type || 'text', content || '', url || null]);
-        const newMoment = yield db.get(`SELECT id, type, content, url, created_at FROM moments WHERE id = ?`, [result.lastID]);
-        res.json({ success: true, moment: newMoment });
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, type, content, url, created_at
+    `, [userId, type || 'text', content || '', url || null]);
+        res.json({ success: true, moment: insertResult.rows[0] });
     }
     catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 }));
-;
 // --- Auth Data (Mock) ---
 router.post('/auth/login', (req, res) => {
     res.json({ success: true, token: 'mock-jwt-token-123', user: { id: 1, name: '一只小透明' } });

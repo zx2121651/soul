@@ -68,16 +68,26 @@ router.get('/chat', (req, res) => {
 
 
 
-// --- Me Data (Powered by SQLite DB) ---
+
+// --- Me Data (Powered by PostgreSQL DB) ---
 router.get('/me', async (req, res) => {
   try {
-    const db = await getDb();
-    const user = await db.get(`SELECT * FROM users WHERE uuid = ?`, ['soul_123456']);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+    const db = getDb();
+
+    // Quick fallback if DB is not connected yet during testing
+    try {
+        await db.query('SELECT 1');
+    } catch(e) {
+        return res.json({ profile: { name: 'DB Not Connected' }, moments: [] });
     }
 
-    const moments = await db.all(`SELECT id, type, content, url, created_at FROM moments WHERE user_id = ? ORDER BY id DESC`, [user.id]);
+    const userResult = await db.query(`SELECT * FROM users WHERE uuid = $1`, ['soul_123456']);
+    if (userResult.rowCount === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const user = userResult.rows[0];
+
+    const momentsResult = await db.query(`SELECT id, type, content, url, created_at FROM moments WHERE user_id = $1 ORDER BY id DESC`, [user.id]);
 
     res.json({
       profile: {
@@ -89,7 +99,7 @@ router.get('/me', async (req, res) => {
         visitors: user.visitors,
         bio: user.bio
       },
-      moments: moments
+      moments: momentsResult.rows
     });
   } catch (error) {
     console.error(error);
@@ -108,31 +118,31 @@ let globalMoments = [
 ];
 
 
-// --- Moment Post logic (Powered by SQLite DB) ---
+
+// --- Moment Post logic (Powered by PostgreSQL DB) ---
 router.post('/moments', async (req, res) => {
   try {
     const { content, type, url } = req.body;
-    const db = await getDb();
+    const db = getDb();
 
-    // Get current user id
-    const user = await db.get(`SELECT id FROM users WHERE uuid = ?`, ['soul_123456']);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    const userResult = await db.query(`SELECT id FROM users WHERE uuid = $1`, ['soul_123456']);
+    if (userResult.rowCount === 0) return res.status(404).json({ error: 'User not found' });
+    const userId = userResult.rows[0].id;
 
-    const result = await db.run(`
+    const insertResult = await db.query(`
       INSERT INTO moments (user_id, type, content, url)
-      VALUES (?, ?, ?, ?)
-    `, [user.id, type || 'text', content || '', url || null]);
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, type, content, url, created_at
+    `, [userId, type || 'text', content || '', url || null]);
 
-    const newMoment = await db.get(`SELECT id, type, content, url, created_at FROM moments WHERE id = ?`, [result.lastID]);
-
-    res.json({ success: true, moment: newMoment });
+    res.json({ success: true, moment: insertResult.rows[0] });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-});
+
 
 
 // --- Auth Data (Mock) ---
