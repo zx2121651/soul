@@ -333,3 +333,344 @@ Server is running on port 3001
    Will skip DB initialization for now.
 Server is running on port 3001
 [32m[nodemon] clean exit - waiting for changes before restart[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+/app/soul-app-backend/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/index.ts(26,61): error TS2304: Cannot find name 'from'.
+src/routes/index.ts(26,1): error TS1005: 'from' expected.
+src/routes/index.ts(26,61): error TS1434: Unexpected keyword or identifier.
+src/routes/index.ts(43,5): error TS1005: ',' expected.
+
+    at createTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1838:10
+    at Object.require.extensions.<computed> [as .ts] (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [ 2304, 1005, 1434, 1005 ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+/app/soul-app-backend/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/index.ts(26,61): error TS2304: Cannot find name 'from'.
+src/routes/index.ts(26,1): error TS1005: 'from' expected.
+src/routes/index.ts(26,61): error TS1434: Unexpected keyword or identifier.
+src/routes/index.ts(43,5): error TS1005: ',' expected.
+
+    at createTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1838:10
+    at Object.require.extensions.<computed> [as .ts] (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [ 2304, 1005, 1434, 1005 ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+/app/soul-app-backend/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/index.ts(26,61): error TS2304: Cannot find name 'from'.
+src/routes/index.ts(26,1): error TS1005: 'from' expected.
+src/routes/index.ts(26,61): error TS1434: Unexpected keyword or identifier.
+src/routes/index.ts(43,5): error TS1005: ',' expected.
+
+    at createTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1838:10
+    at Object.require.extensions.<computed> [as .ts] (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [ 2304, 1005, 1434, 1005 ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+/app/soul-app-backend/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/index.ts(26,61): error TS2304: Cannot find name 'from'.
+src/routes/index.ts(26,1): error TS1005: 'from' expected.
+src/routes/index.ts(26,61): error TS1434: Unexpected keyword or identifier.
+src/routes/index.ts(43,5): error TS1005: ',' expected.
+
+    at createTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1838:10
+    at Object.require.extensions.<computed> [as .ts] (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [ 2304, 1005, 1434, 1005 ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+/app/soul-app-backend/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/index.ts(26,61): error TS2304: Cannot find name 'from'.
+src/routes/index.ts(26,1): error TS1005: 'from' expected.
+src/routes/index.ts(26,61): error TS1434: Unexpected keyword or identifier.
+src/routes/index.ts(43,5): error TS1005: ',' expected.
+
+    at createTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1838:10
+    at Object.require.extensions.<computed> [as .ts] (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [ 2304, 1005, 1434, 1005 ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+/app/soul-app-backend/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/index.ts(26,61): error TS2304: Cannot find name 'from'.
+src/routes/index.ts(26,1): error TS1005: 'from' expected.
+src/routes/index.ts(26,61): error TS1434: Unexpected keyword or identifier.
+src/routes/index.ts(43,5): error TS1005: ',' expected.
+
+    at createTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1838:10
+    at Object.require.extensions.<computed> [as .ts] (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [ 2304, 1005, 1434, 1005 ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+/app/soul-app-backend/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/index.ts(26,1): error TS1005: 'from' expected.
+src/routes/index.ts(43,5): error TS1005: ',' expected.
+
+    at createTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1838:10
+    at Object.require.extensions.<computed> [as .ts] (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [ 1005, 1005 ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+/app/soul-app-backend/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/index.ts(26,1): error TS1005: 'from' expected.
+src/routes/index.ts(43,5): error TS1005: ',' expected.
+
+    at createTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1838:10
+    at Object.require.extensions.<computed> [as .ts] (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [ 1005, 1005 ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+/app/soul-app-backend/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/index.ts(26,1): error TS1005: 'from' expected.
+src/routes/index.ts(43,5): error TS1005: ',' expected.
+
+    at createTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1838:10
+    at Object.require.extensions.<computed> [as .ts] (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [ 1005, 1005 ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+/app/soul-app-backend/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/index.ts(26,1): error TS1005: 'from' expected.
+src/routes/index.ts(43,5): error TS1005: ',' expected.
+
+    at createTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1838:10
+    at Object.require.extensions.<computed> [as .ts] (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [ 1005, 1005 ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+/app/soul-app-backend/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/index.ts(43,5): error TS1005: ',' expected.
+
+    at createTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1838:10
+    at Object.require.extensions.<computed> [as .ts] (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [ 1005 ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+/app/soul-app-backend/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/index.ts(43,5): error TS1005: ',' expected.
+
+    at createTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1838:10
+    at Object.require.extensions.<computed> [as .ts] (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [ 1005 ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+/app/soul-app-backend/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/index.ts(43,5): error TS1005: ',' expected.
+
+    at createTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/app/soul-app-backend/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1838:10
+    at Object.require.extensions.<computed> [as .ts] (/app/soul-app-backend/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [ 1005 ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+◇ injecting env (0) from .env // tip: ⌘ suppress logs { quiet: true }
+⚠️ Could not connect to PostgreSQL database. Please make sure PostgreSQL is running.
+   You can start it using: docker-compose up -d
+   Will skip DB initialization for now.
+Server is running on port 3001
+[32m[nodemon] clean exit - waiting for changes before restart[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+◇ injecting env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+⚠️ Could not connect to PostgreSQL database. Please make sure PostgreSQL is running.
+   You can start it using: docker-compose up -d
+   Will skip DB initialization for now.
+Server is running on port 3001
+[32m[nodemon] clean exit - waiting for changes before restart[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+◇ injecting env (3) from .env // tip: ⌘ override existing { override: true }
+⚠️ Could not connect to PostgreSQL database. Please make sure PostgreSQL is running.
+   You can start it using: docker-compose up -d
+   Will skip DB initialization for now.
+Server is running on port 3001
+[32m[nodemon] clean exit - waiting for changes before restart[39m

@@ -1,6 +1,7 @@
 
 
 
+import { api } from '../api/client';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Planet3D from '../components/Planet3D';
@@ -22,9 +23,7 @@ export default function PlanetPage() {
   const [nodes, setNodes] = useState<NodeData[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/planet')
-      .then(res => res.json())
-      .then(data => {
+    api.get<any>('/planet').then(data => {
         const fetchedNodes = data.nodes || [];
         const SPHERE_RADIUS = 3.5;
         const colors = ["#ff9a9e", "#fecfef", "#a1c4fd", "#c2e9fb", "#d4fc79", "#96e6a1"];

@@ -1,4 +1,5 @@
 
+import { api } from '../api/client';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Heart, Play, Plus } from 'lucide-react';
@@ -47,9 +48,7 @@ export default function ExplorePage({ onOpenEditor }: { onOpenEditor?: () => voi
   const [posts, setPosts] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/explore')
-      .then(res => res.json())
-      .then(data => {
+    api.get<any>('/explore').then(data => {
         setBanners(data.banners || []);
         setTrendingTopics(data.trendingTopics || []);
         setPosts(data.posts || []);
