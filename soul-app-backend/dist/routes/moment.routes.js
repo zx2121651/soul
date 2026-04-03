@@ -12,13 +12,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const db_1 = require("../db");
 const response_1 = require("../utils/response");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
 const router = (0, express_1.Router)();
 // --- Real DB Implementation ---
-router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/', auth_middleware_1.authMiddleware, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { content, type, url } = req.body;
         const db = (0, db_1.getDb)();
-        const userResult = yield db.query(`SELECT id FROM users WHERE uuid = $1`, ['soul_123456']);
+        const userUuid = ((_a = req.user) === null || _a === void 0 ? void 0 : _a.uuid) || 'soul_123456';
+        const userResult = yield db.query(`SELECT id FROM users WHERE uuid = $1`, [userUuid]);
         if (userResult.rowCount === 0)
             return (0, response_1.sendError)(res, 404, 'User not found');
         const insertResult = yield db.query(`

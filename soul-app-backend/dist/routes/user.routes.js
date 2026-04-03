@@ -12,18 +12,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const db_1 = require("../db");
 const response_1 = require("../utils/response");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
 const router = (0, express_1.Router)();
 // --- Real DB Implementation ---
-router.get('/me', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/me', auth_middleware_1.authMiddleware, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     try {
         const db = (0, db_1.getDb)();
-        try {
-            yield db.query('SELECT 1');
-        }
-        catch (e) {
-            return (0, response_1.sendSuccess)(res, { profile: { name: '一只小透明(Mock Mode)' }, moments: [] });
-        }
-        const userResult = yield db.query(`SELECT * FROM users WHERE uuid = $1`, ['soul_123456']);
+        // Auth context injected by middleware
+        const userId = ((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) || 1;
+        const userUuid = ((_b = req.user) === null || _b === void 0 ? void 0 : _b.uuid) || 'soul_123456';
+        const userResult = yield db.query(`SELECT * FROM users WHERE uuid = $1`, [userUuid]);
         if (userResult.rowCount === 0)
             return (0, response_1.sendError)(res, 404, 'User not found');
         const user = userResult.rows[0];
@@ -40,7 +39,7 @@ router.get('/me', (req, res, next) => __awaiter(void 0, void 0, void 0, function
         next(error);
     }
 }));
-router.put('/me/profile', (req, res) => (0, response_1.sendSuccess)(res, req.body, '个人资料已更新'));
+router.put('/me/profile', auth_middleware_1.authMiddleware, (req, res) => (0, response_1.sendSuccess)(res, req.body, '个人资料已更新'));
 // --- User Relationship (Mock Implementation) ---
 router.post('/:id/follow', (req, res) => (0, response_1.sendSuccess)(res, null, 'Followed'));
 router.post('/:id/unfollow', (req, res) => (0, response_1.sendSuccess)(res, null, 'Unfollowed'));

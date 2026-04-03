@@ -1,21 +1,20 @@
 import { Router } from 'express';
 import { getDb } from '../db';
 import { sendSuccess, sendError } from '../utils/response';
+import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = Router();
 
 // --- Real DB Implementation ---
-router.get('/me', async (req, res, next) => {
+router.get('/me', authMiddleware, async (req, res, next) => {
   try {
     const db = getDb();
 
-    try {
-        await db.query('SELECT 1');
-    } catch(e) {
-        return sendSuccess(res, { profile: { name: '一只小透明(Mock Mode)' }, moments: [] });
-    }
+    // Auth context injected by middleware
+    const userId = req.user?.id || 1;
+    const userUuid = req.user?.uuid || 'soul_123456';
 
-    const userResult = await db.query(`SELECT * FROM users WHERE uuid = $1`, ['soul_123456']);
+    const userResult = await db.query(`SELECT * FROM users WHERE uuid = $1`, [userUuid]);
     if (userResult.rowCount === 0) return sendError(res, 404, 'User not found');
 
     const user = userResult.rows[0];
@@ -33,7 +32,7 @@ router.get('/me', async (req, res, next) => {
   }
 });
 
-router.put('/me/profile', (req, res) => sendSuccess(res, req.body, '个人资料已更新'));
+router.put('/me/profile', authMiddleware, (req, res) => sendSuccess(res, req.body, '个人资料已更新'));
 
 // --- User Relationship (Mock Implementation) ---
 router.post('/:id/follow', (req, res) => sendSuccess(res, null, 'Followed'));

@@ -35,7 +35,9 @@ function initDb() {
             console.log('Successfully connected to PostgreSQL database.');
         }
         catch (err) {
-            console.warn('⚠️ Could not connect to PostgreSQL database. Please make sure PostgreSQL is running.');
+            console.error('❌ Could not connect to PostgreSQL database. Exiting process.');
+            console.error('   Please make sure PostgreSQL is running (e.g. docker-compose up -d).');
+            process.exit(1);
             console.warn('   You can start it using: docker-compose up -d');
             console.warn('   Will skip DB initialization for now.');
             return;

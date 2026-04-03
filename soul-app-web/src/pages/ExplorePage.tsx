@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Search, Heart, Play, Plus } from 'lucide-react';
 import UserProfileModal from '../components/UserProfileModal';
 import type { UserProfileData } from '../components/UserProfileModal';
+import type { ExploreBanner } from '../types';
 
 
 interface LikeButtonProps {
@@ -43,12 +44,12 @@ export default function ExplorePage({ onOpenEditor }: { onOpenEditor?: () => voi
   const tabs = ['关注', '推荐', '最新'];
   const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(null);
 
-  const [banners, setBanners] = useState<any[]>([]);
+  const [banners, setBanners] = useState<ExploreBanner[]>([]);
   const [trendingTopics, setTrendingTopics] = useState<any[]>([]);
   const [posts, setPosts] = useState<any[]>([]);
 
   useEffect(() => {
-    api.get<any>('/explore').then(data => {
+    api.get<{ banners: ExploreBanner[], trendingTopics: any[], posts: any[] }>('/explore').then(data => {
         setBanners(data.banners || []);
         setTrendingTopics(data.trendingTopics || []);
         setPosts(data.posts || []);

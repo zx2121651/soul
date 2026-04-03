@@ -1,4 +1,7 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+with open('soul-app-web/src/api/client.ts', 'r') as f:
+    content = f.read()
+
+new_client = """const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
 export interface ApiResponse<T = any> {
   code: number;
@@ -50,3 +53,7 @@ export const api = {
   put: <T>(endpoint: string, body?: any) => apiClient<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
   delete: <T>(endpoint: string) => apiClient<T>(endpoint, { method: 'DELETE' }),
 };
+"""
+
+with open('soul-app-web/src/api/client.ts', 'w') as f:
+    f.write(new_client)

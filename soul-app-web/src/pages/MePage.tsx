@@ -1,6 +1,7 @@
 
 
 import { api } from '../api/client';
+import type { MeDataResponse } from '../types';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, Eye, ChevronRight, Bell, HelpCircle, LogOut, ChevronLeft, PenSquare, Lock } from 'lucide-react';
@@ -20,7 +21,7 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
   const [moments, setMoments] = useState<any[]>([]);
 
   useEffect(() => {
-    api.get<any>('/users/me').then(data => {
+    api.get<MeDataResponse>('/users/me').then(data => {
         if(data.profile) setProfile(data.profile);
         if(data.moments) setMoments(data.moments);
       })

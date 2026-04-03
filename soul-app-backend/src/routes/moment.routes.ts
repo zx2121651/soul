@@ -1,16 +1,18 @@
 import { Router } from 'express';
 import { getDb } from '../db';
 import { sendSuccess, sendError } from '../utils/response';
+import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = Router();
 
 // --- Real DB Implementation ---
-router.post('/', async (req, res, next) => {
+router.post('/', authMiddleware, async (req, res, next) => {
   try {
     const { content, type, url } = req.body;
     const db = getDb();
+    const userUuid = req.user?.uuid || 'soul_123456';
 
-    const userResult = await db.query(`SELECT id FROM users WHERE uuid = $1`, ['soul_123456']);
+    const userResult = await db.query(`SELECT id FROM users WHERE uuid = $1`, [userUuid]);
     if (userResult.rowCount === 0) return sendError(res, 404, 'User not found');
 
     const insertResult = await db.query(`
