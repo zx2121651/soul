@@ -1,0 +1,9 @@
+
+> soul-app-backend@1.0.0 start
+> node dist/index.js
+
+◇ injecting env (0) from .env // tip: ⌘ enable debugging { debug: true }
+⚠️ Could not connect to PostgreSQL database. Please make sure PostgreSQL is running.
+   You can start it using: docker-compose up -d
+   Will skip DB initialization for now.
+Server is running on port 3001

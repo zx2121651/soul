@@ -1,10 +1,11 @@
 
 
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import ChatRoom from '../components/ChatRoom';
-import SwipeableChatItem from '../components/SwipeableChatItem';
 import type { ChatData } from '../components/SwipeableChatItem';
+
 
 
 
@@ -68,17 +69,26 @@ const pinnedUsers = [
 ];
 
 
+
 export default function ChatPage() {
-  const [chats, setChats] = useState<ChatData[]>(initialChats);
+  const [chats, setChats] = useState<ChatData[]>([]);
   const [activeChat, setActiveChat] = useState<ChatData | null>(null);
+  // const [pinnedUsers, setPinnedUsers] = useState<any[]>([]);
 
-  const handleDelete = (id: number) => {
-    setChats(prev => prev.filter(c => c.id !== id));
-  };
+  useEffect(() => {
+    fetch('http://localhost:3001/api/chat')
+      .then(res => res.json())
+      .then(data => {
+        setChats(data.chats || []);
+        // setPinnedUsers(data.pinnedUsers || []);
+      })
+      .catch(err => console.error("Failed to fetch chat data", err));
+  }, []);
 
-  const handleMarkRead = (id: number) => {
-    setChats(prev => prev.map(c => c.id === id ? { ...c, unread: 0 } : c));
-  };
+
+  //
+
+  //
 
   return (
     <div className="w-full h-full bg-[#12141d] flex flex-col pt-12 pb-24">

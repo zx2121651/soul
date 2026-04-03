@@ -1,9 +1,10 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Heart, MessageSquare, Play, Plus } from 'lucide-react';
+import { Search, Heart, Play, Plus } from 'lucide-react';
 import UserProfileModal from '../components/UserProfileModal';
 import type { UserProfileData } from '../components/UserProfileModal';
-import { mockPosts, trendingTopics, banners } from '../data/mockExploreData';
+
 
 interface LikeButtonProps {
   initialLikes: number;
@@ -35,10 +36,27 @@ const LikeButton = ({ initialLikes }: LikeButtonProps) => {
   );
 };
 
+
 export default function ExplorePage({ onOpenEditor }: { onOpenEditor?: () => void }) {
   const [activeTab, setActiveTab] = useState('推荐');
   const tabs = ['关注', '推荐', '最新'];
   const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(null);
+
+  const [banners, setBanners] = useState<any[]>([]);
+  const [trendingTopics, setTrendingTopics] = useState<any[]>([]);
+  const [posts, setPosts] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('http://localhost:3001/api/explore')
+      .then(res => res.json())
+      .then(data => {
+        setBanners(data.banners || []);
+        setTrendingTopics(data.trendingTopics || []);
+        setPosts(data.posts || []);
+      })
+      .catch(err => console.error("Failed to fetch explore data", err));
+  }, []);
+
 
   const handleUserClick = (user: any) => {
     setSelectedUser({
@@ -116,7 +134,7 @@ export default function ExplorePage({ onOpenEditor }: { onOpenEditor?: () => voi
 
         {/* Masonry Layout Grid */}
         <div className="px-3 pb-4 columns-2 gap-3 space-y-3">
-          {mockPosts.map((post) => (
+          {posts.map((post) => (
             <div key={post.id} className="break-inside-avoid bg-[#1c1e2b] rounded-2xl shadow-sm border border-white/5 overflow-hidden flex flex-col">
 
               {/* Cover Image or Voice Visualizer */}
