@@ -6,7 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const routes_1 = __importDefault(require("./routes"));
+const index_1 = __importDefault(require("./routes/index"));
+const error_middleware_1 = require("./middlewares/error.middleware");
 const db_1 = require("./db");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -17,7 +18,8 @@ app.use(express_1.default.json());
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Soul backend is running' });
 });
-app.use('/api', routes_1.default);
+app.use('/api', index_1.default);
+app.use(error_middleware_1.errorMiddleware);
 // Initialize DB then start server
 (0, db_1.initDb)().then(() => {
     app.listen(PORT, () => {
