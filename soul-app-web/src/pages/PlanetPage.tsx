@@ -24,6 +24,7 @@ export default function PlanetPage() {
   useEffect(() => {
     fetch('http://localhost:3001/api/planet')
       .then(res => res.json())
+      .then(resJson => resJson.data)
       .then(data => {
         const fetchedNodes = data.nodes || [];
         const SPHERE_RADIUS = 3.5;

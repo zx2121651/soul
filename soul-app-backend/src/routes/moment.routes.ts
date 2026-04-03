@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getDb } from '../db';
-import { sendError } from '../utils/response';
+import { sendSuccess, sendError } from '../utils/response';
 
 const router = Router();
 
@@ -19,17 +19,17 @@ router.post('/', async (req, res, next) => {
       RETURNING id, type, content, url, created_at
     `, [userResult.rows[0].id, type || 'text', content || '', url || null]);
 
-    res.json({ success: true, moment: insertResult.rows[0] });
+    sendSuccess(res, { moment: insertResult.rows[0] });
   } catch (error) {
     next(error);
   }
 });
 
 // --- Mock Implementations ---
-router.post('/:id/like', (req, res) => res.json({ success: true, message: `Liked post ${req.params.id}`, newLikesCount: Math.floor(Math.random() * 100) }));
-router.get('/:id/comments', (req, res) => res.json({ comments: [{ id: 1, user: '夏天🌿', content: '哈哈，太有意思了！', time: '10分钟前' }] }));
-router.post('/:id/comments', (req, res) => res.json({ success: true, comment: { id: Date.now(), user: '自己 (Me)', content: req.body.content, time: '刚刚' } }));
-router.delete('/:id', (req, res) => res.json({ success: true, message: 'Post deleted' }));
-router.post('/:id/share', (req, res) => res.json({ success: true, shareUrl: 'https://soul.app/p/123' }));
+router.post('/:id/like', (req, res) => sendSuccess(res, { newLikesCount: Math.floor(Math.random() * 100) }, `Liked post ${req.params.id}`));
+router.get('/:id/comments', (req, res) => sendSuccess(res, { comments: [{ id: 1, user: '夏天🌿', content: '哈哈，太有意思了！', time: '10分钟前' }] }));
+router.post('/:id/comments', (req, res) => sendSuccess(res, { comment: { id: Date.now(), user: '自己 (Me)', content: req.body.content, time: '刚刚' } }));
+router.delete('/:id', (req, res) => sendSuccess(res, null, 'Post deleted'));
+router.post('/:id/share', (req, res) => sendSuccess(res, { shareUrl: 'https://soul.app/p/123' }));
 
 export default router;

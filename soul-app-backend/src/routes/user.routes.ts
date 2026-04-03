@@ -18,7 +18,7 @@ router.get('/me', async (req, res, next) => {
     // We keep the old structure but wrap it in the new response formatter if needed.
     // Notice: to not break existing frontend, we might just send raw json, but let's standardise if possible.
     // The frontend currently expects: data.profile, data.moments
-    res.json({
+    sendSuccess(res, {
       profile: {
         name: user.name, id: user.uuid, avatar: user.avatar,
         followers: user.followers, following: user.following, visitors: user.visitors, bio: user.bio
@@ -30,17 +30,17 @@ router.get('/me', async (req, res, next) => {
   }
 });
 
-router.put('/me/profile', (req, res) => res.json({ success: true, message: '个人资料已更新', updatedData: req.body }));
+router.put('/me/profile', (req, res) => sendSuccess(res, { success: true, message: '个人资料已更新', updatedData: req.body }));
 
 // --- User Relationship (Mock Implementation) ---
-router.post('/:id/follow', (req, res) => res.json({ success: true, message: 'Followed' }));
-router.post('/:id/unfollow', (req, res) => res.json({ success: true, message: 'Unfollowed' }));
-router.get('/:id/followers', (req, res) => res.json({ followers: [{ id: 2, name: 'User 2' }, { id: 3, name: 'User 3' }] }));
-router.get('/:id/following', (req, res) => res.json({ following: [{ id: 4, name: 'User 4' }] }));
-router.post('/:id/block', (req, res) => res.json({ success: true, message: 'User blocked' }));
-router.post('/:id/unblock', (req, res) => res.json({ success: true, message: 'User unblocked' }));
-router.get('/blocked', (req, res) => res.json({ blockedUsers: [] }));
-router.post('/:id/report', (req, res) => res.json({ success: true, message: 'Report submitted successfully' }));
-router.get('/:id/profile', (req, res) => res.json({ id: req.params.id, name: 'Mock User', bio: 'Hello world' }));
+router.post('/:id/follow', (req, res) => sendSuccess(res, { success: true, message: 'Followed' }));
+router.post('/:id/unfollow', (req, res) => sendSuccess(res, { success: true, message: 'Unfollowed' }));
+router.get('/:id/followers', (req, res) => sendSuccess(res, { followers: [{ id: 2, name: 'User 2' }, { id: 3, name: 'User 3' }] }));
+router.get('/:id/following', (req, res) => sendSuccess(res, { following: [{ id: 4, name: 'User 4' }] }));
+router.post('/:id/block', (req, res) => sendSuccess(res, { success: true, message: 'User blocked' }));
+router.post('/:id/unblock', (req, res) => sendSuccess(res, { success: true, message: 'User unblocked' }));
+router.get('/blocked', (req, res) => sendSuccess(res, { blockedUsers: [] }));
+router.post('/:id/report', (req, res) => sendSuccess(res, { success: true, message: 'Report submitted successfully' }));
+router.get('/:id/profile', (req, res) => sendSuccess(res, { id: req.params.id, name: 'Mock User', bio: 'Hello world' }));
 
 export default router;

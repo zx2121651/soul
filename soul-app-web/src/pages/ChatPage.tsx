@@ -78,6 +78,7 @@ export default function ChatPage() {
   useEffect(() => {
     fetch('http://localhost:3001/api/chat')
       .then(res => res.json())
+      .then(resJson => resJson.data)
       .then(data => {
         setChats(data.chats || []);
         // setPinnedUsers(data.pinnedUsers || []);

@@ -21,6 +21,7 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
   useEffect(() => {
     fetch('http://localhost:3001/api/me')
       .then(res => res.json())
+      .then(resJson => resJson.data)
       .then(data => {
         if(data.profile) setProfile(data.profile);
         if(data.moments) setMoments(data.moments);

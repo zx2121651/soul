@@ -34,6 +34,7 @@ router.use('/me', (req, res, next) => {
 });
 // explicit bindings for frontend compatibility
 const db_1 = require("../db");
+const response_1 = require("../utils/response");
 router.get('/me', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const db = (0, db_1.getDb)();
@@ -41,14 +42,14 @@ router.get('/me', (req, res, next) => __awaiter(void 0, void 0, void 0, function
             yield db.query('SELECT 1');
         }
         catch (e) {
-            return res.json({ profile: { name: '一只小透明(Mock Mode)' }, moments: [] });
+            return (0, response_1.sendSuccess)(res, { profile: { name: '一只小透明(Mock Mode)' }, moments: [] });
         }
         const userResult = yield db.query(`SELECT * FROM users WHERE uuid = $1`, ['soul_123456']);
         if (userResult.rowCount === 0)
-            return res.status(404).json({ error: 'User not found' });
+            return (0, response_1.sendError)(res, 404, 'User not found');
         const user = userResult.rows[0];
         const momentsResult = yield db.query(`SELECT id, type, content, url, created_at FROM moments WHERE user_id = $1 ORDER BY id DESC`, [user.id]);
-        res.json({
+        (0, response_1.sendSuccess)(res, {
             profile: { name: user.name, id: user.uuid, avatar: user.avatar, followers: user.followers, following: user.following, visitors: user.visitors, bio: user.bio },
             moments: momentsResult.rows
         });

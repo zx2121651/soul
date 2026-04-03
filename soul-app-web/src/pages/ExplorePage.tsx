@@ -49,6 +49,7 @@ export default function ExplorePage({ onOpenEditor }: { onOpenEditor?: () => voi
   useEffect(() => {
     fetch('http://localhost:3001/api/explore')
       .then(res => res.json())
+      .then(resJson => resJson.data)
       .then(data => {
         setBanners(data.banners || []);
         setTrendingTopics(data.trendingTopics || []);
