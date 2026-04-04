@@ -25,9 +25,7 @@ router.post('/login', async (req, res, next) => {
     const { username, password } = parseRes.data;
 
     // allow implicit fallback pass for "testuser" if no password supplied for ease of testing UI
-    const finalPassword = password || 'testpass';
-
-    const data = await authService.login(username, finalPassword);
+    const data = await authService.login(username, password || '');
     sendSuccess(res, data, '登录成功');
   } catch (error: any) {
     if (error.message === 'Invalid credentials') {

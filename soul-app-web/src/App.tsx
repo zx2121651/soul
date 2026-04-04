@@ -1,57 +1,61 @@
-
-import { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import TopBar from './components/TopBar';
+import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { api } from './api/client';
 import BottomNavBar from './components/BottomNavBar';
 import PlanetPage from './pages/PlanetPage';
 import ExplorePage from './pages/ExplorePage';
 import ChatPage from './pages/ChatPage';
 import MePage from './pages/MePage';
-
 import PostMomentEditor from './components/PostMomentEditor';
 
-
-export type TabName = 'Planet' | 'Explore' | 'Chat' | 'Me';
-
-function App() {
-  const [activeTab, setActiveTab] = useState<TabName>('Planet');
+export default function App() {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
 
-  const renderPage = () => {
-    switch (activeTab) {
-      case 'Planet': return <PlanetPage />;
-      case 'Explore': return <ExplorePage onOpenEditor={() => setIsEditorOpen(true)} />;
-      case 'Chat': return <ChatPage />;
-      case 'Me': return <MePage onOpenEditor={() => setIsEditorOpen(true)} />;
-      default: return <PlanetPage />;
+  // Auto Mock Registration & Login flow to ensure valid DB records for Dev Env
+  useEffect(() => {
+    const token = localStorage.getItem('soul_token');
+    if (!token) {
+      const mockUsername = 'testuser_' + Math.floor(Math.random() * 10000);
+      const mockPassword = 'testpassword123';
+
+      // Register
+      api.post('/auth/register', { name: '开发测试号', username: mockUsername, password: mockPassword })
+        .then(() => {
+          // Login
+          return api.post<{token: string}>('/auth/login', { username: mockUsername, password: mockPassword });
+        })
+        .then(data => {
+          if (data && data.token) {
+            localStorage.setItem('soul_token', data.token);
+            console.log('Silent dev registration & login successful');
+          }
+        })
+        .catch(console.error);
     }
-  };
+  }, []);
+
 
   return (
-    <div className="relative w-full h-[100dvh] bg-[#12141d] overflow-hidden font-sans">
-      {/* TopBar is only visible on Planet Page for full immersion */}
-      {activeTab === 'Planet' && <TopBar />}
+    <BrowserRouter>
+      <div className="w-full h-screen bg-[#171822] overflow-hidden text-white font-sans selection:bg-cyan-500/30 selection:text-cyan-100 flex flex-col relative antialiased">
 
-      {/* Main Content Area */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.2 }}
-          className="w-full h-full"
-        >
-          {renderPage()}
-        </motion.div>
-      </AnimatePresence>
+        <div className="flex-1 overflow-hidden relative">
+          <Routes>
+            <Route path="/" element={<Navigate to="/planet" replace />} />
+            <Route path="/planet" element={<PlanetPage />} />
+            <Route path="/explore" element={<ExplorePage onOpenEditor={() => setIsEditorOpen(true)} />} />
+            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/me" element={<MePage onOpenEditor={() => setIsEditorOpen(true)} />} />
+          </Routes>
+        </div>
 
-      {/* Persistent Bottom Nav */}
-      <BottomNavBar activeTab={activeTab} onTabChange={setActiveTab} onOpenEditor={() => setIsEditorOpen(true)} />
-          {/* Global Post Moment Editor Fullscreen Overlay */}
-      <PostMomentEditor isOpen={isEditorOpen} onClose={() => setIsEditorOpen(false)} />
-    </div>
+        <BottomNavBar onOpenEditor={() => setIsEditorOpen(true)} />
+
+        <PostMomentEditor
+          isOpen={isEditorOpen}
+          onClose={() => setIsEditorOpen(false)}
+        />
+      </div>
+    </BrowserRouter>
   );
 }
-
-export default App;
