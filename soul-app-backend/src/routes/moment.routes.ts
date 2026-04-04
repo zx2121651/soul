@@ -1,28 +1,21 @@
 import { Router } from 'express';
-import { getDb } from '../db';
 import { sendSuccess, sendError } from '../utils/response';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import { MomentService } from '../services/moment.service';
 
 const router = Router();
+const momentService = new MomentService();
 
 // --- Real DB Implementation ---
 router.post('/', authMiddleware, async (req, res, next) => {
   try {
     const { content, type, url } = req.body;
-    const db = getDb();
     const userUuid = req.user?.uuid || 'soul_123456';
 
-    const userResult = await db.query(`SELECT id FROM users WHERE uuid = $1`, [userUuid]);
-    if (userResult.rowCount === 0) return sendError(res, 404, 'User not found');
-
-    const insertResult = await db.query(`
-      INSERT INTO moments (user_id, type, content, url)
-      VALUES ($1, $2, $3, $4)
-      RETURNING id, type, content, url, created_at
-    `, [userResult.rows[0].id, type || 'text', content || '', url || null]);
-
-    sendSuccess(res, { moment: insertResult.rows[0] });
-  } catch (error) {
+    const newMoment = await momentService.createMoment(userUuid, type || 'text', content || null, url || null);
+    sendSuccess(res, { moment: newMoment });
+  } catch (error: any) {
+    if (error.message === 'User not found') return sendError(res, 404, error.message);
     next(error);
   }
 });
