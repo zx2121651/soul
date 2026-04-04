@@ -674,3 +674,12 @@ Server is running on port 3001
    Will skip DB initialization for now.
 Server is running on port 3001
 [32m[nodemon] clean exit - waiting for changes before restart[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+◇ injecting env (3) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+❌ Could not connect to PostgreSQL database. Exiting process.
+   Please make sure PostgreSQL is running (e.g. docker-compose up -d).
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
