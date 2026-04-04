@@ -20,12 +20,10 @@ export class AuthService {
   }
 
   async login(username: string, passwordRaw: string) {
-    // We allow a "mock bypass" for testuser for local UI ease if no hash matches, but ideally strict checking
     const user = await this.userRepo.findByUsername(username);
     if (!user) throw new Error('Invalid credentials');
 
-    // Hack: for the seed testuser with MOCK_HASH_DO_NOT_USE
-    if (user.password_hash === 'MOCK_HASH_DO_NOT_USE' || await bcrypt.compare(passwordRaw, user.password_hash)) {
+    if (await bcrypt.compare(passwordRaw, user.password_hash)) {
       const secret = process.env.JWT_SECRET;
       if (!secret) throw new Error('System misconfiguration: missing JWT_SECRET');
 
