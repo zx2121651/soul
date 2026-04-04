@@ -11,10 +11,14 @@ import PostMomentEditor from './components/PostMomentEditor';
 export default function App() {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
 
+
   // Auto Mock Registration & Login flow to ensure valid DB records for Dev Env
   useEffect(() => {
+    if (!import.meta.env.DEV) return; // STRICT ENVIRONMENT GUARD
+
     const token = localStorage.getItem('soul_token');
     if (!token) {
+
       const mockUsername = 'testuser_' + Math.floor(Math.random() * 10000);
       const mockPassword = 'testpassword123';
 

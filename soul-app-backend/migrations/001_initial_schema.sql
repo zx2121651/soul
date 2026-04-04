@@ -120,15 +120,12 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed Initial Data
-INSERT INTO users (uuid, name, username, password_hash, avatar, bio, followers, following, visitors)
-VALUES ('soul_123456', '一只小透明', 'testuser', 'MOCK_HASH_DO_NOT_USE', 'https://api.dicebear.com/7.x/adventurer/svg?seed=me&backgroundColor=f4b6c2', '寻找宇宙中的同频共振 ✨', 128, 56, 342)
-ON CONFLICT (uuid) DO NOTHING;
 
-INSERT INTO moments (user_id, type, content)
-SELECT id, 'text', '保持热爱，奔赴山海' FROM users WHERE uuid = 'soul_123456'
-ON CONFLICT DO NOTHING;
-
-INSERT INTO wallets (user_id, coins, diamonds)
-SELECT id, 1000, 50 FROM users WHERE uuid = 'soul_123456'
-ON CONFLICT DO NOTHING;
+-- 6. Performance Indexes
+CREATE INDEX IF NOT EXISTS idx_moments_user_id ON moments(user_id);
+CREATE INDEX IF NOT EXISTS idx_moments_created_at ON moments(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_room_id ON chat_messages(room_id);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON chat_messages(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_user_follows_follower ON user_follows(follower_id);
+CREATE INDEX IF NOT EXISTS idx_user_follows_following ON user_follows(following_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id_read ON notifications(user_id, is_read);

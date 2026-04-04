@@ -1,11 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { sendError } from '../utils/response';
+
+export interface SoulJwtPayload extends JwtPayload {
+  id: number;
+  uuid: string;
+  role: string;
+}
 
 declare global {
   namespace Express {
     interface Request {
-      user?: any;
+      user?: SoulJwtPayload;
     }
   }
 }
@@ -25,7 +31,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
   }
 
   try {
-    const decoded = jwt.verify(token, secret);
+    const decoded = jwt.verify(token, secret) as SoulJwtPayload;
     req.user = decoded;
     next();
   } catch (error) {

@@ -18,14 +18,23 @@ async function runMigrations() {
 
   try {
     console.log('Running migrations...');
-    const migrationFilePath = path.join(__dirname, '../migrations/001_initial_schema.sql');
-    const sql = fs.readFileSync(migrationFilePath, 'utf8');
 
+    // 1. Schema
+    const schemaPath = path.join(__dirname, '../migrations/001_initial_schema.sql');
+    const schemaSql = fs.readFileSync(schemaPath, 'utf8');
     await client.query('BEGIN');
-    await client.query(sql);
+    await client.query(schemaSql);
     await client.query('COMMIT');
+    console.log('✅ Base Schema and Indexes applied.');
 
-    console.log('✅ Migrations applied successfully.');
+    // 2. Seeds
+    const seedPath = path.join(__dirname, '../migrations/002_seed_data.sql');
+    const seedSql = fs.readFileSync(seedPath, 'utf8');
+    await client.query('BEGIN');
+    await client.query(seedSql);
+    await client.query('COMMIT');
+    console.log('✅ Seed data inserted.');
+
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('❌ Migration failed:', error);
