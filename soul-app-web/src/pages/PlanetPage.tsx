@@ -23,7 +23,7 @@ export default function PlanetPage() {
   const [nodes, setNodes] = useState<NodeData[]>([]);
 
   useEffect(() => {
-    api.get<any>('/planet').then(data => {
+    api.get<{ nodes: NodeData[] }>('/planet').then(data => {
         const fetchedNodes = data.nodes || [];
         const SPHERE_RADIUS = 3.5;
         const colors = ["#ff9a9e", "#fecfef", "#a1c4fd", "#c2e9fb", "#d4fc79", "#96e6a1"];

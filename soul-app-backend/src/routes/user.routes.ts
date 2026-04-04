@@ -1,33 +1,19 @@
 import { Router } from 'express';
-import { getDb } from '../db';
 import { sendSuccess, sendError } from '../utils/response';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import { UserService } from '../services/user.service';
 
 const router = Router();
+const userService = new UserService();
 
 // --- Real DB Implementation ---
 router.get('/me', authMiddleware, async (req, res, next) => {
   try {
-    const db = getDb();
-
-    // Auth context injected by middleware
-    const userId = req.user?.id || 1;
     const userUuid = req.user?.uuid || 'soul_123456';
-
-    const userResult = await db.query(`SELECT * FROM users WHERE uuid = $1`, [userUuid]);
-    if (userResult.rowCount === 0) return sendError(res, 404, 'User not found');
-
-    const user = userResult.rows[0];
-    const momentsResult = await db.query(`SELECT id, type, content, url, created_at FROM moments WHERE user_id = $1 ORDER BY id DESC`, [user.id]);
-
-    sendSuccess(res, {
-      profile: {
-        name: user.name, id: user.uuid, avatar: user.avatar,
-        followers: user.followers, following: user.following, visitors: user.visitors, bio: user.bio
-      },
-      moments: momentsResult.rows
-    });
-  } catch (error) {
+    const data = await userService.getMeProfile(userUuid);
+    sendSuccess(res, data);
+  } catch (error: any) {
+    if (error.message === 'User not found') return sendError(res, 404, error.message);
     next(error);
   }
 });
