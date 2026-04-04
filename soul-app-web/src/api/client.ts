@@ -9,7 +9,6 @@ export interface ApiResponse<T = any> {
 export async function apiClient<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${BASE_URL}${endpoint}`;
 
-  // Auto inject Token
   const token = localStorage.getItem('soul_token');
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -20,28 +19,41 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(url, { ...options, headers });
+  // Add AbortController for timeout (default 10s)
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), 10000);
 
-  // Handle 401 Unauthorized globally
-  if (response.status === 401 || response.status === 403) {
-    console.error('Unauthorized! Need to re-login.');
-    localStorage.removeItem('soul_token');
-    // window.location.href = '/login'; // Optional: Redirect in real app
-    throw new Error('Unauthorized');
+  try {
+    const response = await fetch(url, { ...options, headers, signal: controller.signal });
+    clearTimeout(id);
+
+    if (response.status === 401 || response.status === 403) {
+      console.error('Unauthorized! Need to re-login.');
+      localStorage.removeItem('soul_token');
+      // window.location.href = '/login';
+      throw new Error('Unauthorized');
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: ApiResponse<T> = await response.json();
+
+    if (result.code !== 0) {
+      console.error(`API Error [${endpoint}]:`, result.message);
+      throw new Error(result.message);
+    }
+
+    return result.data;
+  } catch (error: any) {
+    clearTimeout(id);
+    if (error.name === 'AbortError') {
+      console.error(`API Error [${endpoint}]: Request timeout`);
+      throw new Error('网络请求超时，请稍后重试');
+    }
+    throw error;
   }
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  const result: ApiResponse<T> = await response.json();
-
-  if (result.code !== 0) {
-    console.error(`API Error [${endpoint}]:`, result.message);
-    throw new Error(result.message);
-  }
-
-  return result.data;
 }
 
 export const api = {

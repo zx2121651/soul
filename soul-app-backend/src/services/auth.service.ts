@@ -1,6 +1,7 @@
 import { UserRepository } from '../repositories/user.repository';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 export class AuthService {
   private userRepo = new UserRepository();
@@ -13,7 +14,7 @@ export class AuthService {
     const hash = await bcrypt.hash(passwordRaw, salt);
 
     // generate random uuid
-    const uuid = 'user_' + Date.now() + Math.floor(Math.random() * 1000);
+    const uuid = crypto.randomUUID();
 
     const user = await this.userRepo.createUser(uuid, name, username, hash);
     return user;
