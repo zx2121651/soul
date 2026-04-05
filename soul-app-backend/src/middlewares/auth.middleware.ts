@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { sendError } from '../utils/response';
+import { ErrorCode } from '../utils/ErrorCodes';
+
 
 export interface SoulJwtPayload extends JwtPayload {
   id: number;
@@ -20,14 +22,14 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return sendError(res, 401, '未提供认证 Token', 401);
+    return sendError(res, 401, undefined, ErrorCode.AUTH_UNAUTHORIZED);
   }
 
   const token = authHeader.split(' ')[1];
   const secret = process.env.JWT_SECRET;
 
   if (!secret) {
-    return sendError(res, 500, 'System misconfiguration: missing JWT_SECRET', 500);
+    return sendError(res, 500, undefined, ErrorCode.SYSTEM_MISCONFIGURED);
   }
 
   try {
@@ -35,6 +37,6 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     req.user = decoded;
     next();
   } catch (error) {
-    return sendError(res, 403, 'Token 无效或已过期', 403);
+    return sendError(res, 403, undefined, ErrorCode.AUTH_INVALID_TOKEN);
   }
 };
