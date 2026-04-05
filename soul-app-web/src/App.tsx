@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { api } from './api/client';
+import { bootstrapApp } from './utils/bootstrap';
 import React, { Suspense } from 'react';
 const PlanetPage = React.lazy(() => import('./pages/PlanetPage'));
 const ExplorePage = React.lazy(() => import('./pages/ExplorePage'));
@@ -20,31 +21,12 @@ export default function App() {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
 
 
-  // Auto Mock Registration & Login flow to ensure valid DB records for Dev Env
+
+  // Bootstrap Environment (Dev Auth)
   useEffect(() => {
-    if (!import.meta.env.DEV) return; // STRICT ENVIRONMENT GUARD
-
-    const token = localStorage.getItem('soul_token');
-    if (!token) {
-
-      const mockUsername = 'testuser_' + Math.floor(Math.random() * 10000);
-      const mockPassword = 'testpassword123';
-
-      // Register
-      api.post('/auth/register', { name: '开发测试号', username: mockUsername, password: mockPassword })
-        .then(() => {
-          // Login
-          return api.post<{token: string}>('/auth/login', { username: mockUsername, password: mockPassword });
-        })
-        .then(data => {
-          if (data && data.token) {
-            localStorage.setItem('soul_token', data.token);
-            console.log('Silent dev registration & login successful');
-          }
-        })
-        .catch(console.error);
-    }
+    bootstrapApp();
   }, []);
+
 
 
   return (

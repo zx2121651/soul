@@ -1,15 +1,16 @@
 import { Response } from 'express';
+import { ErrorCode, ErrorMessage } from './ErrorCodes';
 
-// 统一标准响应结构
-export const sendSuccess = (res: Response, data: any = {}, message: string = 'Success') => {
+export const sendSuccess = (res: Response, data: any = {}, message: string = ErrorMessage[ErrorCode.SUCCESS]) => {
   return res.status(200).json({
-    code: 0,
+    code: ErrorCode.SUCCESS,
     message,
     data
   });
 };
 
-export const sendError = (res: Response, statusCode: number, message: string, code: number = -1) => {
+export const sendError = (res: Response, statusCode: number, customMessage?: string, code: ErrorCode = ErrorCode.SYSTEM_ERROR) => {
+  const message = customMessage || ErrorMessage[code] || ErrorMessage[ErrorCode.SYSTEM_ERROR];
   return res.status(statusCode).json({
     code,
     message,
