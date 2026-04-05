@@ -35,6 +35,17 @@ async function runMigrations() {
     await client.query('COMMIT');
     console.log('✅ Seed data inserted.');
 
+    // 3. LiveKit Rooms
+    const livekitPath = path.join(__dirname, '../migrations/003_livekit_rooms.sql');
+    if (fs.existsSync(livekitPath)) {
+      const livekitSql = fs.readFileSync(livekitPath, 'utf8');
+      await client.query('BEGIN');
+      await client.query(livekitSql);
+      await client.query('COMMIT');
+      console.log('✅ LiveKit Rooms schema and seeds applied.');
+    }
+
+
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('❌ Migration failed:', error);

@@ -7,14 +7,26 @@ import { ErrorCode } from '../utils/ErrorCodes';
 const router = Router();
 const livekitService = new LiveKitService();
 
-router.get('/', (req, res) => {
-  // 语音房大厅列表（目前返回静态或假表结构）
-  sendSuccess(res, {
-    rooms: [
-      { id: 'music_room_1', title: '一起听周杰伦', listeners: 142, tags: ['音乐', '周杰伦'] },
-      { id: 'chat_room_2', title: '失眠深夜杂谈', listeners: 56, tags: ['深夜', '树洞'] },
-    ]
-  });
+router.get('/', async (req, res, next) => {
+  try {
+    const rooms = await livekitService.getActiveRooms();
+    sendSuccess(res, { rooms });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/', authMiddleware, async (req, res, next) => {
+  try {
+    const { title, tags } = req.body;
+    const userUuid = req.user?.uuid || 'soul_123456';
+    if (!title) return sendError(res, 400, 'Title is required', ErrorCode.VALIDATION_ERROR);
+
+    const result = await livekitService.createRoom(userUuid, title, tags || []);
+    sendSuccess(res, result, '房间创建成功');
+  } catch (error: any) {
+    next(error);
+  }
 });
 
 router.post('/:roomId/join', authMiddleware, async (req, res, next) => {
@@ -22,9 +34,9 @@ router.post('/:roomId/join', authMiddleware, async (req, res, next) => {
     const roomId = req.params.roomId as string;
     const userUuid = req.user?.uuid || 'soul_123456';
 
-    const { token, serverUrl } = await livekitService.createToken(roomId, userUuid);
+    const { token, serverUrl, isOwner } = await livekitService.createToken(roomId, userUuid);
 
-    sendSuccess(res, { token, serverUrl }, '加入语音房成功');
+    sendSuccess(res, { token, serverUrl, isOwner, roomId }, '加入语音房成功');
   } catch (error: any) {
     if (error.message === 'User not found') return sendError(res, 404, undefined, ErrorCode.RESOURCE_NOT_FOUND);
     next(error);
