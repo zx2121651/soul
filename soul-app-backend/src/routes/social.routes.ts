@@ -1,13 +1,22 @@
 import { Router } from 'express';
-import { sendSuccess } from '../utils/response';
+import { sendSuccess, sendError } from '../utils/response';
+
+import { authMiddleware } from '../middlewares/auth.middleware';
+import { ChatService } from '../services/chat.service';
+import { ErrorCode } from '../utils/ErrorCodes';
+const chatService = new ChatService();
 
 const router = Router();
 
-router.get('/chat', (req, res) => {
-  sendSuccess(res, {
-    chats: [ { id: 1, name: "Soul官方助手", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=soul&backgroundColor=c0aede", lastMessage: "你的星球有了新的访客，快去看看吧！", time: "10:30", unread: 2, isOfficial: true } ],
-    pinnedUsers: [ { id: 101, name: '夏天🌿', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=summer&backgroundColor=c0aede', isOnline: true } ]
-  });
+router.get('/chat', authMiddleware, async (req, res, next) => {
+  try {
+    const userUuid = req.user?.uuid || 'soul_123456';
+    const chats = await chatService.getChatList(userUuid);
+    sendSuccess(res, { chats, pinnedUsers: [] });
+  } catch (error: any) {
+    if (error.message === 'User not found') return sendError(res, 404, error.message, ErrorCode.RESOURCE_NOT_FOUND);
+    next(error);
+  }
 });
 
 router.get('/chat/:roomId/messages', (req, res) => sendSuccess(res, { roomId: req.params.roomId, messages: [{ id: 1, senderId: 2, text: '你好呀！', time: '10:00' }] }));

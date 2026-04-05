@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { api } from './api/client';
 import { bootstrapApp } from './utils/bootstrap';
 import React, { Suspense } from 'react';
 const PlanetPage = React.lazy(() => import('./pages/PlanetPage'));

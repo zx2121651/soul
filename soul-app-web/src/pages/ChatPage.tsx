@@ -28,12 +28,12 @@ const pinnedUsers = [
 export default function ChatPage() {
   const [chats, setChats] = useState<ChatData[]>([]);
   const [activeChat, setActiveChat] = useState<ChatData | null>(null);
-  // const [pinnedUsers, setPinnedUsers] = useState<any[]>([]);
+  //
 
   useEffect(() => {
     api.get<ChatResponse>('/chat').then(data => {
         setChats(data.chats || []);
-        // setPinnedUsers(data.pinnedUsers || []);
+
       })
       .catch(err => console.error("Failed to fetch chat data", err));
   }, []);
