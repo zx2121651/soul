@@ -21,4 +21,20 @@ router.post('/', authMiddleware, async (req, res, next) => {
   }
 });
 
+
+
+router.post('/:id/like', authMiddleware, async (req, res, next) => {
+  try {
+    const momentId = parseInt(req.params.id as string, 10);
+    const userUuid = req.user?.uuid || 'soul_123456';
+    const isLike = req.body.like !== false; // default true
+
+    await momentService.toggleLike(userUuid, momentId, isLike);
+    sendSuccess(res, null, isLike ? 'Liked' : 'Unliked');
+  } catch (error: any) {
+    if (error.message === 'User not found') return sendError(res, 404, undefined, ErrorCode.RESOURCE_NOT_FOUND);
+    next(error);
+  }
+});
+
 export default router;

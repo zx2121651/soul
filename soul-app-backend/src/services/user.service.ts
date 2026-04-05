@@ -24,4 +24,26 @@ export class UserService {
       moments
     };
   }
+
+  async followUser(followerUuid: string, targetId: number) {
+    const user = await this.userRepo.findByUuid(followerUuid);
+    if (!user) throw new Error('User not found');
+    await this.userRepo.follow(user.id, targetId);
+    return { success: true };
+  }
+
+  async unfollowUser(followerUuid: string, targetId: number) {
+    const user = await this.userRepo.findByUuid(followerUuid);
+    if (!user) throw new Error('User not found');
+    await this.userRepo.unfollow(user.id, targetId);
+    return { success: true };
+  }
+
+  async search(query: string) {
+    return await this.userRepo.searchUsers(query);
+  }
+
+  async getTopUsers() {
+    return await this.userRepo.getLeaderboard();
+  }
 }
