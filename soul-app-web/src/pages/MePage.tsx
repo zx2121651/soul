@@ -16,7 +16,7 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const [profile, setProfile] = useState<UserProfile>({
-    name: '自己 (Me)', id: '', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=me&backgroundColor=f4b6c2', followers: 128, following: 342, visitors: 89, bio: '{profile.bio}'
+    name: '{profile.name}', id: '', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=me&backgroundColor=f4b6c2', followers: 128, following: 342, visitors: 89, bio: ''
   });
   const [moments, setMoments] = useState<MomentData[]>([]);
 
@@ -71,7 +71,7 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
 
         <div className="mt-4">
           <h2 className="text-white text-2xl font-bold mb-2 flex items-center gap-2">
-            自己 (Me)
+            {profile.name}
             <span className="bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[10px] px-1.5 py-0.5 rounded font-black tracking-widest italic shadow-sm transform -skew-x-6">VIP</span>
           </h2>
 
