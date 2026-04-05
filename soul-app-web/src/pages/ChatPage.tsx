@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import ChatRoom from '../components/ChatRoom';
 import type { ChatData } from '../components/SwipeableChatItem';
-import type { ChatMessage } from '../types';
+import type { ChatResponse } from '../types';
 
 
 
@@ -78,7 +78,7 @@ export default function ChatPage() {
   // const [pinnedUsers, setPinnedUsers] = useState<any[]>([]);
 
   useEffect(() => {
-    api.get<{ chats: ChatMessage[], pinnedUsers: any[] }>('/chat').then(data => {
+    api.get<ChatResponse>('/chat').then(data => {
         setChats(data.chats || []);
         // setPinnedUsers(data.pinnedUsers || []);
       })
