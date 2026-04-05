@@ -1,7 +1,7 @@
 
 
 import { api } from '../api/client';
-import type { MeDataResponse } from '../types';
+import type { MeDataResponse, UserProfile, MomentData } from '../types';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, Eye, ChevronRight, Bell, HelpCircle, LogOut, ChevronLeft, PenSquare, Lock } from 'lucide-react';
@@ -15,10 +15,10 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const [profile, setProfile] = useState<any>({
+  const [profile, setProfile] = useState<UserProfile>({
     name: '自己 (Me)', id: '', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=me&backgroundColor=f4b6c2', followers: 128, following: 342, visitors: 89, bio: '{profile.bio}'
   });
-  const [moments, setMoments] = useState<any[]>([]);
+  const [moments, setMoments] = useState<MomentData[]>([]);
 
   useEffect(() => {
     api.get<MeDataResponse>('/users/me').then(data => {

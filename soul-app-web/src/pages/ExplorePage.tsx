@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Search, Heart, Play, Plus } from 'lucide-react';
 import UserProfileModal from '../components/UserProfileModal';
 import type { UserProfileData } from '../components/UserProfileModal';
-import type { ExploreBanner } from '../types';
+import type { ExploreBanner, TrendingTopic, Post, ExploreResponse } from '../types';
 
 
 interface LikeButtonProps {
@@ -45,11 +45,11 @@ export default function ExplorePage({ onOpenEditor }: { onOpenEditor?: () => voi
   const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(null);
 
   const [banners, setBanners] = useState<ExploreBanner[]>([]);
-  const [trendingTopics, setTrendingTopics] = useState<any[]>([]);
-  const [posts, setPosts] = useState<any[]>([]);
+  const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
-    api.get<{ banners: ExploreBanner[], trendingTopics: any[], posts: any[] }>('/explore').then(data => {
+    api.get<ExploreResponse>('/explore').then(data => {
         setBanners(data.banners || []);
         setTrendingTopics(data.trendingTopics || []);
         setPosts(data.posts || []);
@@ -58,7 +58,7 @@ export default function ExplorePage({ onOpenEditor }: { onOpenEditor?: () => voi
   }, []);
 
 
-  const handleUserClick = (user: any) => {
+  const handleUserClick = (user: { name: string; avatar: string; isOnline?: boolean }) => {
     setSelectedUser({
       id: user.name,
       name: user.name,
