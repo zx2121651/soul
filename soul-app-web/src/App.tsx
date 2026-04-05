@@ -6,6 +6,7 @@ const PlanetPage = React.lazy(() => import('./pages/PlanetPage'));
 const ExplorePage = React.lazy(() => import('./pages/ExplorePage'));
 const ChatPage = React.lazy(() => import('./pages/ChatPage'));
 const MePage = React.lazy(() => import('./pages/MePage'));
+const VoiceRoomPage = React.lazy(() => import('./pages/VoiceRoomPage'));
 
 const FallbackLoader = () => (
   <div className="w-full h-full flex items-center justify-center bg-[#171822]">
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/explore" element={<ExplorePage onOpenEditor={() => setIsEditorOpen(true)} />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/me" element={<MePage onOpenEditor={() => setIsEditorOpen(true)} />} />
+            <Route path="/voiceroom/:id" element={<VoiceRoomPage />} />
           </Routes>
           </Suspense>
         </div>

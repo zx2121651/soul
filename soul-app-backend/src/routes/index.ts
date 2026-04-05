@@ -5,6 +5,7 @@ import momentRoutes from './moment.routes';
 import contentRoutes from './content.routes';
 import socialRoutes from './social.routes';
 import mockRoutes from './mock.routes';
+import voiceroomRoutes from './voiceroom.routes';
 
 const router = Router();
 
@@ -12,6 +13,7 @@ const router = Router();
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/moments', momentRoutes);
+router.use('/voicerooms', voiceroomRoutes);
 
 // Other domains
 router.use('/', contentRoutes); // /planet, /explore, /feed

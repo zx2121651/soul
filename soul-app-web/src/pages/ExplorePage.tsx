@@ -2,6 +2,7 @@
 import { api } from '../api/client';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Search, Heart, Play, Plus } from 'lucide-react';
 import UserProfileModal from '../components/UserProfileModal';
 import type { UserProfileData } from '../components/UserProfileModal';
@@ -42,6 +43,7 @@ const LikeButton = ({ initialLikes }: LikeButtonProps) => {
 export default function ExplorePage({ onOpenEditor }: { onOpenEditor?: () => void }) {
   const [activeTab, setActiveTab] = useState('推荐');
   const tabs = ['关注', '推荐', '最新'];
+  const navigate = useNavigate();
   const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(null);
 
   const [banners, setBanners] = useState<ExploreBanner[]>([]);
@@ -109,7 +111,9 @@ export default function ExplorePage({ onOpenEditor }: { onOpenEditor?: () => voi
         <div className="px-4 pt-2 pb-4">
           <div className="flex overflow-x-auto gap-3 no-scrollbar snap-x snap-mandatory">
             {banners.map(banner => (
-              <div key={banner.id} className={`snap-start shrink-0 w-64 h-24 rounded-2xl bg-gradient-to-r ${banner.bg} p-4 flex flex-col justify-center relative overflow-hidden shadow-lg`}>
+              <div key={banner.id}
+              onClick={() => navigate(`/voiceroom/room_${banner.id}`)}
+              style={{ cursor: "pointer" }} className={`snap-start shrink-0 w-64 h-24 rounded-2xl bg-gradient-to-r ${banner.bg} p-4 flex flex-col justify-center relative overflow-hidden shadow-lg`}>
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 text-4xl opacity-50">{banner.emoji}</div>
                 <h3 className="text-white font-bold text-lg relative z-10">{banner.title}</h3>
                 <button className="text-white/80 text-xs font-medium mt-1 w-fit bg-black/20 px-2 py-0.5 rounded-full relative z-10">
