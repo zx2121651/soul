@@ -95,3 +95,16 @@ export interface NodeData {
 export interface PlanetResponse {
   nodes: NodeData[];
 }
+
+
+
+export interface VoiceRoom {
+  id: string;
+  title: string;
+  owner: {
+    name: string;
+    avatar: string;
+  };
+  tags: string[];
+  listeners: number;
+}

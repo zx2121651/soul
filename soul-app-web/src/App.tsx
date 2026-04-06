@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { api } from './api/client';
 import { bootstrapApp } from './utils/bootstrap';
 import React, { Suspense } from 'react';
 const PlanetPage = React.lazy(() => import('./pages/PlanetPage'));
 const ExplorePage = React.lazy(() => import('./pages/ExplorePage'));
 const ChatPage = React.lazy(() => import('./pages/ChatPage'));
 const MePage = React.lazy(() => import('./pages/MePage'));
+const VoiceRoomPage = React.lazy(() => import('./pages/VoiceRoomPage'));
 
 const FallbackLoader = () => (
   <div className="w-full h-full flex items-center justify-center bg-[#171822]">
@@ -15,6 +15,7 @@ const FallbackLoader = () => (
 );
 
 import BottomNavBar from './components/BottomNavBar';
+import TopBar from './components/TopBar';
 import PostMomentEditor from './components/PostMomentEditor';
 
 export default function App() {
@@ -33,14 +34,16 @@ export default function App() {
     <BrowserRouter>
       <div className="w-full h-screen bg-[#171822] overflow-hidden text-white font-sans selection:bg-cyan-500/30 selection:text-cyan-100 flex flex-col relative antialiased">
 
+        <TopBar />
         <div className="flex-1 overflow-hidden relative">
           <Suspense fallback={<FallbackLoader />}>
           <Routes>
             <Route path="/" element={<Navigate to="/planet" replace />} />
             <Route path="/planet" element={<PlanetPage />} />
-            <Route path="/explore" element={<ExplorePage onOpenEditor={() => setIsEditorOpen(true)} />} />
+            <Route path="/explore" element={<ExplorePage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/me" element={<MePage onOpenEditor={() => setIsEditorOpen(true)} />} />
+            <Route path="/voiceroom/:id" element={<VoiceRoomPage />} />
           </Routes>
           </Suspense>
         </div>

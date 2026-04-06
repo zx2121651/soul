@@ -5,7 +5,7 @@ import { api } from '../api/client';
 import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import ChatRoom from '../components/ChatRoom';
-import type { ChatData } from '../components/SwipeableChatItem';
+export interface ChatData { id: string | number; name: string; avatar: string; lastMessage: string; time: string; unread: number; isOfficial?: boolean; }
 import type { ChatResponse } from '../types';
 
 
@@ -28,12 +28,12 @@ const pinnedUsers = [
 export default function ChatPage() {
   const [chats, setChats] = useState<ChatData[]>([]);
   const [activeChat, setActiveChat] = useState<ChatData | null>(null);
-  // const [pinnedUsers, setPinnedUsers] = useState<any[]>([]);
+  //
 
   useEffect(() => {
     api.get<ChatResponse>('/chat').then(data => {
         setChats(data.chats || []);
-        // setPinnedUsers(data.pinnedUsers || []);
+
       })
       .catch(err => console.error("Failed to fetch chat data", err));
   }, []);

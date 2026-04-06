@@ -11,4 +11,15 @@ export class MomentService {
 
     return await this.momentRepo.create(user.id, type, content, url);
   }
+
+  async toggleLike(userUuid: string, momentId: number, isLike: boolean) {
+    const user = await this.userRepo.findByUuid(userUuid);
+    if (!user) throw new Error('User not found');
+    if (isLike) {
+      await this.momentRepo.likeMoment(user.id, momentId);
+    } else {
+      await this.momentRepo.unlikeMoment(user.id, momentId);
+    }
+    return { success: true };
+  }
 }
