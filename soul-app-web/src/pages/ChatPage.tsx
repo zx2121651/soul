@@ -5,7 +5,7 @@ import { api } from '../api/client';
 import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import ChatRoom from '../components/ChatRoom';
-import type { ChatData } from '../components/SwipeableChatItem';
+export interface ChatData { id: string | number; name: string; avatar: string; lastMessage: string; time: string; unread: number; isOfficial?: boolean; }
 import type { ChatResponse } from '../types';
 
 

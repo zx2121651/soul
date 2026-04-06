@@ -45,7 +45,7 @@ export default function VoiceRoomPage() {
     <div className="w-full h-full bg-gradient-to-b from-[#1c1c38] to-[#12141d] flex flex-col text-white">
       {/* 顶部导航栏 */}
       <div className="px-4 py-4 flex items-center justify-between shadow-sm z-10 border-b border-white/10">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition">
+        <button onClick={() => navigate('/explore', { replace: true })} className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition">
           <ChevronLeft size={24} className="text-white" />
         </button>
         <div className="flex flex-col items-center">
@@ -67,6 +67,7 @@ export default function VoiceRoomPage() {
         connectOptions={{ autoSubscribe: true }}
         data-lk-theme="default"
         className="flex-1 flex flex-col w-full relative overflow-hidden"
+        onDisconnected={() => navigate('/explore', { replace: true })}
       >
         <RoomContent />
       </LiveKitRoom>
