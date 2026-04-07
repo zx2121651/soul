@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X } from 'lucide-react';
+import { api } from '../api/client';
+import { useNavigate } from 'react-router-dom';
 
 interface MatchRadarOverlayProps {
   isOpen: boolean;
@@ -14,6 +16,7 @@ const mockMatches = [
 ];
 
 export default function MatchRadarOverlay({ isOpen, onClose }: MatchRadarOverlayProps) {
+  const navigate = useNavigate();
   const [matchState, setMatchState] = useState<'scanning' | 'matched'>('scanning');
   const [matchedUser, setMatchedUser] = useState<typeof mockMatches[0] | null>(null);
 
@@ -23,9 +26,20 @@ export default function MatchRadarOverlay({ isOpen, onClose }: MatchRadarOverlay
       setMatchedUser(null);
 
       const timer = setTimeout(() => {
-        const randomUser = mockMatches[Math.floor(Math.random() * mockMatches.length)];
-        setMatchedUser(randomUser);
-        setMatchState('matched');
+        // 调用真实的匹配接口
+        api.post<{ success: boolean, matchUser: any }>('/social/match')
+          .then(data => {
+            if (data.success && data.matchUser) {
+              setMatchedUser(data.matchUser);
+              setMatchState('matched');
+            }
+          })
+          .catch(err => {
+            console.error("匹配失败", err);
+            // 兜底假数据
+            setMatchedUser(mockMatches[0]);
+            setMatchState('matched');
+          });
       }, 3000); // 3 seconds scan
 
       return () => clearTimeout(timer);
@@ -131,7 +145,9 @@ export default function MatchRadarOverlay({ isOpen, onClose }: MatchRadarOverlay
 
              <p className="text-gray-400 text-xs mt-4 text-center">缘分让你们相遇，快去打个招呼吧~</p>
 
-             <button className="mt-8 w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white rounded-full py-4 flex items-center justify-center gap-2 font-bold shadow-[0_4px_20px_rgba(6,182,212,0.4)] hover:scale-[1.02] transition-transform active:scale-95">
+             <button
+                onClick={() => { onClose(); navigate('/chat'); }}
+                className="mt-8 w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white rounded-full py-4 flex items-center justify-center gap-2 font-bold shadow-[0_4px_20px_rgba(6,182,212,0.4)] hover:scale-[1.02] transition-transform active:scale-95">
                 <MessageSquare size={20} fill="currentColor" />
                 打个招呼
              </button>

@@ -1,6 +1,22 @@
 import { getDb } from '../db';
 
 export class MomentRepository {
+  // 获取所有动态（广场列表），包含用户信息和点赞数
+  async findAll() {
+    const db = getDb();
+    const result = await db.query(`
+      SELECT
+        m.id, m.type, m.content as text, m.url as image, m.likes as initialLikes,
+        m.created_at as time,
+        u.id as user_id, u.name as "authorName", u.avatar as "authorAvatar"
+      FROM moments m
+      JOIN users u ON m.user_id = u.id
+      ORDER BY m.created_at DESC
+      LIMIT 50
+    `);
+    return result.rows;
+  }
+
   async findByUserId(userId: number) {
     const db = getDb();
     const result = await db.query(

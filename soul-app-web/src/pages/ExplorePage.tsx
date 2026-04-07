@@ -52,13 +52,16 @@ export default function ExplorePage() {
   const [newRoomTitle, setNewRoomTitle] = useState('');
 
   useEffect(() => {
-    api.get<ExploreResponse>('/explore')
+    // 从真实的 moments 路由获取广场数据，附带中文注释
+    api.get<{explore: ExploreResponse}>('/moments')
       .then(data => {
-        setBanners(data.banners || []);
-        setTrendingTopics(data.trendingTopics || []);
-        setPosts(data.posts || []);
+        if (data.explore) {
+          setBanners(data.explore.banners || []);
+          setTrendingTopics(data.explore.trendingTopics || []);
+          setPosts(data.explore.posts || []);
+        }
       })
-      .catch(console.error);
+      .catch(err => console.error("获取广场动态失败", err));
 
     api.get<{ rooms: VoiceRoom[] }>('/voicerooms')
       .then(data => setVoiceRooms(data.rooms || []))

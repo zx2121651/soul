@@ -31,7 +31,8 @@ export default function ChatPage() {
   //
 
   useEffect(() => {
-    api.get<ChatResponse>('/chat').then(data => {
+    // 从真实的 social 路由获取聊天列表，带上中文注释
+    api.get<ChatResponse>('/social/chat').then(data => {
         setChats(data.chats || []);
 
       })

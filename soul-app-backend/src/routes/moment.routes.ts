@@ -8,6 +8,30 @@ const router = Router();
 const momentService = new MomentService();
 
 // --- Real DB Implementation ---
+// 获取广场动态列表
+router.get('/', authMiddleware, async (req, res, next) => {
+  try {
+    const posts = await momentService.getExploreMoments();
+    // 构造 ExploreResponse 需要的字段，目前为了兼容前端也可以放进 explore 对象里，或者直接返回
+    sendSuccess(res, {
+      explore: {
+        banners: [
+          { id: 1, imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60', link: '#' },
+          { id: 2, imageUrl: 'https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=800&auto=format&fit=crop&q=60', link: '#' }
+        ],
+        trendingTopics: [
+          { id: 101, title: '# 寻找同频的你', participants: 12500 },
+          { id: 102, title: '# 周末去哪儿', participants: 8300 }
+        ],
+        posts,
+        voiceRooms: []
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.post('/', authMiddleware, async (req, res, next) => {
   try {
     const { content, type, url } = req.body;
