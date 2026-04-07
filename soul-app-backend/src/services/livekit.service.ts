@@ -19,7 +19,7 @@ export class LiveKitService {
       ORDER BY vr.created_at DESC
     `);
 
-    return result.rows.map(r => ({
+    return result.rows.map((r: any) => ({
       id: r.id,
       title: r.title,
       owner: { name: r.owner_name, avatar: r.owner_avatar },
