@@ -31,7 +31,7 @@ router.get('/stats', async (req, res) => {
       ]
     });
   } catch (err) {
-    sendError(res, ErrorCode.SYSTEM_ERROR, 'Failed to fetch stats');
+    sendError(res, 500, 'Failed to fetch stats');
   }
 });
 
@@ -56,7 +56,7 @@ router.get('/users', async (req, res) => {
       total
     });
   } catch (err) {
-    sendError(res, ErrorCode.SYSTEM_ERROR, 'Failed to fetch users');
+    sendError(res, 500, 'Failed to fetch users');
   }
 });
 
@@ -83,7 +83,7 @@ router.get('/moments', async (req, res) => {
       total
     });
   } catch (err) {
-    sendError(res, ErrorCode.SYSTEM_ERROR, 'Failed to fetch moments');
+    sendError(res, 500, 'Failed to fetch moments');
   }
 });
 
@@ -111,7 +111,7 @@ router.get('/voice-rooms', async (req, res) => {
       total
     });
   } catch (err) {
-    sendError(res, ErrorCode.SYSTEM_ERROR, '获取语音房列表失败');
+    sendError(res, 500, '获取语音房列表失败');
   }
 });
 
@@ -126,6 +126,6 @@ router.delete('/voice-rooms/:id', async (req, res) => {
 
     sendSuccess(res, null, '语音房已成功下架');
   } catch (err) {
-    sendError(res, ErrorCode.SYSTEM_ERROR, '删除语音房失败');
+    sendError(res, 500, '删除语音房失败');
   }
 });
