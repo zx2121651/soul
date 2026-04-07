@@ -74,6 +74,15 @@ export async function initDb() {
         PRIMARY KEY (user_id, moment_id)
       );
 
+      CREATE TABLE IF NOT EXISTS voice_rooms (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        host_id INTEGER NOT NULL,
+        online_count INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'active',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE TABLE IF NOT EXISTS chat_rooms (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -100,6 +109,8 @@ export async function initDb() {
       await dbInstance.run("INSERT INTO users (uuid, phone, password_hash, name, avatar, bio) VALUES ('user_2', '13800138001', 'hash', '夏天🌿', 'https://api.dicebear.com/7.x/adventurer/svg?seed=summer&backgroundColor=c0aede', '热爱生活')");
       await dbInstance.run("INSERT INTO users (uuid, phone, password_hash, name, avatar, bio) VALUES ('user_3', '13800138002', 'hash', '陈子豪', 'https://api.dicebear.com/7.x/adventurer/svg?seed=chen&backgroundColor=b6e3f4', '摄影师')");
 
+      await dbInstance.run("INSERT INTO voice_rooms (name, host_id, online_count) VALUES ('午夜心碎俱乐部', 2, 45)");
+      await dbInstance.run("INSERT INTO voice_rooms (name, host_id, online_count) VALUES ('一起听歌', 3, 12)");
       await dbInstance.run("INSERT INTO chat_rooms (id) VALUES (1)");
       await dbInstance.run("INSERT INTO chat_room_members (room_id, user_id) VALUES (1, 1), (1, 2)");
       await dbInstance.run("INSERT INTO chat_messages (room_id, sender_id, text) VALUES (1, 2, '你好呀！')");
