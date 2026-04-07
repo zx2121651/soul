@@ -94,7 +94,7 @@ const Dashboard: React.FC = () => {
       <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
         <Col span={24}>
           <Card title={<span style={{ color: '#e5e7eb' }}>星系活跃度分布</span>} bordered={false} style={{ minHeight: 300, background: '#1c1e2b' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, color: '#6b7280' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 350, color: '#6b7280', width: '100%' }}>
               {stats.chartData && stats.chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={stats.chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
