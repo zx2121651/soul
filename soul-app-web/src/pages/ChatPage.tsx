@@ -1,61 +1,17 @@
 
 
-import { useState } from 'react';
+
+import { api } from '../api/client';
+import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import ChatRoom from '../components/ChatRoom';
-import SwipeableChatItem from '../components/SwipeableChatItem';
-import type { ChatData } from '../components/SwipeableChatItem';
+export interface ChatData { id: string | number; name: string; avatar: string; lastMessage: string; time: string; unread: number; isOfficial?: boolean; }
+import type { ChatResponse } from '../types';
 
 
 
 
-export const initialChats = [
-  {
-    id: 1,
-    name: "Soul官方助手",
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=soul&backgroundColor=c0aede",
-    lastMessage: "你的星球有了新的访客，快去看看吧！",
-    time: "10:30",
-    unread: 2,
-    isOfficial: true
-  },
-  {
-    id: 2,
-    name: "一只小橘猫🐱",
-    avatar: "https://api.dicebear.com/7.x/adventurer/svg?seed=cat&backgroundColor=ffdfbf",
-    lastMessage: "哈哈，那个表情包也太逗了吧",
-    time: "昨天",
-    unread: 0,
-    isOfficial: false
-  },
-  {
-    id: 3,
-    name: "陈子豪",
-    avatar: "https://api.dicebear.com/7.x/adventurer/svg?seed=chen&backgroundColor=b6e3f4",
-    lastMessage: "周末有空一起打游戏吗？",
-    time: "星期二",
-    unread: 1,
-    isOfficial: false
-  },
-  {
-    id: 4,
-    name: "夏天🌿",
-    avatar: "https://api.dicebear.com/7.x/adventurer/svg?seed=summer&backgroundColor=c0aede",
-    lastMessage: "[图片]",
-    time: "星期一",
-    unread: 0,
-    isOfficial: false
-  },
-  {
-    id: 5,
-    name: "林深见鹿🦌",
-    avatar: "https://api.dicebear.com/7.x/adventurer/svg?seed=deer&backgroundColor=d4fc79",
-    lastMessage: "晚安啦~",
-    time: "10-15",
-    unread: 0,
-    isOfficial: false
-  }
-];
+
 
 
 
@@ -68,17 +24,24 @@ const pinnedUsers = [
 ];
 
 
+
 export default function ChatPage() {
-  const [chats, setChats] = useState<ChatData[]>(initialChats);
+  const [chats, setChats] = useState<ChatData[]>([]);
   const [activeChat, setActiveChat] = useState<ChatData | null>(null);
+  //
 
-  const handleDelete = (id: number) => {
-    setChats(prev => prev.filter(c => c.id !== id));
-  };
+  useEffect(() => {
+    api.get<ChatResponse>('/chat').then(data => {
+        setChats(data.chats || []);
 
-  const handleMarkRead = (id: number) => {
-    setChats(prev => prev.map(c => c.id === id ? { ...c, unread: 0 } : c));
-  };
+      })
+      .catch(err => console.error("Failed to fetch chat data", err));
+  }, []);
+
+
+  //
+
+  //
 
   return (
     <div className="w-full h-full bg-[#12141d] flex flex-col pt-12 pb-24">

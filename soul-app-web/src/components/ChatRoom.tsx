@@ -4,7 +4,7 @@ import { ChevronLeft, Phone, Video, Mic, Smile, Plus, Send, Camera } from 'lucid
 
 interface ChatRoomProps {
   user: {
-    id: number;
+    id: number | string;
     name: string;
     avatar: string;
     isOnline?: boolean;

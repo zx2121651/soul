@@ -1,7 +1,12 @@
 
-import { useState } from 'react';
+
+import { api } from '../api/client';
+import type { MeDataResponse, UserProfile, MomentData } from '../types';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, PenSquare, Eye, ChevronRight, Lock, Bell, HelpCircle, LogOut, ChevronLeft } from 'lucide-react';
+import { Settings, Eye, ChevronRight, Bell, HelpCircle, LogOut, ChevronLeft, PenSquare, Lock } from 'lucide-react';
+
+
 
 
 
@@ -10,11 +15,19 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const mockMoments = [
-    { id: 1, type: 'image', url: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=600&h=600&fit=crop' },
-    { id: 2, type: 'text', content: '"今天天气真好，去西湖边喝了咖啡。"' },
-    { id: 3, type: 'image', url: 'https://images.unsplash.com/photo-1536924940846-227afb31e2a5?w=600&h=600&fit=crop' },
-  ];
+  const [profile, setProfile] = useState<UserProfile>({
+    name: '{profile.name}', id: '', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=me&backgroundColor=f4b6c2', followers: 128, following: 342, visitors: 89, bio: ''
+  });
+  const [moments, setMoments] = useState<MomentData[]>([]);
+
+  useEffect(() => {
+    api.get<MeDataResponse>('/users/me').then(data => {
+        if(data.profile) setProfile(data.profile);
+        if(data.moments) setMoments(data.moments);
+      })
+      .catch(err => console.error("Failed to fetch me data", err));
+  }, []);
+
 
   return (
     <div className="w-full h-full bg-[#12141d] overflow-y-auto no-scrollbar pb-24 relative">
@@ -58,7 +71,7 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
 
         <div className="mt-4">
           <h2 className="text-white text-2xl font-bold mb-2 flex items-center gap-2">
-            自己 (Me)
+            {profile.name}
             <span className="bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[10px] px-1.5 py-0.5 rounded font-black tracking-widest italic shadow-sm transform -skew-x-6">VIP</span>
           </h2>
 
@@ -78,22 +91,22 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
               🎮 蒸汽平台 1k+h
             </span>
           </div>
-          <p className="text-gray-400 text-sm mt-3 leading-relaxed">宇宙很大，生活更大。探索中... ✨</p>
+          <p className="text-gray-400 text-sm mt-3 leading-relaxed">{profile.bio}</p>
         </div>
 
 
         {/* Stats */}
         <div className="flex gap-8 mt-6 pb-6 border-b border-white/10">
           <div className="flex flex-col items-center">
-             <span className="text-white font-bold text-lg">128</span>
+             <span className="text-white font-bold text-lg">{profile.followers}</span>
              <span className="text-gray-500 text-xs">关注</span>
           </div>
           <div className="flex flex-col items-center">
-             <span className="text-white font-bold text-lg">342</span>
+             <span className="text-white font-bold text-lg">{profile.following}</span>
              <span className="text-gray-500 text-xs">粉丝</span>
           </div>
           <div className="flex flex-col items-center">
-             <span className="text-white font-bold text-lg">89</span>
+             <span className="text-white font-bold text-lg">{profile.visitors}</span>
              <span className="text-gray-500 text-xs">访客</span>
           </div>
         </div>
@@ -147,10 +160,10 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
                transition={{ duration: 0.2 }}
                className="grid grid-cols-3 gap-1"
              >
-                {mockMoments.map((moment) => (
+                {moments.map((moment) => (
                   <div
                     key={moment.id}
-                    onClick={() => moment.type === 'image' && setSelectedImage(moment.url)}
+                    onClick={() => moment.type === 'image' && setSelectedImage(moment.url || null)}
                     className={`aspect-square bg-[#1c1e2b] relative overflow-hidden group ${moment.type === 'image' ? 'cursor-pointer' : ''} ${moment.type === 'text' ? 'flex items-center justify-center p-2 text-center text-[10px] text-white bg-gradient-to-br from-[#8E5E99] to-[#4A235A]' : ''}`}
                   >
                      {moment.type === 'image' && (

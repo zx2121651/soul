@@ -1,0 +1,6 @@
+node_modules/
+*.py
+*.sh
+backend.log
+frontend.log
+*.sqlite

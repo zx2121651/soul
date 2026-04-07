@@ -1,57 +1,60 @@
+import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { bootstrapApp } from './utils/bootstrap';
+import React, { Suspense } from 'react';
+const PlanetPage = React.lazy(() => import('./pages/PlanetPage'));
+const ExplorePage = React.lazy(() => import('./pages/ExplorePage'));
+const ChatPage = React.lazy(() => import('./pages/ChatPage'));
+const MePage = React.lazy(() => import('./pages/MePage'));
+const VoiceRoomPage = React.lazy(() => import('./pages/VoiceRoomPage'));
 
-import { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import TopBar from './components/TopBar';
+const FallbackLoader = () => (
+  <div className="w-full h-full flex items-center justify-center bg-[#171822]">
+    <div className="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
+
 import BottomNavBar from './components/BottomNavBar';
-import PlanetPage from './pages/PlanetPage';
-import ExplorePage from './pages/ExplorePage';
-import ChatPage from './pages/ChatPage';
-import MePage from './pages/MePage';
-
+import TopBar from './components/TopBar';
 import PostMomentEditor from './components/PostMomentEditor';
 
-
-export type TabName = 'Planet' | 'Explore' | 'Chat' | 'Me';
-
-function App() {
-  const [activeTab, setActiveTab] = useState<TabName>('Planet');
+export default function App() {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
 
-  const renderPage = () => {
-    switch (activeTab) {
-      case 'Planet': return <PlanetPage />;
-      case 'Explore': return <ExplorePage onOpenEditor={() => setIsEditorOpen(true)} />;
-      case 'Chat': return <ChatPage />;
-      case 'Me': return <MePage onOpenEditor={() => setIsEditorOpen(true)} />;
-      default: return <PlanetPage />;
-    }
-  };
+
+
+  // Bootstrap Environment (Dev Auth)
+  useEffect(() => {
+    bootstrapApp();
+  }, []);
+
+
 
   return (
-    <div className="relative w-full h-[100dvh] bg-[#12141d] overflow-hidden font-sans">
-      {/* TopBar is only visible on Planet Page for full immersion */}
-      {activeTab === 'Planet' && <TopBar />}
+    <BrowserRouter>
+      <div className="w-full h-screen bg-[#171822] overflow-hidden text-white font-sans selection:bg-cyan-500/30 selection:text-cyan-100 flex flex-col relative antialiased">
 
-      {/* Main Content Area */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.2 }}
-          className="w-full h-full"
-        >
-          {renderPage()}
-        </motion.div>
-      </AnimatePresence>
+        <TopBar />
+        <div className="flex-1 overflow-hidden relative">
+          <Suspense fallback={<FallbackLoader />}>
+          <Routes>
+            <Route path="/" element={<Navigate to="/planet" replace />} />
+            <Route path="/planet" element={<PlanetPage />} />
+            <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/me" element={<MePage onOpenEditor={() => setIsEditorOpen(true)} />} />
+            <Route path="/voiceroom/:id" element={<VoiceRoomPage />} />
+          </Routes>
+          </Suspense>
+        </div>
 
-      {/* Persistent Bottom Nav */}
-      <BottomNavBar activeTab={activeTab} onTabChange={setActiveTab} onOpenEditor={() => setIsEditorOpen(true)} />
-          {/* Global Post Moment Editor Fullscreen Overlay */}
-      <PostMomentEditor isOpen={isEditorOpen} onClose={() => setIsEditorOpen(false)} />
-    </div>
+        <BottomNavBar onOpenEditor={() => setIsEditorOpen(true)} />
+
+        <PostMomentEditor
+          isOpen={isEditorOpen}
+          onClose={() => setIsEditorOpen(false)}
+        />
+      </div>
+    </BrowserRouter>
   );
 }
-
-export default App;
