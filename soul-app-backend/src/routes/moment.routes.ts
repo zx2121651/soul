@@ -15,10 +15,7 @@ router.get('/', authMiddleware, async (req, res, next) => {
     // 构造 ExploreResponse 需要的字段，目前为了兼容前端也可以放进 explore 对象里，或者直接返回
     sendSuccess(res, {
       explore: {
-        banners: [
-          { id: 1, imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60', link: '#' },
-          { id: 2, imageUrl: 'https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=800&auto=format&fit=crop&q=60', link: '#' }
-        ],
+        banners: (await require('../db').getDb().query("SELECT id, image_url as \"imageUrl\", link FROM banners WHERE status = 'active' ORDER BY sort_order ASC, created_at DESC LIMIT 5")).rows,
         trendingTopics: [
           { id: 101, title: '# 寻找同频的你', participants: 12500 },
           { id: 102, title: '# 周末去哪儿', participants: 8300 }

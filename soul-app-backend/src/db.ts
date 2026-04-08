@@ -45,6 +45,15 @@ export async function initDb() {
     wrapperInstance = new SqlitePoolWrapper(dbInstance);
 
     await dbInstance.exec(`
+      CREATE TABLE IF NOT EXISTS banners (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        image_url TEXT NOT NULL,
+        link TEXT DEFAULT '#',
+        sort_order INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'active',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE TABLE IF NOT EXISTS announcements (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
@@ -121,6 +130,9 @@ export async function initDb() {
       await dbInstance.run("INSERT INTO voice_rooms (name, host_id, online_count) VALUES ('午夜心碎俱乐部', 2, 45)");
       await dbInstance.run("INSERT INTO voice_rooms (name, host_id, online_count) VALUES ('一起听歌', 3, 12)");
       await dbInstance.run("INSERT INTO announcements (title, content, type) VALUES ('欢迎来到 SOUL OS', '全新元宇宙社交枢纽已经启动，请遵守星际法则，愉快交流！', 'system')");
+      await dbInstance.run("INSERT INTO banners (image_url, link, sort_order) VALUES ('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60', '#', 1)");
+      await dbInstance.run("INSERT INTO banners (image_url, link, sort_order) VALUES ('https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=800&auto=format&fit=crop&q=60', '#', 2)");
+
       await dbInstance.run("INSERT INTO chat_rooms (id) VALUES (1)");
       await dbInstance.run("INSERT INTO chat_room_members (room_id, user_id) VALUES (1, 1), (1, 2)");
       await dbInstance.run("INSERT INTO chat_messages (room_id, sender_id, text) VALUES (1, 2, '你好呀！')");
