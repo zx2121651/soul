@@ -53,10 +53,10 @@ router.get('/users', async (req, res) => {
     const offset = parseInt(req.query.offset as string) || 0;
 
     const countRes = await db.query('SELECT COUNT(*) FROM users');
-    const total = parseInt(countRes.rows[0].count);
+    const total = countRes.rows[0].count || countRes.rows[0]['COUNT(*)'] || 0;
 
     const usersRes = await db.query(`
-      SELECT id, uuid, name, username, avatar, bio, gender, age, followers, following, created_at
+      SELECT id, uuid, name, phone, avatar, bio, created_at
       FROM users
       ORDER BY created_at DESC
       LIMIT $1 OFFSET $2
@@ -78,10 +78,10 @@ router.get('/moments', async (req, res) => {
     const offset = parseInt(req.query.offset as string) || 0;
 
     const countRes = await db.query('SELECT COUNT(*) FROM moments');
-    const total = parseInt(countRes.rows[0].count);
+    const total = countRes.rows[0].count || countRes.rows[0]['COUNT(*)'] || 0;
 
     const momentsRes = await db.query(`
-      SELECT m.id, m.uuid, m.content, m.type, m.media_urls, m.likes, m.comments, m.created_at,
+      SELECT m.id, m.content, m.type, m.url as media_urls, m.likes, m.created_at,
              u.name as author_name, u.avatar as author_avatar
       FROM moments m
       JOIN users u ON m.author_id = u.id
@@ -138,5 +138,34 @@ router.delete('/voice-rooms/:id', async (req, res) => {
     sendSuccess(res, null, '语音房已成功下架');
   } catch (err) {
     sendError(res, 500, '删除语音房失败');
+  }
+});
+
+// 删除(封禁)星球居民
+router.delete('/users/:id', async (req, res) => {
+  try {
+    const db = getDb();
+    const userId = parseInt(req.params.id, 10);
+
+    // 硬删除用户（真实场景可能是更新 status 字段）
+    await db.query('DELETE FROM users WHERE id = $1', [userId]);
+
+    sendSuccess(res, null, '该星球居民已被成功封禁(删除)');
+  } catch (err) {
+    sendError(res, 500, '封禁居民失败');
+  }
+});
+
+// 删除(下架)瞬间动态
+router.delete('/moments/:id', async (req, res) => {
+  try {
+    const db = getDb();
+    const momentId = parseInt(req.params.id, 10);
+
+    await db.query('DELETE FROM moments WHERE id = $1', [momentId]);
+
+    sendSuccess(res, null, '瞬间动态已强制下架');
+  } catch (err) {
+    sendError(res, 500, '下架瞬间动态失败');
   }
 });
