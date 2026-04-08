@@ -19,6 +19,17 @@ router.get('/stats', async (req, res) => {
       activeRooms: roomsCount.rows[0].count || roomsCount.rows[0]['COUNT(*)'] || 0,
       activeToday: 1128, // mock active today for now
 
+      // 饼图用的数据 (性别分布)
+      genderData: [
+        { name: '男生', value: 45 },
+        { name: '女生', value: 55 }
+      ],
+      // 饼图用的数据 (瞬间动态类型分布)
+      momentTypeData: [
+        { name: '纯文字', value: 35 },
+        { name: '图文', value: 50 },
+        { name: '语音', value: 15 }
+      ],
       // 添加图表用的趋势数据 (模拟最近7天)
       chartData: [
         { date: '10-01', users: 120, moments: 45, rooms: 5 },
