@@ -71,6 +71,7 @@ export async function initDb() {
         name TEXT NOT NULL,
         avatar TEXT,
         bio TEXT,
+        status TEXT DEFAULT 'active',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -81,6 +82,7 @@ export async function initDb() {
         content TEXT,
         url TEXT,
         likes INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'active',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES users(id)
       );

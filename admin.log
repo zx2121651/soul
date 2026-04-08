@@ -1,9 +1,0 @@
-
-> soul-app-admin@0.0.0 dev
-> vite --port 5174
-
-
-  VITE v8.0.4  ready in 978 ms
-
-  ➜  Local:   http://localhost:5174/
-  ➜  Network: use --host to expose

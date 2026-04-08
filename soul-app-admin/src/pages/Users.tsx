@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Card, Button, message, Popconfirm, Tag, Avatar, Typography } from 'antd';
-import { DeleteOutlined, UserOutlined } from '@ant-design/icons';
+import { Table, Card, Button, message, Popconfirm, Tag, Avatar, Typography, Segmented } from 'antd';
+import { UserOutlined, CheckCircleOutlined, StopOutlined } from '@ant-design/icons';
 import { api } from '../api/client';
 
 const { Title } = Typography;
@@ -19,12 +19,13 @@ const Users: React.FC = () => {
   const [data, setData] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
+  const [currentStatus, setCurrentStatus] = useState<string>('active');
 
   // 获取星球居民(用户)列表
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res: any = await api.get('/admin/users');
+      const res: any = await api.get(`/admin/users?status=${currentStatus}`);
       setData(res.items || []);
       setTotal(res.total || 0);
     } catch (err) {
@@ -36,9 +37,20 @@ const Users: React.FC = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [currentStatus]);
 
-  // 封禁(删除)用户处理函数
+  // 恢复(解封)用户处理函数
+  const handleRestore = async (id: number) => {
+    try {
+      await api.post(`/admin/users/${id}/restore`);
+      message.success('该居民已成功解封并恢复访问权限');
+      fetchUsers();
+    } catch (err) {
+      message.error('解封操作失败');
+    }
+  };
+
+  // 封禁(逻辑删除)用户处理函数
   const handleDelete = async (id: number) => {
     try {
       await api.delete(`/admin/users/${id}`);
@@ -97,20 +109,37 @@ const Users: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      render: (_: any, record: UserData) => (
-        <Popconfirm
-          title="警告：封禁该居民"
-          description="确定要永久封禁并删除这个星球居民吗？此操作不可逆。"
-          onConfirm={() => handleDelete(record.id)}
-          okText="确认封禁"
-          cancelText="取消"
-          okButtonProps={{ danger: true }}
-        >
-          <Button danger type="text" icon={<DeleteOutlined />}>
-            封禁
-          </Button>
-        </Popconfirm>
-      ),
+      render: (_: any, record: UserData) => {
+        if (currentStatus === 'banned') {
+          return (
+            <Popconfirm
+              title="解除封禁"
+              description="确定要解封该用户，恢复其所有星际权限吗？"
+              onConfirm={() => handleRestore(record.id)}
+              okText="确认解封"
+              cancelText="取消"
+            >
+              <Button type="text" style={{ color: '#10b981' }} icon={<CheckCircleOutlined />}>
+                一键解封
+              </Button>
+            </Popconfirm>
+          );
+        }
+        return (
+          <Popconfirm
+            title="警告：封禁该居民"
+            description="确定要封禁这个星球居民吗？其账号将被冻结。"
+            onConfirm={() => handleDelete(record.id)}
+            okText="确认封禁"
+            cancelText="取消"
+            okButtonProps={{ danger: true }}
+          >
+            <Button danger type="text" icon={<StopOutlined />}>
+              封禁冻结
+            </Button>
+          </Popconfirm>
+        );
+      },
     },
   ];
 
@@ -118,6 +147,15 @@ const Users: React.FC = () => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <Title level={4} style={{ margin: 0, fontWeight: 'bold' }}>星球居民 (用户) 管理</Title>
+        <Segmented
+          options={[
+            { label: '正常居民', value: 'active' },
+            { label: '已封禁名单', value: 'banned' },
+          ]}
+          value={currentStatus}
+          onChange={(value) => setCurrentStatus(value as string)}
+          style={{ background: '#111827', color: '#9ca3af' }}
+        />
       </div>
       <Card bordered={false} style={{ background: '#1c1e2b' }}>
         <Table

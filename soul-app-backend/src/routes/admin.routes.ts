@@ -51,16 +51,18 @@ router.get('/users', async (req, res) => {
     const db = getDb();
     const limit = parseInt(req.query.limit as string) || 50;
     const offset = parseInt(req.query.offset as string) || 0;
+    const status = req.query.status || 'active'; // 默认查询正常用户
 
-    const countRes = await db.query('SELECT COUNT(*) FROM users');
+    const countRes = await db.query('SELECT COUNT(*) FROM users WHERE status = $1', [status]);
     const total = countRes.rows[0].count || countRes.rows[0]['COUNT(*)'] || 0;
 
     const usersRes = await db.query(`
-      SELECT id, uuid, name, phone, avatar, bio, created_at
+      SELECT id, uuid, name, phone, avatar, bio, status, created_at
       FROM users
+      WHERE status = $3
       ORDER BY created_at DESC
       LIMIT $1 OFFSET $2
-    `, [limit, offset]);
+    `, [limit, offset, status]);
 
     sendSuccess(res, {
       items: usersRes.rows,
@@ -141,14 +143,13 @@ router.delete('/voice-rooms/:id', async (req, res) => {
   }
 });
 
-// 删除(封禁)星球居民
+// 逻辑封禁星球居民 (软删除)
 router.delete('/users/:id', async (req, res) => {
   try {
     const db = getDb();
     const userId = parseInt(req.params.id, 10);
 
-    // 硬删除用户（真实场景可能是更新 status 字段）
-    await db.query('DELETE FROM users WHERE id = $1', [userId]);
+    await db.query("UPDATE users SET status = 'banned' WHERE id = $1", [userId]);
 
     sendSuccess(res, null, '该星球居民已被成功封禁(删除)');
   } catch (err) {
@@ -156,13 +157,13 @@ router.delete('/users/:id', async (req, res) => {
   }
 });
 
-// 删除(下架)瞬间动态
+// 逻辑下架瞬间动态 (软删除)
 router.delete('/moments/:id', async (req, res) => {
   try {
     const db = getDb();
     const momentId = parseInt(req.params.id, 10);
 
-    await db.query('DELETE FROM moments WHERE id = $1', [momentId]);
+    await db.query("UPDATE moments SET status = 'deleted' WHERE id = $1", [momentId]);
 
     sendSuccess(res, null, '瞬间动态已强制下架');
   } catch (err) {
@@ -267,5 +268,31 @@ router.delete('/banners/:id', async (req, res) => {
     sendSuccess(res, null, '海报已下架');
   } catch (err) {
     sendError(res, 500, '海报下架失败');
+  }
+});
+
+// ==================== RESTORE (解封/恢复) ====================
+
+// 恢复(解封)星球居民
+router.post('/users/:id/restore', async (req, res) => {
+  try {
+    const db = getDb();
+    const userId = parseInt(req.params.id, 10);
+    await db.query("UPDATE users SET status = 'active' WHERE id = $1", [userId]);
+    sendSuccess(res, null, '该星球居民已成功解封');
+  } catch (err) {
+    sendError(res, 500, '解封居民失败');
+  }
+});
+
+// 恢复上架瞬间动态
+router.post('/moments/:id/restore', async (req, res) => {
+  try {
+    const db = getDb();
+    const momentId = parseInt(req.params.id, 10);
+    await db.query("UPDATE moments SET status = 'active' WHERE id = $1", [momentId]);
+    sendSuccess(res, null, '瞬间动态已恢复上架');
+  } catch (err) {
+    sendError(res, 500, '恢复瞬间动态失败');
   }
 });

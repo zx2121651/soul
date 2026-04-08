@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Card, Button, message, Popconfirm, Tag, Avatar, Space, Typography, Image } from 'antd';
-import { DeleteOutlined, PictureOutlined, AudioOutlined, FileTextOutlined } from '@ant-design/icons';
+import { Table, Card, Button, message, Popconfirm, Tag, Avatar, Space, Typography, Image, Segmented } from 'antd';
+import { PictureOutlined, AudioOutlined, FileTextOutlined, CheckCircleOutlined, StopOutlined } from '@ant-design/icons';
 import { api } from '../api/client';
 
 const { Title, Paragraph } = Typography;
@@ -20,12 +20,13 @@ const Moments: React.FC = () => {
   const [data, setData] = useState<MomentData[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
+  const [currentStatus, setCurrentStatus] = useState<string>('active');
 
   // 获取瞬间动态列表
   const fetchMoments = async () => {
     setLoading(true);
     try {
-      const res: any = await api.get('/admin/moments');
+      const res: any = await api.get(`/admin/moments?status=${currentStatus}`);
       setData(res.items || []);
       setTotal(res.total || 0);
     } catch (err) {
@@ -37,9 +38,20 @@ const Moments: React.FC = () => {
 
   useEffect(() => {
     fetchMoments();
-  }, []);
+  }, [currentStatus]);
 
-  // 删除(下架)违规动态处理函数
+  // 恢复上架处理函数
+  const handleRestore = async (id: number) => {
+    try {
+      await api.post(`/admin/moments/${id}/restore`);
+      message.success('瞬间动态已成功恢复并重新上架展示');
+      fetchMoments();
+    } catch (err) {
+      message.error('恢复操作失败');
+    }
+  };
+
+  // 逻辑下架违规动态处理函数
   const handleDelete = async (id: number) => {
     try {
       await api.delete(`/admin/moments/${id}`);
@@ -122,20 +134,37 @@ const Moments: React.FC = () => {
       title: '操作',
       key: 'action',
       width: 120,
-      render: (_: any, record: MomentData) => (
-        <Popconfirm
-          title="强制下架动态"
-          description="该动态疑似违规，确定要强制下架并删除吗？"
-          onConfirm={() => handleDelete(record.id)}
-          okText="确认下架"
-          cancelText="取消"
-          okButtonProps={{ danger: true }}
-        >
-          <Button danger type="text" icon={<DeleteOutlined />}>
-            下架
-          </Button>
-        </Popconfirm>
-      ),
+      render: (_: any, record: MomentData) => {
+        if (currentStatus === 'deleted') {
+          return (
+            <Popconfirm
+              title="恢复动态"
+              description="确定要将这条动态重新上架展示吗？"
+              onConfirm={() => handleRestore(record.id)}
+              okText="确认恢复"
+              cancelText="取消"
+            >
+              <Button type="text" style={{ color: '#10b981' }} icon={<CheckCircleOutlined />}>
+                恢复上架
+              </Button>
+            </Popconfirm>
+          );
+        }
+        return (
+          <Popconfirm
+            title="强制下架动态"
+            description="该动态疑似违规，确定要强制下架吗？"
+            onConfirm={() => handleDelete(record.id)}
+            okText="确认下架"
+            cancelText="取消"
+            okButtonProps={{ danger: true }}
+          >
+            <Button danger type="text" icon={<StopOutlined />}>
+              强制下架
+            </Button>
+          </Popconfirm>
+        );
+      },
     },
   ];
 
@@ -143,6 +172,15 @@ const Moments: React.FC = () => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <Title level={4} style={{ margin: 0, fontWeight: 'bold' }}>瞬间广场 (动态) 审查</Title>
+        <Segmented
+          options={[
+            { label: '在架动态', value: 'active' },
+            { label: '已下架/违规', value: 'deleted' },
+          ]}
+          value={currentStatus}
+          onChange={(value) => setCurrentStatus(value as string)}
+          style={{ background: '#111827', color: '#9ca3af' }}
+        />
       </div>
       <Card bordered={false} style={{ background: '#1c1e2b' }}>
         <Table
