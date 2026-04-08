@@ -5,6 +5,7 @@ import {
   UserOutlined,
   MessageOutlined,
   AudioOutlined,
+  NotificationOutlined,
   BellOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
@@ -59,6 +60,7 @@ const MainLayout: React.FC = () => {
             { key: '/users', icon: <UserOutlined />, label: '星球居民' },
             { key: '/moments', icon: <MessageOutlined />, label: '瞬间广场' },
             { key: '/voicerooms', icon: <AudioOutlined />, label: '异星派对' },
+            { key: '/announcements', icon: <NotificationOutlined />, label: '系统广播' },
           ]}
         />
       </Sider>

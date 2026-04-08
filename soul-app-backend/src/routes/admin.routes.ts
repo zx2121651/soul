@@ -169,3 +169,48 @@ router.delete('/moments/:id', async (req, res) => {
     sendError(res, 500, '下架瞬间动态失败');
   }
 });
+
+// 获取系统广播(通知)列表
+router.get('/announcements', async (req, res) => {
+  try {
+    const db = getDb();
+
+    const countRes = await db.query('SELECT COUNT(*) FROM announcements');
+    const total = countRes.rows[0].count || countRes.rows[0]['COUNT(*)'] || 0;
+
+    const listRes = await db.query(`
+      SELECT id, title, content, type, created_at
+      FROM announcements
+      ORDER BY created_at DESC
+    `);
+
+    sendSuccess(res, {
+      items: listRes.rows,
+      total
+    });
+  } catch (err) {
+    sendError(res, 500, '获取系统广播列表失败');
+  }
+});
+
+// 发布新的系统广播
+router.post('/announcements', async (req, res) => {
+  try {
+    const db = getDb();
+    const { title, content, type = 'info' } = req.body;
+
+    if (!title || !content) {
+      return sendError(res, 400, '标题和内容不能为空');
+    }
+
+    const insertResult = await db.query(`
+      INSERT INTO announcements (title, content, type)
+      VALUES ($1, $2, $3)
+      RETURNING id, title, content, type, created_at
+    `, [title, content, type]);
+
+    sendSuccess(res, insertResult.rows[0], '系统广播发布成功');
+  } catch (err) {
+    sendError(res, 500, '系统广播发布失败');
+  }
+});

@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
 import Moments from './pages/Moments';
 import VoiceRooms from './pages/VoiceRooms';
+import Announcements from './pages/Announcements';
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
             <Route path="users" element={<Users />} />
             <Route path="moments" element={<Moments />} />
             <Route path="voicerooms" element={<VoiceRooms />} />
+            <Route path="announcements" element={<Announcements />} />
           </Route>
         </Routes>
       </BrowserRouter>
