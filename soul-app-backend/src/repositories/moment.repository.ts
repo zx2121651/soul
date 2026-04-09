@@ -1,128 +1,164 @@
 import { getDb } from '../db';
+import { Prisma } from '@prisma/client';
 
 export class MomentRepository {
   /**
-   * 生产级：获取广场所有动态列表 (支持简单的游标分页、作者信息联表、当前用户是否已点赞的聚合判断)
-   * @param viewerId 正在浏览的用户的 ID (用于判断 is_liked)
-   * @param limit 每页条数
-   * @param lastId 游标(最后一条记录的ID)，如果传0表示第一页
+   * 生产级：基于 Cursor 的分页查询广场动态 (Prisma Include 与 聚合 COUNT)
    */
   async findAllWithInteractions(viewerId: number, limit: number = 20, lastId: number = 0) {
     const db = getDb();
 
-    let query = `
-      SELECT
-        m.id, m.type, m.content as text, m.url as image, m.likes as initialLikes,
-        m.created_at as time,
-        u.id as user_id, u.name as authorName, u.avatar as authorAvatar,
-        EXISTS(SELECT 1 FROM moment_likes ml WHERE ml.moment_id = m.id AND ml.user_id = $1) as isLikedByMe
-      FROM moments m
-      JOIN users u ON m.user_id = u.id
-      WHERE m.status = 'active'
-    `;
-    const params: any[] = [viewerId, limit];
+    // 构建基于游标的查询参数
+    const cursorObj = lastId > 0 ? { id: lastId } : undefined;
+    const skipNum = lastId > 0 ? 1 : 0; // 如果传了 cursor，就要跳过 cursor 本身这条记录
 
-    // 基于游标的分页 (Cursor Pagination)
-    if (lastId > 0) {
-      query += ` AND m.id < $3 `;
-      params.push(lastId);
-    }
+    const moments = await db.moment.findMany({
+      where: { status: 'active' },
+      take: limit,
+      cursor: cursorObj,
+      skip: skipNum,
+      orderBy: { id: 'desc' }, // 时间降序，也是 ID 降序
+      include: {
+        author: {
+          select: { id: true, name: true, avatar: true }
+        },
+        // 利用嵌套查询判断当前登陆用户是否点过赞
+        likes: viewerId ? {
+          where: { userId: viewerId },
+          select: { userId: true }
+        } : false,
+        _count: {
+          select: { comments: true }
+        }
+      }
+    });
 
-    query += ` ORDER BY m.id DESC LIMIT $2 `;
-
-    const result = await db.query(query, params);
-
-    // SQLite 的 EXISTS 会返回 0/1，统一转为 boolean
-    return result.rows.map((row: any) => ({
-      ...row,
-      isLikedByMe: row.isLikedByMe === 1 || row.isLikedByMe === true
+    // 格式化输出为业务层需要的数据结构
+    return moments.map((m) => ({
+      id: m.id,
+      type: m.type,
+      text: m.content,
+      image: m.url,
+      initialLikes: m.likesCount,
+      time: m.createdAt,
+      user_id: m.author.id,
+      authorName: m.author.name,
+      authorAvatar: m.author.avatar,
+      comments: m._count.comments,
+      isLikedByMe: m.likes && m.likes.length > 0 // 判断嵌套的点赞数组是否有记录
     }));
   }
 
-  /**
-   * 生产级：获取特定用户的过往所有动态列表
-   */
   async findByUserId(userId: number, viewerId: number) {
     const db = getDb();
-    const result = await db.query(`
-      SELECT
-        m.id, m.type, m.content, m.url, m.likes, m.created_at,
-        EXISTS(SELECT 1 FROM moment_likes ml WHERE ml.moment_id = m.id AND ml.user_id = $2) as "isLikedByMe"
-      FROM moments m
-      WHERE m.user_id = $1 AND m.status = 'active'
-      ORDER BY m.id DESC
-    `, [userId, viewerId]);
+    const moments = await db.moment.findMany({
+      where: { authorId: userId, status: 'active' },
+      orderBy: { id: 'desc' },
+      include: {
+        likes: viewerId ? {
+          where: { userId: viewerId },
+          select: { userId: true }
+        } : false,
+        _count: {
+          select: { comments: true }
+        }
+      }
+    });
 
-    return result.rows.map((row: any) => ({
-      ...row,
-      isLikedByMe: row.isLikedByMe === 1 || row.isLikedByMe === true
+    return moments.map((m) => ({
+      id: m.id,
+      type: m.type,
+      text: m.content,
+      image: m.url,
+      initialLikes: m.likesCount,
+      time: m.createdAt,
+      comments: m._count.comments,
+      isLikedByMe: m.likes && m.likes.length > 0
     }));
   }
 
   /**
-   * 生产级：使用事务(Transaction)安全创建一条新动态
-   * 如果涉及多个表(例如还要记录到 user_moments_count 表中)，必须保证原子性
+   * 生产级：使用 Prisma Transaction 创建动态并提取标签
    */
-  async createWithTransaction(userId: number, type: string, content: string | null, url: string | null) {
+  async createWithTransaction(userId: number, type: string, content: string | null, url: string | null, tags: string[] = []) {
     const db = getDb();
 
-    // 因为这里我们用的是 SQLite/PG 混用封装好的 wrapper，如果是纯 PG 我们会写 BEGIN; COMMIT;
-    // 这里简单封装一层查询：
+    return await db.$transaction(async (tx) => {
+      // 1. 创建动态本身
+      const newMoment = await tx.moment.create({
+        data: {
+          authorId: userId,
+          type,
+          content,
+          url,
+          status: 'active'
+        }
+      });
+
+      // 2. 如果有话题标签，进行批量插入/关联
+      if (tags.length > 0) {
+        const tagData = tags.map(t => ({
+          momentId: newMoment.id,
+          tagName: t
+        }));
+        for (const tag of tagData) {
+          await tx.momentTag.create({ data: tag });
+        }
+      }
+
+      return newMoment;
+    });
+  }
+
+  /**
+   * 生产级：乐观锁处理点赞 (使用 Prisma create 捕获冲突或 transaction)
+   */
+  async likeMoment(userId: number, momentId: number) {
+    const db = getDb();
+
     try {
-      if (typeof db.query === 'function' && db.query.name !== 'query') {
-        // 若使用真实的 PG Pool
-        await db.query('BEGIN');
-      }
+      await db.$transaction(async (tx) => {
+        // 尝试创建关系
+        await tx.momentLike.create({
+          data: { userId, momentId }
+        });
 
-      const insertResult = await db.query(`
-        INSERT INTO moments (user_id, type, content, url, status)
-        VALUES ($1, $2, $3, $4, 'active')
-        RETURNING id, type, content, url, created_at
-      `, [userId, type, content, url]);
-
-      // 假设我们这里有一个业务需求：需要更新 user 表的 posts_count 字段 (暂时忽略以兼容目前表结构)
-      // await db.query(`UPDATE users SET posts_count = posts_count + 1 WHERE id = $1`, [userId]);
-
-      if (typeof db.query === 'function' && db.query.name !== 'query') {
-        await db.query('COMMIT');
-      }
-      return insertResult.rows[0];
-    } catch (e) {
-      if (typeof db.query === 'function' && db.query.name !== 'query') {
-        await db.query('ROLLBACK');
-      }
+        // 关系建立成功后，冗余统计 +1
+        await tx.moment.update({
+          where: { id: momentId },
+          data: { likesCount: { increment: 1 } }
+        });
+      });
+      return true;
+    } catch (e: any) {
+      // Prisma 会在重复创建唯一约束记录时抛出 P2002 错误
+      if (e.code === 'P2002') return false;
       throw e;
     }
   }
 
-  /**
-   * 生产级：严格的乐观锁点赞操作 (ON CONFLICT 防重复、并原子更新总数)
-   */
-  async likeMoment(userId: number, momentId: number) {
-    const db = getDb();
-    // 插入点赞关系，如果有冲突(已经点过赞)则什么都不做
-    const res = await db.query(`
-      INSERT INTO moment_likes (user_id, moment_id)
-      VALUES ($1, $2)
-      ON CONFLICT(user_id, moment_id) DO NOTHING
-    `, [userId, momentId]);
-
-    // 只有在真正插入成功时，才去更新主表的 likes 冗余字段 (提高查询性能)
-    if (res.rowCount && res.rowCount > 0) {
-      await db.query(`UPDATE moments SET likes = likes + 1 WHERE id = $1`, [momentId]);
-    }
-    return true;
-  }
-
   async unlikeMoment(userId: number, momentId: number) {
     const db = getDb();
-    // 删除关系记录
-    const res = await db.query(`DELETE FROM moment_likes WHERE user_id = $1 AND moment_id = $2`, [userId, momentId]);
 
-    // 只有真的删除了数据，才去递减总数
-    if (res.rowCount && res.rowCount > 0) {
-      await db.query(`UPDATE moments SET likes = likes - 1 WHERE id = $1 AND likes > 0`, [momentId]);
+    try {
+      await db.$transaction(async (tx) => {
+        const existing = await tx.momentLike.findUnique({
+          where: { userId_momentId: { userId, momentId } }
+        });
+        if (!existing) return;
+
+        await tx.momentLike.delete({
+          where: { userId_momentId: { userId, momentId } }
+        });
+
+        await tx.moment.update({
+          where: { id: momentId },
+          data: { likesCount: { decrement: 1 } }
+        });
+      });
+      return true;
+    } catch (e) {
+      throw e;
     }
-    return true;
   }
 }

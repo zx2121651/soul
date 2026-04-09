@@ -1,64 +1,131 @@
 import { getDb } from '../db';
+import { Prisma } from '@prisma/client';
 
 export class UserRepository {
+  async findByUsername(phone: string) {
+    return await getDb().user.findUnique({ where: { phone } });
+  }
+
+  async createUser(uuid: string, name: string, phone: string, passwordHash: string) {
+    return await getDb().user.create({
+      data: { uuid, phone, passwordHash, name }
+    });
+  }
+
   async findByUuid(uuid: string) {
-    const db = getDb();
-    const result = await db.query(`SELECT * FROM users WHERE uuid = $1`, [uuid]);
-    return result.rows[0] || null;
+    return await getDb().user.findUnique({ where: { uuid } });
   }
 
-  async findById(id: number) {
-    const db = getDb();
-    const result = await db.query(`SELECT * FROM users WHERE id = $1`, [id]);
-    return result.rows[0] || null;
+  // 聚合查询排行榜，根据粉丝数降序
+  async getLeaderboard(limit = 10) {
+    return await getDb().user.findMany({
+      where: { status: 'active' },
+      orderBy: { followersCount: 'desc' },
+      take: limit,
+      select: {
+        id: true,
+        uuid: true,
+        name: true,
+        avatar: true,
+        bio: true,
+        followersCount: true,
+      }
+    });
   }
 
-  async findByUsername(username: string) {
-    const db = getDb();
-    const result = await db.query(`SELECT * FROM users WHERE username = $1`, [username]);
-    return result.rows[0] || null;
+  // 搜索用户
+  async searchUsers(query: string, limit = 20) {
+    return await getDb().user.findMany({
+      where: {
+        status: 'active',
+        OR: [
+          { name: { contains: query } },
+          { bio: { contains: query } }
+        ]
+      },
+      take: limit,
+      select: { id: true, name: true, avatar: true, bio: true }
+    });
   }
 
-  async createUser(uuid: string, name: string, username: string, passwordHash: string) {
-    const db = getDb();
-    const result = await db.query(`
-      INSERT INTO users (uuid, name, username, password_hash)
-      VALUES ($1, $2, $3, $4)
-      RETURNING *
-    `, [uuid, name, username, passwordHash]);
-    return result.rows[0];
-  }
-
+  /**
+   * 生产级：使用 Prisma Transaction 实现关注操作
+   */
   async follow(followerId: number, followingId: number) {
+    if (followerId === followingId) throw new Error('不能关注自己');
+
     const db = getDb();
-    await db.query(`INSERT INTO user_follows (follower_id, following_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, [followerId, followingId]);
-    await db.query(`UPDATE users SET following = following + 1 WHERE id = $1`, [followerId]);
-    await db.query(`UPDATE users SET followers = followers + 1 WHERE id = $1`, [followingId]);
-    return true;
+
+    return await db.$transaction(async (tx) => {
+      // 1. 检查是否已经关注
+      const existing = await tx.userFollow.findUnique({
+        where: { followerId_followingId: { followerId, followingId } }
+      });
+      if (existing) return; // 幂等性处理
+
+      // 2. 创建关注记录
+      await tx.userFollow.create({
+        data: { followerId, followingId }
+      });
+
+      // 3. 更新双方计数（Prisma 的 increment 原子操作）
+      await tx.user.update({
+        where: { id: followingId },
+        data: { followersCount: { increment: 1 } }
+      });
+      await tx.user.update({
+        where: { id: followerId },
+        data: { followingCount: { increment: 1 } }
+      });
+    });
   }
 
+  /**
+   * 生产级：使用 Prisma Transaction 实现取消关注操作
+   */
   async unfollow(followerId: number, followingId: number) {
     const db = getDb();
-    const res = await db.query(`DELETE FROM user_follows WHERE follower_id = $1 AND following_id = $2`, [followerId, followingId]);
-    if (res.rowCount && res.rowCount > 0) {
-      await db.query(`UPDATE users SET following = following - 1 WHERE id = $1`, [followerId]);
-      await db.query(`UPDATE users SET followers = followers - 1 WHERE id = $1`, [followingId]);
-    }
-    return true;
+
+    return await db.$transaction(async (tx) => {
+      const existing = await tx.userFollow.findUnique({
+        where: { followerId_followingId: { followerId, followingId } }
+      });
+      if (!existing) return;
+
+      await tx.userFollow.delete({
+        where: { followerId_followingId: { followerId, followingId } }
+      });
+
+      await tx.user.update({
+        where: { id: followingId },
+        data: { followersCount: { decrement: 1 } }
+      });
+      await tx.user.update({
+        where: { id: followerId },
+        data: { followingCount: { decrement: 1 } }
+      });
+    });
   }
 
-  async searchUsers(query: string, limit: number = 20) {
+  /**
+   * 生产级：获取社交关系状态 (我关注TA，TA关注我，是否互关)
+   */
+  async getRelationship(viewerId: number, targetId: number) {
     const db = getDb();
-    const result = await db.query(
-      `SELECT id, uuid, name, avatar, bio, followers FROM users WHERE name ILIKE $1 OR username ILIKE $1 LIMIT $2`,
-      [`%${query}%`, limit]
-    );
-    return result.rows;
-  }
 
-  async getLeaderboard(limit: number = 10) {
-    const db = getDb();
-    const result = await db.query(`SELECT id, uuid, name, avatar, followers FROM users ORDER BY followers DESC LIMIT $1`, [limit]);
-    return result.rows;
+    // 并发查询两笔关系
+    const [iFollowYou, youFollowMe] = await Promise.all([
+      db.userFollow.findUnique({ where: { followerId_followingId: { followerId: viewerId, followingId: targetId } } }),
+      db.userFollow.findUnique({ where: { followerId_followingId: { followerId: targetId, followingId: viewerId } } })
+    ]);
+
+    const isFollowing = !!iFollowYou;
+    const isFollowedBy = !!youFollowMe;
+
+    return {
+      isFollowing,
+      isFollowedBy,
+      isMutual: isFollowing && isFollowedBy
+    };
   }
 }

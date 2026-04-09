@@ -82,9 +82,9 @@ export class ChatService {
 
     return {
       id: newMessage.id,
-      senderId: newMessage.sender_id,
+      senderId: newMessage.senderId,
       text: newMessage.text,
-      time: new Date(newMessage.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+      time: new Date(newMessage.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
       isSelf: true // 当前发送者自然是自己
     };
   }

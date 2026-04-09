@@ -3,6 +3,8 @@ import { sendSuccess, sendError } from '../utils/response';
 import { ErrorCode } from '../utils/ErrorCodes';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { MomentService } from '../services/moment.service';
+import { validate } from '../middlewares/validate.middleware';
+import { createMomentSchema } from '../validations/moment.validation';
 
 const router = Router();
 const momentService = new MomentService();
@@ -16,7 +18,7 @@ router.get('/', authMiddleware, async (req, res, next) => {
     // 构造 ExploreResponse 需要的字段，目前为了兼容前端也可以放进 explore 对象里，或者直接返回
     sendSuccess(res, {
       explore: {
-        banners: (await require('../db').getDb().query("SELECT id, image_url as \"imageUrl\", link FROM banners WHERE status = 'active' ORDER BY sort_order ASC, created_at DESC LIMIT 5")).rows,
+        banners: await require('../db').getDb().banner.findMany({ where: { status: 'active' }, orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }], take: 5, select: { id: true, imageUrl: true, link: true } }),
         // 热门话题，真实场景应由算法或聚合查询得出
         trendingTopics: [
           { id: 101, title: '# 寻找同频的灵魂', participants: Math.floor(Math.random() * 50000) + 10000 },
@@ -32,7 +34,7 @@ router.get('/', authMiddleware, async (req, res, next) => {
   }
 });
 
-router.post('/', authMiddleware, async (req, res, next) => {
+router.post('/', authMiddleware, validate(createMomentSchema), async (req, res, next) => {
   try {
     const { content, type, url } = req.body;
     const userUuid = req.user?.uuid || 'soul_123456';

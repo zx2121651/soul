@@ -1,0 +1,224 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// -----------------------------------------------------------------------------
+// 实体建模：星球居民 (User)
+// 包含详细的个人资料、身份验证信息以及复杂的社交关系映射
+// -----------------------------------------------------------------------------
+model User {
+  id             Int       @id @default(autoincrement())
+  uuid           String    @unique @default(uuid()) // 业务侧使用的全局唯一ID，防止暴露自增主键
+  phone          String    @unique // 手机号注册/登录
+  passwordHash   String    // 加密后的哈希密码
+  name           String    // 居民昵称
+  avatar         String?   // 头像URL
+  bio            String?   // 个性签名/自我介绍
+
+  // 冗余统计字段（在大数据量下提高读取性能，需在业务代码中配合事务更新）
+  followersCount Int       @default(0) // 粉丝数
+  followingCount Int       @default(0) // 关注数
+  visitorsCount  Int       @default(0) // 访客数
+
+  // 账号状态：'active' = 正常, 'banned' = 封禁冻结
+  status         String    @default("active")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // --- 关系映射 (Relations) ---
+  moments        Moment[]             // 该用户发布的瞬间动态
+  likes          MomentLike[]         // 该用户的点赞记录
+  comments       MomentComment[]      // 该用户发表的评论
+
+  followers      UserFollow[] @relation("Following") // 关注了该用户的人 (粉丝)
+  following      UserFollow[] @relation("Followers") // 该用户关注的人
+
+  blockedUsers   UserBlock[]  @relation("Blocker")   // 该用户拉黑的人
+  blockedBy      UserBlock[]  @relation("Blocked")   // 拉黑了该用户的人
+
+  ownedVoiceRooms VoiceRoom[]         // 该用户创建的异星派对(语音房)
+  chatMemberships ChatRoomMember[]    // 该用户参与的私聊房间
+  sentMessages    ChatMessage[]       // 该用户发送的私聊消息
+  announcements   Announcement[]      // 该管理员发布的系统广播
+}
+
+// -----------------------------------------------------------------------------
+// 实体建模：社交关系图谱 (UserFollow / UserBlock)
+// -----------------------------------------------------------------------------
+model UserFollow {
+  followerId   Int
+  followingId  Int
+  createdAt    DateTime @default(now())
+
+  follower     User     @relation("Followers", fields: [followerId], references: [id])
+  following    User     @relation("Following", fields: [followingId], references: [id])
+
+  @@id([followerId, followingId]) // 联合主键，防止重复关注
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model UserBlock {
+  blockerId    Int
+  blockedId    Int
+  reason       String?  // 可选：拉黑原因记录
+  createdAt    DateTime @default(now())
+
+  blocker      User     @relation("Blocker", fields: [blockerId], references: [id])
+  blocked      User     @relation("Blocked", fields: [blockedId], references: [id])
+
+  @@id([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+}
+
+// -----------------------------------------------------------------------------
+// 实体建模：瞬间广场动态系统 (Moment / Like / Comment)
+// -----------------------------------------------------------------------------
+model Moment {
+  id           Int       @id @default(autoincrement())
+  authorId     Int
+
+  type         String    @default("text") // 'text', 'image', 'voice'
+  content      String?   // 动态文字内容
+  url          String?   // 媒体链接(图片/音频)
+
+  // 冗余统计字段
+  likesCount   Int       @default(0) // 获赞数
+  commentsCount Int      @default(0) // 评论数
+
+  // 状态管理：'active' = 正常在架, 'deleted' = 被下架/删除
+  status       String    @default("active")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  author       User             @relation(fields: [authorId], references: [id])
+  likes        MomentLike[]     // 收到点赞记录
+  comments     MomentComment[]  // 收到的评论记录
+  tags         MomentTag[]      // 关联的话题标签
+
+  @@index([authorId])
+  @@index([status, createdAt]) // 广场列表查询优化索引
+}
+
+model MomentLike {
+  userId       Int
+  momentId     Int
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id])
+  moment       Moment   @relation(fields: [momentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, momentId])
+  @@index([momentId])
+}
+
+model MomentComment {
+  id           Int       @id @default(autoincrement())
+  momentId     Int
+  authorId     Int
+  content      String    // 评论内容
+  status       String    @default("active")
+  createdAt    DateTime  @default(now())
+
+  moment       Moment   @relation(fields: [momentId], references: [id], onDelete: Cascade)
+  author       User     @relation(fields: [authorId], references: [id])
+
+  @@index([momentId])
+  @@index([authorId])
+}
+
+model MomentTag {
+  id           Int       @id @default(autoincrement())
+  momentId     Int
+  tagName      String    // 提取出的话题名称，如 "日常", "避雷"
+
+  moment       Moment   @relation(fields: [momentId], references: [id], onDelete: Cascade)
+
+  @@index([tagName])
+  @@index([momentId])
+}
+
+// -----------------------------------------------------------------------------
+// 实体建模：社交私聊系统 (ChatRoom / Member / Message)
+// -----------------------------------------------------------------------------
+model ChatRoom {
+  id           Int       @id @default(autoincrement())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt // 每次有新消息时更新此字段，用于聊天列表排序
+
+  members      ChatRoomMember[]
+  messages     ChatMessage[]
+}
+
+model ChatRoomMember {
+  roomId       Int
+  userId       Int
+  joinedAt     DateTime @default(now())
+  unreadCount  Int      @default(0) // 每个成员维度的未读消息计数
+
+  room         ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@id([roomId, userId])
+  @@index([userId])
+}
+
+model ChatMessage {
+  id           Int       @id @default(autoincrement())
+  roomId       Int
+  senderId     Int
+  text         String    // 消息内容
+  isRead       Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+
+  room         ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sender       User     @relation(fields: [senderId], references: [id])
+
+  @@index([roomId, createdAt])
+}
+
+// -----------------------------------------------------------------------------
+// 实体建模：语音派惊房 (VoiceRoom)
+// -----------------------------------------------------------------------------
+model VoiceRoom {
+  id           Int       @id @default(autoincrement())
+  name         String    // 房间名称
+  hostId       Int
+  onlineCount  Int       @default(1) // 当前在线人数
+  tags         String?   // 序列化后的标签数组 JSON
+  status       String    @default("active") // 'active' 正常, 'closed' 已关闭/解散
+  createdAt    DateTime  @default(now())
+
+  host         User      @relation(fields: [hostId], references: [id])
+
+  @@index([status, createdAt])
+}
+
+// -----------------------------------------------------------------------------
+// 实体建模：后台管理配置 (Banner / Announcement)
+// -----------------------------------------------------------------------------
+model Banner {
+  id           Int       @id @default(autoincrement())
+  imageUrl     String
+  link         String    @default("#")
+  sortOrder    Int       @default(0) // 排序权重
+  status       String    @default("active") // 'active' = 在架, 'deleted' = 下架
+  createdAt    DateTime  @default(now())
+}
+
+model Announcement {
+  id           Int       @id @default(autoincrement())
+  title        String
+  content      String
+  type         String    @default("info") // 'info', 'system', 'warning'
+  adminId      Int?      // 发布此广播的管理员ID
+  createdAt    DateTime  @default(now())
+
+  admin        User?     @relation(fields: [adminId], references: [id])
+}

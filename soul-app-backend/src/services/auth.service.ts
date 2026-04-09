@@ -24,7 +24,7 @@ export class AuthService {
     const user = await this.userRepo.findByUsername(username);
     if (!user) throw new Error('Invalid credentials');
 
-    if (await bcrypt.compare(passwordRaw, user.password_hash)) {
+    if (await bcrypt.compare(passwordRaw, user.passwordHash)) {
       const secret = process.env.JWT_SECRET;
       if (!secret) throw new Error('System misconfiguration: missing JWT_SECRET');
 

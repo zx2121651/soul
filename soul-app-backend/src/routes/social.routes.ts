@@ -4,6 +4,8 @@ import { sendSuccess, sendError } from '../utils/response';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { ChatService } from '../services/chat.service';
 import { ErrorCode } from '../utils/ErrorCodes';
+import { validate } from '../middlewares/validate.middleware';
+import { sendMessageSchema } from '../validations/chat.validation';
 const chatService = new ChatService();
 
 const router = Router();
@@ -30,7 +32,7 @@ router.get('/chat/:roomId/messages', authMiddleware, async (req, res, next) => {
     next(error);
   }
 });
-router.post('/chat/:roomId/messages', authMiddleware, async (req, res, next) => {
+router.post('/chat/:roomId/messages', authMiddleware, validate(sendMessageSchema), async (req, res, next) => {
   try {
     const userUuid = req.user?.uuid || 'soul_123456';
     const roomId = parseInt(req.params.roomId as string, 10);

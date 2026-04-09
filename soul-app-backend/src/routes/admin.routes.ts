@@ -5,18 +5,23 @@ import { ErrorCode } from '../utils/ErrorCodes';
 
 const router = Router();
 
+// ==================== 仪表盘 (Dashboard) ====================
 // 获取后台仪表盘统计数据和图表数据
 router.get('/stats', async (req, res) => {
   try {
     const db = getDb();
-    const usersCount = await db.query('SELECT COUNT(*) FROM users');
-    const momentsCount = await db.query('SELECT COUNT(*) FROM moments');
-    const roomsCount = await db.query('SELECT COUNT(*) FROM voice_rooms');
+
+    // Prisma 聚合查询
+    const [totalUsers, totalMoments, activeRooms] = await Promise.all([
+      db.user.count(),
+      db.moment.count(),
+      db.voiceRoom.count({ where: { status: 'active' } })
+    ]);
 
     sendSuccess(res, {
-      totalUsers: usersCount.rows[0].count || usersCount.rows[0]['COUNT(*)'] || 0,
-      totalMoments: momentsCount.rows[0].count || momentsCount.rows[0]['COUNT(*)'] || 0,
-      activeRooms: roomsCount.rows[0].count || roomsCount.rows[0]['COUNT(*)'] || 0,
+      totalUsers,
+      totalMoments,
+      activeRooms,
       activeToday: 1128, // mock active today for now
 
       // 饼图用的数据 (性别分布)
@@ -46,100 +51,28 @@ router.get('/stats', async (req, res) => {
   }
 });
 
+// ==================== 星球居民管理 (Users) ====================
 router.get('/users', async (req, res) => {
   try {
     const db = getDb();
     const limit = parseInt(req.query.limit as string) || 50;
     const offset = parseInt(req.query.offset as string) || 0;
-    const status = req.query.status || 'active'; // 默认查询正常用户
+    const status = (req.query.status as string) || 'active'; // 默认查询正常用户
 
-    const countRes = await db.query('SELECT COUNT(*) FROM users WHERE status = $1', [status]);
-    const total = countRes.rows[0].count || countRes.rows[0]['COUNT(*)'] || 0;
+    const [total, users] = await Promise.all([
+      db.user.count({ where: { status } }),
+      db.user.findMany({
+        where: { status },
+        take: limit,
+        skip: offset,
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, uuid: true, name: true, phone: true, avatar: true, bio: true, status: true, createdAt: true }
+      })
+    ]);
 
-    const usersRes = await db.query(`
-      SELECT id, uuid, name, phone, avatar, bio, status, created_at
-      FROM users
-      WHERE status = $3
-      ORDER BY created_at DESC
-      LIMIT $1 OFFSET $2
-    `, [limit, offset, status]);
-
-    sendSuccess(res, {
-      items: usersRes.rows,
-      total
-    });
+    sendSuccess(res, { items: users, total });
   } catch (err) {
     sendError(res, 500, 'Failed to fetch users');
-  }
-});
-
-router.get('/moments', async (req, res) => {
-  try {
-    const db = getDb();
-    const limit = parseInt(req.query.limit as string) || 50;
-    const offset = parseInt(req.query.offset as string) || 0;
-
-    const countRes = await db.query('SELECT COUNT(*) FROM moments');
-    const total = countRes.rows[0].count || countRes.rows[0]['COUNT(*)'] || 0;
-
-    const momentsRes = await db.query(`
-      SELECT m.id, m.content, m.type, m.url as media_urls, m.likes, m.created_at,
-             u.name as author_name, u.avatar as author_avatar
-      FROM moments m
-      JOIN users u ON m.author_id = u.id
-      ORDER BY m.created_at DESC
-      LIMIT $1 OFFSET $2
-    `, [limit, offset]);
-
-    sendSuccess(res, {
-      items: momentsRes.rows,
-      total
-    });
-  } catch (err) {
-    sendError(res, 500, 'Failed to fetch moments');
-  }
-});
-
-export default router;
-
-
-// 获取语音房列表
-router.get('/voice-rooms', async (req, res) => {
-  try {
-    const db = getDb();
-
-    const countRes = await db.query('SELECT COUNT(*) FROM voice_rooms');
-    const total = countRes.rows[0].count || countRes.rows[0]['COUNT(*)'] || 0;
-
-    const roomsRes = await db.query(`
-      SELECT r.id, r.name, r.online_count, r.status, r.created_at,
-             u.name as host_name
-      FROM voice_rooms r
-      LEFT JOIN users u ON r.host_id = u.id
-      ORDER BY r.created_at DESC
-    `);
-
-    sendSuccess(res, {
-      items: roomsRes.rows,
-      total
-    });
-  } catch (err) {
-    sendError(res, 500, '获取语音房列表失败');
-  }
-});
-
-// 删除(下架)语音房
-router.delete('/voice-rooms/:id', async (req, res) => {
-  try {
-    const db = getDb();
-    const roomId = parseInt(req.params.id, 10);
-
-    // 这里使用硬删除，也可以改为 UPDATE status = 'closed'
-    await db.query('DELETE FROM voice_rooms WHERE id = $1', [roomId]);
-
-    sendSuccess(res, null, '语音房已成功下架');
-  } catch (err) {
-    sendError(res, 500, '删除语音房失败');
   }
 });
 
@@ -148,12 +81,52 @@ router.delete('/users/:id', async (req, res) => {
   try {
     const db = getDb();
     const userId = parseInt(req.params.id, 10);
-
-    await db.query("UPDATE users SET status = 'banned' WHERE id = $1", [userId]);
-
+    await db.user.update({ where: { id: userId }, data: { status: 'banned' } });
     sendSuccess(res, null, '该星球居民已被成功封禁(删除)');
   } catch (err) {
     sendError(res, 500, '封禁居民失败');
+  }
+});
+
+// 恢复(解封)星球居民
+router.post('/users/:id/restore', async (req, res) => {
+  try {
+    const db = getDb();
+    const userId = parseInt(req.params.id, 10);
+    await db.user.update({ where: { id: userId }, data: { status: 'active' } });
+    sendSuccess(res, null, '该星球居民已成功解封');
+  } catch (err) {
+    sendError(res, 500, '解封居民失败');
+  }
+});
+
+// ==================== 瞬间动态管理 (Moments) ====================
+router.get('/moments', async (req, res) => {
+  try {
+    const db = getDb();
+    const limit = parseInt(req.query.limit as string) || 50;
+    const offset = parseInt(req.query.offset as string) || 0;
+    const status = (req.query.status as string) || 'active'; // 默认查询在架动态
+
+    const [total, moments] = await Promise.all([
+      db.moment.count({ where: { status } }),
+      db.moment.findMany({
+        where: { status },
+        take: limit,
+        skip: offset,
+        orderBy: { createdAt: 'desc' },
+        include: { author: { select: { name: true, avatar: true } } }
+      })
+    ]);
+
+    const formattedMoments = moments.map(m => ({
+      id: m.id, content: m.content, type: m.type, media_urls: m.url, likes: m.likesCount, status: m.status, created_at: m.createdAt,
+      author_name: m.author.name, author_avatar: m.author.avatar
+    }));
+
+    sendSuccess(res, { items: formattedMoments, total });
+  } catch (err) {
+    sendError(res, 500, 'Failed to fetch moments');
   }
 });
 
@@ -162,77 +135,35 @@ router.delete('/moments/:id', async (req, res) => {
   try {
     const db = getDb();
     const momentId = parseInt(req.params.id, 10);
-
-    await db.query("UPDATE moments SET status = 'deleted' WHERE id = $1", [momentId]);
-
+    await db.moment.update({ where: { id: momentId }, data: { status: 'deleted' } });
     sendSuccess(res, null, '瞬间动态已强制下架');
   } catch (err) {
     sendError(res, 500, '下架瞬间动态失败');
   }
 });
 
-// 获取系统广播(通知)列表
-router.get('/announcements', async (req, res) => {
+// 恢复上架瞬间动态
+router.post('/moments/:id/restore', async (req, res) => {
   try {
     const db = getDb();
-
-    const countRes = await db.query('SELECT COUNT(*) FROM announcements');
-    const total = countRes.rows[0].count || countRes.rows[0]['COUNT(*)'] || 0;
-
-    const listRes = await db.query(`
-      SELECT id, title, content, type, created_at
-      FROM announcements
-      ORDER BY created_at DESC
-    `);
-
-    sendSuccess(res, {
-      items: listRes.rows,
-      total
-    });
+    const momentId = parseInt(req.params.id, 10);
+    await db.moment.update({ where: { id: momentId }, data: { status: 'active' } });
+    sendSuccess(res, null, '瞬间动态已恢复上架');
   } catch (err) {
-    sendError(res, 500, '获取系统广播列表失败');
-  }
-});
-
-// 发布新的系统广播
-router.post('/announcements', async (req, res) => {
-  try {
-    const db = getDb();
-    const { title, content, type = 'info' } = req.body;
-
-    if (!title || !content) {
-      return sendError(res, 400, '标题和内容不能为空');
-    }
-
-    const insertResult = await db.query(`
-      INSERT INTO announcements (title, content, type)
-      VALUES ($1, $2, $3)
-      RETURNING id, title, content, type, created_at
-    `, [title, content, type]);
-
-    sendSuccess(res, insertResult.rows[0], '系统广播发布成功');
-  } catch (err) {
-    sendError(res, 500, '系统广播发布失败');
+    sendError(res, 500, '恢复瞬间动态失败');
   }
 });
 
 // ==================== BANNERS (轮播海报) ====================
-
 // 获取轮播海报列表
 router.get('/banners', async (req, res) => {
   try {
     const db = getDb();
-    const countRes = await db.query("SELECT COUNT(*) FROM banners WHERE status = 'active'");
-    const total = countRes.rows[0].count || countRes.rows[0]['COUNT(*)'] || 0;
-
-    const listRes = await db.query(`
-      SELECT id, image_url, link, sort_order, created_at
-      FROM banners
-      WHERE status = 'active'
-      ORDER BY sort_order ASC, created_at DESC
-    `);
-
-    sendSuccess(res, { items: listRes.rows, total });
+    const [total, banners] = await Promise.all([
+      db.banner.count({ where: { status: 'active' } }),
+      db.banner.findMany({ where: { status: 'active' }, orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }] })
+    ]);
+    sendSuccess(res, { items: banners, total });
   } catch (err) {
     sendError(res, 500, '获取轮播海报失败');
   }
@@ -243,16 +174,9 @@ router.post('/banners', async (req, res) => {
   try {
     const db = getDb();
     const { image_url, link = '#', sort_order = 0 } = req.body;
-
     if (!image_url) return sendError(res, 400, '海报图片链接不能为空');
-
-    const insertResult = await db.query(`
-      INSERT INTO banners (image_url, link, sort_order)
-      VALUES ($1, $2, $3)
-      RETURNING id, image_url, link, sort_order, created_at
-    `, [image_url, link, sort_order]);
-
-    sendSuccess(res, insertResult.rows[0], '海报配置成功');
+    const newBanner = await db.banner.create({ data: { imageUrl: image_url, link, sortOrder: sort_order, status: 'active' } });
+    sendSuccess(res, newBanner, '海报配置成功');
   } catch (err) {
     sendError(res, 500, '新增轮播海报失败');
   }
@@ -263,36 +187,72 @@ router.delete('/banners/:id', async (req, res) => {
   try {
     const db = getDb();
     const bannerId = parseInt(req.params.id, 10);
-    // 使用软删除
-    await db.query("UPDATE banners SET status = 'deleted' WHERE id = $1", [bannerId]);
+    await db.banner.update({ where: { id: bannerId }, data: { status: 'deleted' } });
     sendSuccess(res, null, '海报已下架');
   } catch (err) {
     sendError(res, 500, '海报下架失败');
   }
 });
 
-// ==================== RESTORE (解封/恢复) ====================
-
-// 恢复(解封)星球居民
-router.post('/users/:id/restore', async (req, res) => {
+// ==================== 语音房管理 (VoiceRooms) ====================
+// 获取语音房列表
+router.get('/voice-rooms', async (req, res) => {
   try {
     const db = getDb();
-    const userId = parseInt(req.params.id, 10);
-    await db.query("UPDATE users SET status = 'active' WHERE id = $1", [userId]);
-    sendSuccess(res, null, '该星球居民已成功解封');
+    const [total, rooms] = await Promise.all([
+      db.voiceRoom.count(),
+      db.voiceRoom.findMany({ include: { host: { select: { name: true } } }, orderBy: { createdAt: 'desc' } })
+    ]);
+    const formattedRooms = rooms.map(r => ({
+      id: r.id, name: r.name, online_count: r.onlineCount, status: r.status, created_at: r.createdAt, host_name: r.host.name
+    }));
+    sendSuccess(res, { items: formattedRooms, total });
   } catch (err) {
-    sendError(res, 500, '解封居民失败');
+    sendError(res, 500, '获取语音房列表失败');
   }
 });
 
-// 恢复上架瞬间动态
-router.post('/moments/:id/restore', async (req, res) => {
+// 删除(下架)语音房
+router.delete('/voice-rooms/:id', async (req, res) => {
   try {
     const db = getDb();
-    const momentId = parseInt(req.params.id, 10);
-    await db.query("UPDATE moments SET status = 'active' WHERE id = $1", [momentId]);
-    sendSuccess(res, null, '瞬间动态已恢复上架');
+    const roomId = parseInt(req.params.id, 10);
+    await db.voiceRoom.delete({ where: { id: roomId } });
+    sendSuccess(res, null, '语音房已成功下架');
   } catch (err) {
-    sendError(res, 500, '恢复瞬间动态失败');
+    sendError(res, 500, '删除语音房失败');
   }
 });
+
+// ==================== 系统广播 (Announcements) ====================
+// 获取系统广播(通知)列表
+router.get('/announcements', async (req, res) => {
+  try {
+    const db = getDb();
+    const [total, announcements] = await Promise.all([
+      db.announcement.count(),
+      db.announcement.findMany({ orderBy: { createdAt: 'desc' } })
+    ]);
+    const formattedAnns = announcements.map(a => ({
+      id: a.id, title: a.title, content: a.content, type: a.type, created_at: a.createdAt
+    }));
+    sendSuccess(res, { items: formattedAnns, total });
+  } catch (err) {
+    sendError(res, 500, '获取系统广播列表失败');
+  }
+});
+
+// 发布新的系统广播
+router.post('/announcements', async (req, res) => {
+  try {
+    const db = getDb();
+    const { title, content, type = 'info' } = req.body;
+    if (!title || !content) return sendError(res, 400, '标题和内容不能为空');
+    const newAnn = await db.announcement.create({ data: { title, content, type } });
+    sendSuccess(res, newAnn, '系统广播发布成功');
+  } catch (err) {
+    sendError(res, 500, '系统广播发布失败');
+  }
+});
+
+export default router;

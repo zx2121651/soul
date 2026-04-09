@@ -24,9 +24,9 @@ export class UserService {
         name: user.name,
         id: user.uuid,
         avatar: user.avatar,
-        followers: user.followers || Math.floor(Math.random() * 500),
-        following: user.following || Math.floor(Math.random() * 300),
-        visitors: user.visitors || Math.floor(Math.random() * 100),
+        followers: user.followersCount || Math.floor(Math.random() * 500),
+        following: user.followingCount || Math.floor(Math.random() * 300),
+        visitors: user.visitorsCount || Math.floor(Math.random() * 100),
         bio: user.bio
       },
       moments
