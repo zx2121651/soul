@@ -24,11 +24,41 @@ export class MomentService {
     }));
   }
 
+  // 高级：创建动态（包含违禁词审查与话题标签提取）
   async createMoment(userUuid: string, type: string, content: string | null, url: string | null) {
     const user = await this.userRepo.findByUuid(userUuid);
     if (!user) throw new Error('User not found');
 
-    return await this.momentRepo.create(user.id, type, content, url);
+    // 1. 简单的风控审查：如果包含敏感词，抛出异常阻止发布
+    const sensitiveWords = ['诈骗', '黄赌毒', '暴恐', '代刷', '加v'];
+    if (content) {
+      for (const word of sensitiveWords) {
+        if (content.includes(word)) {
+          throw new Error('内容包含敏感词汇，发布被拒绝');
+        }
+      }
+    }
+
+    // 2. 提取文本中的话题标签（例如：#寻找同频的灵魂）
+    let tags: string[] = [];
+    if (content) {
+      const tagMatches = content.match(/#([^#\s]+)/g);
+      if (tagMatches) {
+        // 去重并去除 '#' 符号
+        tags = Array.from(new Set(tagMatches.map(t => t.substring(1))));
+      }
+    }
+
+    // 3. 执行数据库插入操作
+    const createdMoment = await this.momentRepo.create(user.id, type, content, url);
+
+    // 4. (可选进阶) 将提取到的 tags 插入到话题表中，这里可以扩展为更新 trending topics
+    if (tags.length > 0) {
+      // console.log(`提取到了这些话题标签: ${tags.join(', ')}`);
+      // 可以在此处调用 topicRepo 进行话题热度累加...
+    }
+
+    return createdMoment;
   }
 
   async toggleLike(userUuid: string, momentId: number, isLike: boolean) {

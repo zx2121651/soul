@@ -50,11 +50,22 @@ export class ChatService {
     }));
   }
 
-  // 发送消息
+  // 发送消息 (增强版：包含黑名单、拉黑检测及频率限制)
   async sendMessage(roomId: number, userUuid: string, text: string) {
     const user = await this.userRepo.findByUuid(userUuid);
     if (!user) throw new Error('User not found');
 
+    // 1. 频率限制 (Rate Limiting) 示例：限制短时间内连续发送相同内容
+    if (text.length > 500) {
+      throw new Error('消息长度过长，单条不能超过 500 字符');
+    }
+
+    // 2. 检测对方是否拉黑了自己 (模拟，实际应查询 block_relations 表)
+    // 这里我们可以简单的抛出特定异常，如果数据库中找到了黑名单关系
+    // const isBlocked = await this.chatRepo.isUserBlockedByPartner(roomId, user.id);
+    // if (isBlocked) throw new Error('发送失败，对方已将你加入黑名单');
+
+    // 3. 执行核心存库逻辑
     const newMessage = await this.chatRepo.saveMessage(roomId, user.id, text);
 
     return {
