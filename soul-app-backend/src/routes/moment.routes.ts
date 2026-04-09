@@ -16,9 +16,11 @@ router.get('/', authMiddleware, async (req, res, next) => {
     sendSuccess(res, {
       explore: {
         banners: (await require('../db').getDb().query("SELECT id, image_url as \"imageUrl\", link FROM banners WHERE status = 'active' ORDER BY sort_order ASC, created_at DESC LIMIT 5")).rows,
+        // 热门话题，真实场景应由算法或聚合查询得出
         trendingTopics: [
-          { id: 101, title: '# 寻找同频的你', participants: 12500 },
-          { id: 102, title: '# 周末去哪儿', participants: 8300 }
+          { id: 101, title: '# 寻找同频的灵魂', participants: Math.floor(Math.random() * 50000) + 10000 },
+          { id: 102, title: '# 星际漫游日记', participants: Math.floor(Math.random() * 20000) + 5000 },
+          { id: 103, title: '# 异星穿搭指南', participants: Math.floor(Math.random() * 10000) + 2000 }
         ],
         posts,
         voiceRooms: []

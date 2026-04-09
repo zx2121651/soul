@@ -11,8 +11,8 @@ const router = Router();
 router.get('/chat', authMiddleware, async (req, res, next) => {
   try {
     const userUuid = req.user?.uuid || 'soul_123456';
-    const chats = await chatService.getChatList(userUuid);
-    sendSuccess(res, { chats, pinnedUsers: [] });
+    const data = await chatService.getChatList(userUuid);
+    sendSuccess(res, data);
   } catch (error: any) {
     if (error.message === 'User not found') return sendError(res, 404, error.message, ErrorCode.RESOURCE_NOT_FOUND);
     next(error);

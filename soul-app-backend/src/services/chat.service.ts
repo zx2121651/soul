@@ -5,23 +5,32 @@ export class ChatService {
   private chatRepo = new ChatRepository();
   private userRepo = new UserRepository();
 
-  // 获取聊天列表
+  // 获取聊天列表与置顶联系人
   async getChatList(userUuid: string) {
     const user = await this.userRepo.findByUuid(userUuid);
     if (!user) throw new Error('User not found');
 
     const rawChats = await this.chatRepo.findChatListByUserId(user.id);
 
-    // 格式化输出，符合前端期望的结构
-    return rawChats.map((c: any) => ({
+    // 简单模拟从数据库最近聊天的对象提取置顶用户 (真实场景应有一个 pinned 字段)
+    const pinnedUsers = rawChats.slice(0, 3).map((c: any) => ({
+      id: c.other_user_id || c.room_id,
+      name: c.name,
+      avatar: c.avatar,
+      isOnline: Math.random() > 0.5 // 随机在线状态
+    }));
+
+    const chats = rawChats.map((c: any) => ({
       id: c.room_id,
       name: c.name,
       avatar: c.avatar,
       lastMessage: c.last_message || '暂无消息',
       time: c.time ? new Date(c.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '',
-      unread: Math.floor(Math.random() * 3), // 目前仍然模拟未读消息数
+      unread: Math.floor(Math.random() * 3),
       isOfficial: c.is_official
     }));
+
+    return { chats, pinnedUsers };
   }
 
   // 获取某个房间的消息记录
