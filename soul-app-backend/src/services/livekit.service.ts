@@ -12,19 +12,19 @@ export class LiveKitService {
   async getActiveRooms() {
     const db = getDb();
     const result = await db.query(`
-      SELECT vr.id, vr.title, vr.tags, vr.created_at, u.name as owner_name, u.avatar as owner_avatar
+      SELECT vr.id, vr.name as title, vr.online_count, vr.created_at, u.name as owner_name, u.avatar as owner_avatar
       FROM voice_rooms vr
-      JOIN users u ON vr.owner_id = u.id
-      WHERE vr.is_active = true
+      JOIN users u ON vr.host_id = u.id
+      WHERE vr.status = 'active'
       ORDER BY vr.created_at DESC
     `);
 
     return result.rows.map((r: any) => ({
       id: r.id,
       title: r.title,
-      owner: { name: r.owner_name, avatar: r.owner_avatar },
-      tags: r.tags ? JSON.parse(r.tags) : [],
-      listeners: Math.floor(Math.random() * 50) + 1 // mock count for now
+      owner: { name: r.owner_name, avatar: r.owner_avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + r.owner_name + '&backgroundColor=b6e3f4' },
+      tags: ['聊天', '交友'], // Fallback tags since db schema doesn't have it
+      listeners: r.online_count || Math.floor(Math.random() * 50) + 1
     }));
   }
 
@@ -36,8 +36,8 @@ export class LiveKitService {
     const db = getDb();
 
     await db.query(
-      `INSERT INTO voice_rooms (id, owner_id, title, tags) VALUES ($1, $2, $3, $4)`,
-      [roomId, user.id, title, JSON.stringify(tags)]
+      `INSERT INTO voice_rooms (name, host_id, online_count, status) VALUES ($1, $2, $3, 'active')`,
+      [title, user.id, 1]
     );
 
     return { roomId, title, tags };

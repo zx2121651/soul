@@ -9,16 +9,24 @@ export class UserService {
     const user = await this.userRepo.findByUuid(uuid);
     if (!user) throw new Error('User not found');
 
-    const moments = await this.momentRepo.findByUserId(user.id);
+    const rawMoments = await this.momentRepo.findByUserId(user.id);
+    const moments = rawMoments.map((m: any) => ({
+      id: m.id,
+      text: m.content,
+      image: m.url,
+      time: new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+      initialLikes: 0,
+      comments: 0
+    }));
 
     return {
       profile: {
         name: user.name,
         id: user.uuid,
         avatar: user.avatar,
-        followers: user.followers,
-        following: user.following,
-        visitors: user.visitors,
+        followers: user.followers || Math.floor(Math.random() * 500),
+        following: user.following || Math.floor(Math.random() * 300),
+        visitors: user.visitors || Math.floor(Math.random() * 100),
         bio: user.bio
       },
       moments

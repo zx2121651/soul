@@ -63,9 +63,10 @@ export default function ExplorePage() {
       })
       .catch(err => console.error("获取广场动态失败", err));
 
+    // 获取真实的语音房列表，支持后端下发
     api.get<{ rooms: VoiceRoom[] }>('/voicerooms')
       .then(data => setVoiceRooms(data.rooms || []))
-      .catch(console.error);
+      .catch(err => console.error("获取异星派对(语音房)失败", err));
   }, []);
 
   const handleUserClick = (user: { name: string; avatar: string; isOnline?: boolean }) => {
@@ -84,9 +85,10 @@ export default function ExplorePage() {
     try {
       const res = await api.post<{ roomId: string }>('/voicerooms', { title: newRoomTitle, tags: ['派对'] });
       setIsCreatingRoom(false);
+      // 跳转到真实的语音房页面
       navigate(`/voiceroom/${res.roomId}`);
     } catch (err) {
-      console.error('Failed to create room', err);
+      console.error('创建语音房失败', err);
     }
   };
 

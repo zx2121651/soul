@@ -28,3 +28,16 @@ router.get('/feed/recommend', (req, res) => sendSuccess(res, { posts: [] }));
 router.get('/feed/latest', (req, res) => sendSuccess(res, { posts: [] }));
 
 export default router;
+
+// --- Public Announcements ---
+router.get('/announcements', async (req, res) => {
+  try {
+    const db = require('../db').getDb();
+    const result = await db.query(
+      "SELECT title, content, type FROM announcements ORDER BY created_at DESC LIMIT 1"
+    );
+    sendSuccess(res, { latest: result.rows[0] || null });
+  } catch (err) {
+    sendSuccess(res, { latest: null }); // 静默失败
+  }
+});

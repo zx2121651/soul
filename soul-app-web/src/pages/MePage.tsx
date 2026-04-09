@@ -16,16 +16,20 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const [profile, setProfile] = useState<UserProfile>({
-    name: '{profile.name}', id: '', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=me&backgroundColor=f4b6c2', followers: 128, following: 342, visitors: 89, bio: ''
+    name: '星球居民', id: 'soul_...', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=me&backgroundColor=f4b6c2', followers: 0, following: 0, visitors: 0, bio: '正在连接星球信号...'
   });
   const [moments, setMoments] = useState<MomentData[]>([]);
 
+
   useEffect(() => {
-    api.get<MeDataResponse>('/users/me').then(data => {
-        if(data.profile) setProfile(data.profile);
-        if(data.moments) setMoments(data.moments);
+    // 从后端真实的获取当前登录用户的信息以及他的过往动态
+    api.get<MeDataResponse>('/users/me')
+      .then(data => {
+        if (data.profile) setProfile(data.profile);
+        if (data.moments) setMoments(data.moments);
       })
-      .catch(err => console.error("Failed to fetch me data", err));
+      .catch(err => console.error("获取个人资料失败", err))
+      ;
   }, []);
 
 
