@@ -2,6 +2,103 @@ import { getDb } from '../db';
 import { Prisma } from '@prisma/client';
 
 export class MomentRepository {
+
+  /**
+   * 生产级推荐系统 (推荐池召回)：
+   * 从数据库中批量拉取近期的、且排除用户已看过、且排除被拉黑对象的候选动态集合
+   */
+  async getRecommendationCandidates(viewerId: number, poolSize: number = 200) {
+    const db = getDb();
+
+    // 如果是未登录游客 (viewerId=0)，则不进行历史排重，直接随机拉取热点
+    if (!viewerId) {
+      return await db.moment.findMany({
+        where: { status: 'active' },
+        orderBy: { likesCount: 'desc' },
+        take: 50,
+        include: { author: true, tags: true, _count: { select: { comments: true } } }
+      });
+    }
+
+    // 对于真实用户：
+    // 1. 查询该用户看过的 momentIds (历史排重池)
+    const histories = await db.userMomentHistory.findMany({
+      where: { userId: viewerId },
+      select: { momentId: true }
+    });
+    const viewedIds = histories.map(h => h.momentId);
+
+    // 2. 查询该用户拉黑的 blockerIds (社交隔离)
+    const blocks = await db.userBlock.findMany({
+      where: { blockerId: viewerId },
+      select: { blockedId: true }
+    });
+    const blockedIds = blocks.map(b => b.blockedId);
+
+    // 3. 复杂召回 (Recall): 获取不在黑名单、非自己发布、并且未曝光过的最新 200 条候选动态
+    // (实际生产中这里可能是从 Redis 缓存的热榜队列或是 ElasticSearch 取数据，这里我们在关系型数据库模拟)
+    const candidates = await db.moment.findMany({
+      where: {
+        status: 'active',
+        authorId: { notIn: [viewerId, ...blockedIds] }, // 排除自己和拉黑对象
+        id: { notIn: viewedIds } // 曝光排重机制
+      },
+      orderBy: { createdAt: 'desc' },
+      take: poolSize,
+      include: {
+        author: { select: { id: true, name: true, avatar: true, bio: true } },
+        tags: { select: { tagName: true } },
+        likes: { where: { userId: viewerId }, select: { userId: true } }, // 用于判断是否已赞
+        _count: { select: { comments: true } }
+      }
+    });
+
+    return candidates;
+  }
+
+  /**
+   * 记录曝光历史（批处理批量插入，降低数据库连接开销）
+   */
+  async recordBatchExposure(userId: number, momentIds: number[]) {
+    if (!userId || momentIds.length === 0) return;
+    const db = getDb();
+
+    // SQLite with Prisma might throw unique constraint violations if we blindly createMany.
+    // Let's do a safe individual inserts or ignore errors
+    for (const mid of momentIds) {
+       try {
+         await db.userMomentHistory.create({
+           data: { userId, momentId: mid, actionType: 'view' }
+         });
+       } catch(e) { }
+    }
+  }
+
+  /**
+   * 获取用户的兴趣画像 (分析他点赞过、评论过的标签偏好)
+   */
+  async getUserInterestProfile(userId: number): Promise<Record<string, number>> {
+    const db = getDb();
+
+    // 找出他点赞过的所有的标签分布
+    const likes = await db.momentLike.findMany({
+      where: { userId },
+      include: { moment: { include: { tags: true } } },
+      take: 100 // 分析最近的 100 个赞
+    });
+
+    const tagScores: Record<string, number> = {};
+    for (const like of likes) {
+      if (like.moment && like.moment.tags) {
+        for (const t of like.moment.tags) {
+          tagScores[t.tagName] = (tagScores[t.tagName] || 0) + 1;
+        }
+      }
+    }
+
+    return tagScores;
+  }
+
   /**
    * 生产级：基于 Cursor 的分页查询广场动态 (Prisma Include 与 聚合 COUNT)
    */

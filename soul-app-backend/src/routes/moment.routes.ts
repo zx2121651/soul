@@ -14,7 +14,10 @@ const momentService = new MomentService();
 router.get('/', authMiddleware, async (req, res, next) => {
   try {
     const viewerUuid = req.user?.uuid || 'soul_123456';
-    const posts = await momentService.getExploreMoments(viewerUuid);
+    // const posts = await momentService.getExploreMoments(viewerUuid); // 简单的基于时间流(Timeline)的分页
+
+    // 🔥 调用最新接入的极度复杂的推荐系统算法！
+    const posts = await momentService.getFeedRecommends(viewerUuid, 20);
     // 构造 ExploreResponse 需要的字段，目前为了兼容前端也可以放进 explore 对象里，或者直接返回
     sendSuccess(res, {
       explore: {

@@ -19,6 +19,7 @@ model User {
   name           String    // 居民昵称
   avatar         String?   // 头像URL
   bio            String?   // 个性签名/自我介绍
+  interests      String?   // JSON 数组：用户偏好的兴趣标签，用于推荐算法
 
   // 冗余统计字段（在大数据量下提高读取性能，需在业务代码中配合事务更新）
   followersCount Int       @default(0) // 粉丝数
@@ -45,6 +46,7 @@ model User {
   chatMemberships ChatRoomMember[]    // 该用户参与的私聊房间
   sentMessages    ChatMessage[]       // 该用户发送的私聊消息
   announcements   Announcement[]      // 该管理员发布的系统广播
+  momentHistories UserMomentHistory[] // 用户看过的动态历史（用于推荐系统排重）
 }
 
 // -----------------------------------------------------------------------------
@@ -101,6 +103,7 @@ model Moment {
   likes        MomentLike[]     // 收到点赞记录
   comments     MomentComment[]  // 收到的评论记录
   tags         MomentTag[]      // 关联的话题标签
+  histories    UserMomentHistory[] // 这条动态的所有曝光和点击记录
 
   @@index([authorId])
   @@index([status, createdAt]) // 广场列表查询优化索引
@@ -221,4 +224,22 @@ model Announcement {
   createdAt    DateTime  @default(now())
 
   admin        User?     @relation(fields: [adminId], references: [id])
+}
+
+
+// -----------------------------------------------------------------------------
+// 实体建模：推荐算法 - 用户浏览历史 (排重池)
+// -----------------------------------------------------------------------------
+model UserMomentHistory {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  momentId     Int
+  actionType   String    @default("view") // 'view'=已展现(曝光), 'click'=点击详情, 'dislike'=不感兴趣
+  createdAt    DateTime  @default(now())
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moment       Moment    @relation(fields: [momentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, momentId, actionType]) // 复合唯一键，防止重复记录
+  @@index([userId, createdAt])
 }
