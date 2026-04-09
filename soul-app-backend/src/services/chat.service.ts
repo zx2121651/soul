@@ -62,8 +62,20 @@ export class ChatService {
 
     // 2. 检测对方是否拉黑了自己 (模拟，实际应查询 block_relations 表)
     // 这里我们可以简单的抛出特定异常，如果数据库中找到了黑名单关系
-    // const isBlocked = await this.chatRepo.isUserBlockedByPartner(roomId, user.id);
-    // if (isBlocked) throw new Error('发送失败，对方已将你加入黑名单');
+    // 2. 真实检测拉黑：获取房间内除发送者外的其他人，判断他们是否拉黑了当前发送者
+    // 此处简化为一个双人房间的查询
+    const db = require('../db').getDb();
+    const partners = await db.query(
+      "SELECT user_id FROM chat_room_members WHERE room_id = $1 AND user_id != $2",
+      [roomId, user.id]
+    );
+    if (partners.rows.length > 0) {
+      const partnerId = partners.rows[0].user_id;
+      const isBlocked = await this.chatRepo.isUserBlocked(user.id, partnerId);
+      if (isBlocked) {
+        throw new Error('发送失败，对方开启了隐身或已将你加入黑名单屏蔽');
+      }
+    }
 
     // 3. 执行核心存库逻辑
     const newMessage = await this.chatRepo.saveMessage(roomId, user.id, text);

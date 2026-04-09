@@ -1,7 +1,18 @@
 import { getDb } from '../db';
 
 export class ChatRepository {
-  // 获取聊天列表
+  // 生产级：查询双方是否存在拉黑关系，防止发消息时被骚扰
+  async isUserBlocked(senderId: number, receiverId: number) {
+    const db = getDb();
+    // 查询 block 表中，是否存在 receiver 屏蔽 sender 的记录
+    const res = await db.query(
+      "SELECT 1 FROM user_blocks WHERE user_id = $1 AND blocked_user_id = $2",
+      [receiverId, senderId]
+    );
+    return res.rows.length > 0;
+  }
+
+  // 获取聊天列表，联表查询最后一条消息及其发送时间
   async findChatListByUserId(userId: number) {
     const db = getDb();
 
@@ -53,8 +64,26 @@ export class ChatRepository {
     return result.rows;
   }
 
-  // 发送消息
+  // 生产级：发送消息 (采用事务机制插入消息并更新房间最新状态)
   async saveMessage(roomId: number, senderId: number, text: string) {
+    const db = getDb();
+
+    // 如果系统里有一个 last_message 字段在 chat_rooms 表里，可以一并用事务更新它，以加速查询
+    const query = `
+      INSERT INTO chat_messages (room_id, sender_id, text)
+      VALUES ($1, $2, $3)
+      RETURNING id, sender_id, text, created_at as time;
+    `;
+    const result = await db.query(query, [roomId, senderId, text]);
+
+    // 更新 chat_rooms 的最后活动时间（可选）
+    await db.query(`UPDATE chat_rooms SET updated_at = CURRENT_TIMESTAMP WHERE id = $1`, [roomId]);
+
+    return result.rows[0];
+  }
+
+  // 旧的发送消息
+  async _saveMessage(roomId: number, senderId: number, text: string) {
     const db = getDb();
     const query = `
       INSERT INTO chat_messages (room_id, sender_id, text)

@@ -63,6 +63,13 @@ export async function initDb() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
+      CREATE TABLE IF NOT EXISTS user_follows (
+        follower_id INTEGER NOT NULL,
+        following_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (follower_id, following_id)
+      );
+
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         uuid TEXT UNIQUE NOT NULL,
@@ -71,6 +78,9 @@ export async function initDb() {
         name TEXT NOT NULL,
         avatar TEXT,
         bio TEXT,
+        followers INTEGER DEFAULT 0,
+        following INTEGER DEFAULT 0,
+        visitors INTEGER DEFAULT 0,
         status TEXT DEFAULT 'active',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
@@ -103,9 +113,17 @@ export async function initDb() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
+      CREATE TABLE IF NOT EXISTS user_blocks (
+        user_id INTEGER NOT NULL,
+        blocked_user_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY(user_id, blocked_user_id)
+      );
+
       CREATE TABLE IF NOT EXISTS chat_rooms (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
       CREATE TABLE IF NOT EXISTS chat_room_members (

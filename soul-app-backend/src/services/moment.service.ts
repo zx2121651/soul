@@ -5,9 +5,13 @@ export class MomentService {
   private userRepo = new UserRepository();
   private momentRepo = new MomentRepository();
 
-  // 获取广场列表
-  async getExploreMoments() {
-    const rawMoments = await this.momentRepo.findAll();
+  // 获取广场列表（生产级：带有登录用户上下文的个性化展现）
+  async getExploreMoments(viewerUuid: string) {
+    const viewer = await this.userRepo.findByUuid(viewerUuid);
+    const viewerId = viewer ? viewer.id : 0; // 支持未登录游客模式 (0 = 没点过赞)
+
+    // 支持按游标拉取第一页 (20条)，实际可以开放参数
+    const rawMoments = await this.momentRepo.findAllWithInteractions(viewerId, 20, 0);
     return rawMoments.map((m: any) => ({
       id: m.id,
       author: {
@@ -20,7 +24,8 @@ export class MomentService {
       type: m.type,
       time: new Date(m.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
       initialLikes: m.initiallikes || m.initialLikes || 0,
-      comments: Math.floor(Math.random() * 20) // 模拟评论数
+      isLiked: m.isLikedByMe, // 返回当前用户是否已经点赞
+      comments: Math.floor(Math.random() * 20) // 真实评论数需从 comments 表聚合
     }));
   }
 
@@ -49,8 +54,8 @@ export class MomentService {
       }
     }
 
-    // 3. 执行数据库插入操作
-    const createdMoment = await this.momentRepo.create(user.id, type, content, url);
+    // 3. 执行数据库插入操作 (使用事物包装)
+    const createdMoment = await this.momentRepo.createWithTransaction(user.id, type, content, url);
 
     // 4. (可选进阶) 将提取到的 tags 插入到话题表中，这里可以扩展为更新 trending topics
     if (tags.length > 0) {

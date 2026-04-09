@@ -9,7 +9,7 @@ export class UserService {
     const user = await this.userRepo.findByUuid(uuid);
     if (!user) throw new Error('User not found');
 
-    const rawMoments = await this.momentRepo.findByUserId(user.id);
+    const rawMoments = await this.momentRepo.findByUserId(user.id, user.id);
     const moments = rawMoments.map((m: any) => ({
       id: m.id,
       text: m.content,

@@ -11,7 +11,8 @@ const momentService = new MomentService();
 // 获取广场动态列表
 router.get('/', authMiddleware, async (req, res, next) => {
   try {
-    const posts = await momentService.getExploreMoments();
+    const viewerUuid = req.user?.uuid || 'soul_123456';
+    const posts = await momentService.getExploreMoments(viewerUuid);
     // 构造 ExploreResponse 需要的字段，目前为了兼容前端也可以放进 explore 对象里，或者直接返回
     sendSuccess(res, {
       explore: {
