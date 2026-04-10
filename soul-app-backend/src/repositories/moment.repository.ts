@@ -4,6 +4,114 @@ import { Prisma } from '@prisma/client';
 export class MomentRepository {
 
   /**
+   * 工业级增强：精准且深度的用户兴趣画像构建 (User Interest Profiling)
+   * 采用基于行为加权的分析方式：用户的 "点赞" 记作弱特征(2分)，"评论" 记作强特征(5分)。
+   */
+  async getDeepUserInterestProfile(userId: number): Promise<Record<string, number>> {
+    const db = getDb();
+
+    // 1. 获取最近 100 条点赞的动态标签 (弱特征: Weight = 2)
+    const likes = await db.momentLike.findMany({
+      where: { userId },
+      include: { moment: { include: { tags: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 100
+    });
+
+    // 2. 获取最近 50 条评论过的动态标签 (强特征: Weight = 5)
+    const comments = await db.momentComment.findMany({
+      where: { authorId: userId },
+      include: { moment: { include: { tags: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 50
+    });
+
+    const tagScores: Record<string, number> = {};
+
+    // 聚合点赞得分
+    for (const like of likes) {
+      if (like.moment && like.moment.tags) {
+        for (const t of like.moment.tags) {
+          tagScores[t.tagName] = (tagScores[t.tagName] || 0) + 2; // +2 兴趣分
+        }
+      }
+    }
+
+    // 聚合评论得分
+    for (const comment of comments) {
+      if (comment.moment && comment.moment.tags) {
+        for (const t of comment.moment.tags) {
+          tagScores[t.tagName] = (tagScores[t.tagName] || 0) + 5; // +5 兴趣分
+        }
+      }
+    }
+
+    return tagScores;
+  }
+
+  /**
+   * 工业级增强：多路召回通道之二 (Global Hot Recall)
+   * 获取全局高热度、未经当前用户曝光且不在黑名单中的动态
+   */
+  async getGlobalHotCandidates(viewerId: number, viewedIds: number[], blockedIds: number[], poolSize: number = 100) {
+    const db = getDb();
+    return await db.moment.findMany({
+      where: {
+        status: 'active',
+        authorId: { notIn: [viewerId, ...blockedIds] },
+        id: { notIn: viewedIds },
+        // 只召回基础互动量大(例如点赞数 >= 5)的内容作为热门候选
+        likesCount: { gte: 5 }
+      },
+      orderBy: { likesCount: 'desc' }, // 热度降序
+      take: poolSize,
+      include: {
+        author: { select: { id: true, name: true, avatar: true, bio: true, followersCount: true } },
+        tags: { select: { tagName: true } },
+        likes: { where: { userId: viewerId }, select: { userId: true } },
+        _count: { select: { comments: true } }
+      }
+    });
+  }
+
+  /**
+   * 工业级增强：多路召回通道之一 (Latest Fresh Recall)
+   * 获取最新发布的动态，保证推荐系统的内容有足够的新鲜度(Freshness)
+   */
+  async getLatestFreshCandidates(viewerId: number, viewedIds: number[], blockedIds: number[], poolSize: number = 100) {
+    const db = getDb();
+    return await db.moment.findMany({
+      where: {
+        status: 'active',
+        authorId: { notIn: [viewerId, ...blockedIds] },
+        id: { notIn: viewedIds }
+      },
+      orderBy: { createdAt: 'desc' }, // 时间降序
+      take: poolSize,
+      include: {
+        author: { select: { id: true, name: true, avatar: true, bio: true, followersCount: true } }, // 必须带出粉丝数用于权威度计算
+        tags: { select: { tagName: true } },
+        likes: { where: { userId: viewerId }, select: { userId: true } },
+        _count: { select: { comments: true } }
+      }
+    });
+  }
+
+  /**
+   * 社交图谱提取：获取当前用户的关注列表，用于后续对熟人动态进行加权(Social Boost)
+   */
+  async getUserFollowingIds(userId: number): Promise<number[]> {
+    if (!userId) return [];
+    const db = getDb();
+    const follows = await db.userFollow.findMany({
+      where: { followerId: userId },
+      select: { followingId: true }
+    });
+    return follows.map(f => f.followingId);
+  }
+
+
+  /**
    * 生产级推荐系统 (推荐池召回)：
    * 从数据库中批量拉取近期的、且排除用户已看过、且排除被拉黑对象的候选动态集合
    */
