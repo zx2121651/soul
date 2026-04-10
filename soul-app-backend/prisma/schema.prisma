@@ -91,6 +91,7 @@ model Moment {
   url          String?   // 媒体链接(图片/音频)
 
   // 冗余统计字段
+  viewsCount   Int       @default(0) // 真实曝光/阅读总数 (用于计算CTR转化率)
   likesCount   Int       @default(0) // 获赞数
   commentsCount Int      @default(0) // 评论数
 
@@ -242,4 +243,13 @@ model UserMomentHistory {
 
   @@unique([userId, momentId, actionType]) // 复合唯一键，防止重复记录
   @@index([userId, createdAt])
+}
+
+// -----------------------------------------------------------------------------
+// 实体建模：全站算法配置单例 (Global Algorithm Status)
+// -----------------------------------------------------------------------------
+model GlobalConfig {
+  key          String    @id
+  value        String    // JSON or Integer strings
+  updatedAt    DateTime  @updatedAt
 }

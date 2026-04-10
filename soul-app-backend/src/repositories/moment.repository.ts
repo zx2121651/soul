@@ -4,6 +4,119 @@ import { Prisma } from '@prisma/client';
 export class MomentRepository {
 
   /**
+   * 工业级终极增强：多路召回通道之三 (U2U2I 协同过滤召回 / Collaborative Filtering)
+   * 找到与当前用户“品味相似”的用户（他们点赞过相同的东西），
+   * 然后推荐这些“相似用户”最近点赞过、但当前用户还没看过的动态。
+   */
+  async getCollaborativeFilteringCandidates(viewerId: number, viewedIds: number[], blockedIds: number[], poolSize: number = 30) {
+    if (viewerId === 0) return [];
+    const db = getDb();
+
+    try {
+      // 1. 找出我最近点赞过的动态 ID (最多 20 条，太多算不动)
+      const myLikes = await db.momentLike.findMany({
+        where: { userId: viewerId },
+        select: { momentId: true },
+        orderBy: { createdAt: 'desc' },
+        take: 20
+      });
+      const myLikedMomentIds = myLikes.map(l => l.momentId);
+      if (myLikedMomentIds.length === 0) return [];
+
+      // 2. 找出同样点赞过这些动态的其他用户 (潜在相似品味的好友)，找出最活跃的 10 个人
+      const similarUsersResult = await db.momentLike.groupBy({
+        by: ['userId'],
+        where: {
+          momentId: { in: myLikedMomentIds },
+          userId: { notIn: [viewerId, ...blockedIds] }
+        },
+        _count: { userId: true },
+        orderBy: { _count: { userId: 'desc' } },
+        take: 10
+      });
+      const similarUserIds = similarUsersResult.map(s => s.userId);
+      if (similarUserIds.length === 0) return [];
+
+      // 3. 从这些“品味相似”的用户最近的点赞列表里，挑出我还没看过的动态作为推荐候选
+      const cfLikes = await db.momentLike.findMany({
+        where: {
+          userId: { in: similarUserIds },
+          momentId: { notIn: viewedIds } // 我没看过的
+        },
+        select: { momentId: true },
+        orderBy: { createdAt: 'desc' },
+        take: poolSize * 2
+      });
+      const cfMomentIds = Array.from(new Set(cfLikes.map(l => l.momentId))).slice(0, poolSize);
+
+      if (cfMomentIds.length === 0) return [];
+
+      // 4. 将这些动态的详细信息（带上作者、标签等）一并捞出
+      return await db.moment.findMany({
+        where: { id: { in: cfMomentIds }, status: 'active', authorId: { notIn: blockedIds } },
+        include: {
+          author: { select: { id: true, name: true, avatar: true, bio: true, followersCount: true } },
+          tags: { select: { tagName: true } },
+          likes: { where: { userId: viewerId }, select: { userId: true } },
+          _count: { select: { comments: true } }
+        }
+      });
+    } catch (e) {
+      console.warn('协同过滤召回失败', e);
+      return [];
+    }
+  }
+
+  /**
+   * 重构批量曝光记录：
+   * 不仅向 UserMomentHistory 写入记录，还要同时利用 Prisma 事务更新每一条 Moment 的总曝光(viewsCount)
+   * 并且更新全站流量盘 GlobalConfig (用于 UCB 探索置信区间计算)
+   */
+  async recordBatchExposureWithCTR(userId: number, momentIds: number[]) {
+    if (!userId || momentIds.length === 0) return;
+    const db = getDb();
+
+    try {
+      await db.$transaction(async (tx) => {
+        // 1. 给每条动态的真实展现量 viewsCount 加 1
+        await tx.moment.updateMany({
+          where: { id: { in: momentIds } },
+          data: { viewsCount: { increment: 1 } }
+        });
+
+        // 2. 插入个人排重记录，由于 SQLite 对并发支持薄弱，循环单条 try-catch 或者使用 upsert 模拟
+        for (const mid of momentIds) {
+          await tx.userMomentHistory.upsert({
+            where: { userId_momentId_actionType: { userId, momentId: mid, actionType: 'view' } },
+            update: {}, // 如果已存在什么都不做 (其实不会存在，因为之前过滤过)
+            create: { userId, momentId: mid, actionType: 'view' }
+          });
+        }
+
+        // 3. 更新全站总流量池，供 UCB 算法使用
+        await tx.globalConfig.upsert({
+          where: { key: 'TOTAL_MOMENT_EXPOSURE' },
+          update: { value: { set: (parseInt(await tx.globalConfig.findUnique({where: {key: 'TOTAL_MOMENT_EXPOSURE'}}).then(c => c?.value || '0')) + momentIds.length).toString() } },
+          create: { key: 'TOTAL_MOMENT_EXPOSURE', value: momentIds.length.toString() }
+        });
+      });
+    } catch (e) {
+      console.warn('记录批量曝光 (包含 viewsCount 累加) 出现冲突或失败', e);
+    }
+  }
+
+  async getTotalExposureCount(): Promise<number> {
+    try {
+      const db = getDb();
+      const config = await db.globalConfig.findUnique({ where: { key: 'TOTAL_MOMENT_EXPOSURE' } });
+      return config ? parseInt(config.value, 10) : 1000; // 兜底 1000 次，避免分母爆零
+    } catch (e) {
+      return 1000;
+    }
+  }
+
+
+  /**
    * 工业级增强：精准且深度的用户兴趣画像构建 (User Interest Profiling)
    * 采用基于行为加权的分析方式：用户的 "点赞" 记作弱特征(2分)，"评论" 记作强特征(5分)。
    */
@@ -164,23 +277,7 @@ export class MomentRepository {
     return candidates;
   }
 
-  /**
-   * 记录曝光历史（批处理批量插入，降低数据库连接开销）
-   */
-  async recordBatchExposure(userId: number, momentIds: number[]) {
-    if (!userId || momentIds.length === 0) return;
-    const db = getDb();
 
-    // SQLite with Prisma might throw unique constraint violations if we blindly createMany.
-    // Let's do a safe individual inserts or ignore errors
-    for (const mid of momentIds) {
-       try {
-         await db.userMomentHistory.create({
-           data: { userId, momentId: mid, actionType: 'view' }
-         });
-       } catch(e) { }
-    }
-  }
 
   /**
    * 获取用户的兴趣画像 (分析他点赞过、评论过的标签偏好)
