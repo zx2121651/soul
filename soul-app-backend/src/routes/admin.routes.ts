@@ -107,11 +107,16 @@ router.get('/moments', async (req, res) => {
     const limit = parseInt(req.query.limit as string) || 50;
     const offset = parseInt(req.query.offset as string) || 0;
     const status = (req.query.status as string) || 'active'; // 默认查询在架动态
+    const userIdStr = req.query.userId as string;
+    const userId = userIdStr ? parseInt(userIdStr, 10) : undefined;
+
+    const whereCondition: any = { status };
+    if (userId) whereCondition.authorId = userId;
 
     const [total, moments] = await Promise.all([
-      db.moment.count({ where: { status } }),
+      db.moment.count({ where: whereCondition }),
       db.moment.findMany({
-        where: { status },
+        where: whereCondition,
         take: limit,
         skip: offset,
         orderBy: { createdAt: 'desc' },

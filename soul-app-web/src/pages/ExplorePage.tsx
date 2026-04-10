@@ -69,15 +69,13 @@ export default function ExplorePage() {
       .catch(err => console.error("获取异星派对(语音房)失败", err));
   }, []);
 
-  const handleUserClick = (user: { name: string; avatar: string; isOnline?: boolean }) => {
-    setSelectedUser({
-      id: user.name,
-      name: user.name,
-      avatar: user.avatar,
-      gender: Math.random() > 0.5 ? 'male' : 'female',
-      age: Math.floor(18 + Math.random() * 10),
-      isOnline: user.isOnline
-    });
+  // 确保有正确的用户点击事件
+  const handleUserClick = (user: any) => {
+    if (user && user.id) {
+      navigate(`/user/${user.id}`);
+    } else {
+      console.warn('缺少 User ID 无法进入主页');
+    }
   };
 
   const handleCreateVoiceRoom = async () => {

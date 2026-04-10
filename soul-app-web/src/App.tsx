@@ -43,6 +43,9 @@ export default function App() {
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/me" element={<MePage onOpenEditor={() => setIsEditorOpen(true)} />} />
+              <Route path="/moment/:id" element={<MomentDetailPage />} />
+              <Route path="/user/:id" element={<UserProfilePage />} />
+              <Route path="/edit-profile" element={<EditProfilePage />} />
             <Route path="/voiceroom/:id" element={<VoiceRoomPage />} />
           </Routes>
           </Suspense>

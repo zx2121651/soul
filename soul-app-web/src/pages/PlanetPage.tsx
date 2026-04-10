@@ -73,19 +73,9 @@ export default function PlanetPage() {
 
 
   const handleNodeClick = (node: NodeData) => {
-    if (node.isSelf) return; // Optional: do not show modal for self
-
-    // Transform NodeData to UserProfileData
-    setSelectedUser({
-      id: node.id,
-      name: node.name,
-      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + node.name + '&backgroundColor=b6e3f4', // mock avatar
-      match: node.match,
-      gender: Math.random() > 0.5 ? 'male' : 'female',
-      age: Math.floor(18 + Math.random() * 10),
-      location: '银河系',
-      isOnline: Math.random() > 0.3
-    });
+    if (node.isSelf) return;
+    // 直接跳转到他人主页
+    window.location.href = `/user/${node.id}`;
   };
 
   return (
