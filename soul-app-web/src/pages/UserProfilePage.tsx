@@ -16,7 +16,7 @@ export default function UserProfilePage() {
 
   const fetchUser = async () => {
     try {
-      const res = await api.get<{ profile: UserProfile, moments: MomentData[], isFollowing: boolean }>(\`/users/\${id}\`);
+      const res = await api.get<{ profile: UserProfile, moments: MomentData[], isFollowing: boolean }>(`/users/${id}`);
       setProfile(res.profile);
       setMoments(res.moments || []);
       setIsFollowing(res.isFollowing || false);
@@ -39,21 +39,21 @@ export default function UserProfilePage() {
     // 乐观更新粉丝数
     setProfile({
       ...profile,
-      followers: profile.followers + (!originalFollowing ? 1 : -1)
+      followers: (profile.followers || 0) + (!originalFollowing ? 1 : -1)
     });
 
     try {
       if (!originalFollowing) {
-        await api.post(\`/users/\${id}/follow\`);
+        await api.post(`/users/${id}/follow`);
       } else {
-        await api.delete(\`/users/\${id}/follow\`);
+        await api.delete(`/users/${id}/follow`);
       }
     } catch (e) {
       // 失败回滚
       setIsFollowing(originalFollowing);
       setProfile({
         ...profile,
-        followers: profile.followers + (originalFollowing ? 1 : -1)
+        followers: (profile.followers || 0) + (originalFollowing ? 1 : -1)
       });
     }
   };
@@ -102,7 +102,7 @@ export default function UserProfilePage() {
             </div>
             <div className="w-px h-6 bg-white/10"></div>
             <div className="text-center">
-              <div className="text-white font-bold text-lg">{profile.followers}</div>
+              <div className="text-white font-bold text-lg">{(profile.followers || 0)}</div>
               <div className="text-gray-500 text-xs mt-1">粉丝</div>
             </div>
           </div>
@@ -111,11 +111,11 @@ export default function UserProfilePage() {
           <div className="flex items-center justify-center gap-4 mt-8 w-full">
             <button
               onClick={handleFollowToggle}
-              className={\`flex-1 max-w-[140px] flex items-center justify-center gap-2 py-2.5 rounded-full font-bold text-sm transition-all \${
+              className={`flex-1 max-w-[140px] flex items-center justify-center gap-2 py-2.5 rounded-full font-bold text-sm transition-all ${
                 isFollowing
                   ? 'bg-white/10 text-white hover:bg-white/20'
                   : 'bg-gradient-to-r from-cyan-400 to-blue-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.4)] active:scale-95'
-              }\`}
+              }`}
             >
               {isFollowing ? <UserCheck size={18} /> : <UserPlus size={18} />}
               {isFollowing ? '已关注' : '关注'}
@@ -144,20 +144,20 @@ export default function UserProfilePage() {
               {moments.map(m => (
                 <div
                   key={m.id}
-                  onClick={() => navigate(\`/moment/\${m.id}\`)}
+                  onClick={() => navigate(`/moment/${m.id}`)}
                   className="bg-[#1c1e2b] rounded-2xl overflow-hidden aspect-[4/5] relative cursor-pointer active:scale-95 transition-transform border border-white/5"
                 >
-                  {m.image ? (
-                    <img src={m.image} alt="post" className="w-full h-full object-cover" />
+                  {(m as any).image ? (
+                    <img src={(m as any).image} alt="post" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full p-4 flex flex-col justify-between">
-                       <p className="text-white/80 text-sm line-clamp-4">{m.text}</p>
-                       <span className="text-gray-500 text-[10px]">{new Date(m.time).toLocaleDateString()}</span>
+                       <p className="text-white/80 text-sm line-clamp-4">{(m as any).text}</p>
+                       <span className="text-gray-500 text-[10px]">{new Date((m as any).time).toLocaleDateString()}</span>
                     </div>
                   )}
-                  {m.image && (
+                  {(m as any).image && (
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-3">
-                      <p className="text-white text-xs font-medium line-clamp-2 shadow-sm drop-shadow-md">{m.text}</p>
+                      <p className="text-white text-xs font-medium line-clamp-2 shadow-sm drop-shadow-md">{(m as any).text}</p>
                     </div>
                   )}
                 </div>

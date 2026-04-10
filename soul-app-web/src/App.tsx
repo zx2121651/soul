@@ -6,6 +6,9 @@ const PlanetPage = React.lazy(() => import('./pages/PlanetPage'));
 const ExplorePage = React.lazy(() => import('./pages/ExplorePage'));
 const ChatPage = React.lazy(() => import('./pages/ChatPage'));
 const MePage = React.lazy(() => import('./pages/MePage'));
+const MomentDetailPage = React.lazy(() => import('./pages/MomentDetailPage'));
+const UserProfilePage = React.lazy(() => import('./pages/UserProfilePage'));
+const EditProfilePage = React.lazy(() => import('./pages/EditProfilePage'));
 const VoiceRoomPage = React.lazy(() => import('./pages/VoiceRoomPage'));
 
 const FallbackLoader = () => (

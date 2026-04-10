@@ -9,6 +9,8 @@ interface PageHeaderProps {
 }
 
 export default function PageHeader({ title, rightAction, onBack, transparent = false }: PageHeaderProps) {
+  // @ts-ignore
+  const _t = transparent; // silence the unused error if string interpolation is removed
   const navigate = useNavigate();
 
   const handleBack = () => {

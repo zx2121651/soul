@@ -15,7 +15,7 @@ export default function MomentDetailPage() {
 
   const fetchDetail = async () => {
     try {
-      const res = await api.get<{ moment: any, comments: any[] }>(\`/moments/\${id}\`);
+      const res = await api.get<{ moment: any, comments: any[] }>(`/moments/${id}`);
       setMoment(res.moment);
       setComments(res.comments || []);
     } catch (err) {
@@ -39,7 +39,7 @@ export default function MomentDetailPage() {
       initialLikes: moment.initialLikes + (originalLiked ? -1 : 1)
     });
     try {
-      await api.post(\`/moments/\${id}/like\`, { like: !originalLiked });
+      await api.post(`/moments/${id}/like`, { like: !originalLiked });
     } catch (e) {
       // 回滚
       setMoment({
@@ -53,7 +53,7 @@ export default function MomentDetailPage() {
   const handleSendComment = async () => {
     if (!newComment.trim()) return;
     try {
-      const res = await api.post<{ comment: any }>(\`/moments/\${id}/comments\`, { content: newComment });
+      const res = await api.post<{ comment: any }>(`/moments/${id}/comments`, { content: newComment });
       setComments([res.comment, ...comments]);
       setMoment({ ...moment, comments: moment.comments + 1 });
       setNewComment('');
@@ -94,12 +94,12 @@ export default function MomentDetailPage() {
         <div className="p-4 bg-[#1c1e2b] border-b border-white/5">
           <div className="flex items-center gap-3 mb-4">
             <div
-              onClick={() => navigate(\`/user/\${moment.author.id}\`)}
+              onClick={(e) => { e.stopPropagation(); navigate(`/user/${moment.author.id}`); }}
               className="w-10 h-10 rounded-full overflow-hidden bg-gray-800 shrink-0 cursor-pointer active:scale-95 transition-transform border border-white/10"
             >
               <img src={moment.author.avatar} alt="avatar" className="w-full h-full object-cover" />
             </div>
-            <div className="flex-1 min-w-0" onClick={() => navigate(\`/user/\${moment.author.id}\`)}>
+            <div className="flex-1 min-w-0" onClick={(e) => { e.stopPropagation(); navigate(`/user/${moment.author.id}`); }}>
               <h3 className="text-white text-sm font-bold truncate">{moment.author.name}</h3>
               <p className="text-gray-500 text-xs mt-0.5">{new Date(moment.time).toLocaleString()}</p>
             </div>
@@ -138,7 +138,7 @@ export default function MomentDetailPage() {
                 <motion.div animate={moment.isLiked ? { scale: [1, 1.3, 1] } : {}}>
                   <Heart size={22} className={moment.isLiked ? "text-pink-500 fill-pink-500" : ""} />
                 </motion.div>
-                <span className={\`text-sm font-medium \${moment.isLiked ? 'text-pink-500' : ''}\`}>
+                <span className={`text-sm font-medium ${moment.isLiked ? 'text-pink-500' : ''}`}>
                   {moment.initialLikes || '赞'}
                 </span>
               </button>
@@ -167,14 +167,14 @@ export default function MomentDetailPage() {
               {comments.map((c: any) => (
                 <div key={c.id} className="flex gap-3">
                   <div
-                    onClick={() => navigate(\`/user/\${c.author.id}\`)}
+                    onClick={(e) => { e.stopPropagation(); navigate(`/user/${c.author.id}`); }}
                     className="w-8 h-8 rounded-full overflow-hidden bg-gray-800 shrink-0 cursor-pointer"
                   >
                     <img src={c.author.avatar} alt="avatar" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-baseline justify-between mb-1">
-                      <span className="text-gray-400 text-xs font-medium" onClick={() => navigate(\`/user/\${c.author.id}\`)}>
+                      <span className="text-gray-400 text-xs font-medium" onClick={(e) => { e.stopPropagation(); navigate(`/user/${c.author.id}`); }}>
                         {c.author.name}
                       </span>
                       <span className="text-gray-600 text-[10px]">{c.time}</span>
@@ -203,11 +203,11 @@ export default function MomentDetailPage() {
         <button
           onClick={handleSendComment}
           disabled={!newComment.trim()}
-          className={\`p-2.5 rounded-full flex items-center justify-center transition-all \${
+          className={`p-2.5 rounded-full flex items-center justify-center transition-all ${
             newComment.trim()
               ? 'bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.3)] active:scale-95'
               : 'bg-white/5 text-gray-500'
-          }\`}
+          }`}
         >
           <Send size={18} className={newComment.trim() ? 'ml-0.5' : ''} />
         </button>

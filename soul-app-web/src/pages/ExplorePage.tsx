@@ -217,7 +217,7 @@ export default function ExplorePage() {
       <div className="mt-6 px-4 flex flex-col gap-4">
         {posts.map(post => (
           <div key={post.id} className="bg-[#1c1e2b] p-4 rounded-2xl border border-[#2a2c3d]">
-            <div className="flex items-center gap-3 mb-3" onClick={() => handleUserClick(post.user)}>
+            <div className="flex items-center gap-3 mb-3" onClick={(e) => { e.stopPropagation(); handleUserClick((post as any).author || post.user); }}>
               <img src={post.user.avatar} alt="avatar" className="w-10 h-10 rounded-full bg-gray-700" />
               <div>
                 <h4 className="text-white text-sm font-medium">{post.user.name}</h4>

@@ -10,7 +10,9 @@ import { Settings, Eye, ChevronRight, Bell, HelpCircle, LogOut, ChevronLeft, Pen
 
 
 
+import { useNavigate } from 'react-router-dom';
 export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'moments' | 'cocreate' | 'about'>('moments');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -41,8 +43,8 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
 
       {/* Top Header Actions */}
       <div className="relative z-10 px-4 pt-12 pb-4 flex justify-end gap-4 text-white">
-        <button className="bg-black/30 backdrop-blur-md p-2 rounded-full">
-          <Eye size={20} />
+        <button onClick={() => navigate('/edit-profile')} className="bg-black/30 backdrop-blur-md p-2 rounded-full active:scale-95 transition-transform text-cyan-400">
+          <PenSquare size={20} />
         </button>
         <button onClick={() => setIsSettingsOpen(true)} className="bg-black/30 backdrop-blur-md p-2 rounded-full active:scale-95 transition-transform">
           <Settings size={20} />
