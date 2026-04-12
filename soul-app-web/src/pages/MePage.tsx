@@ -10,22 +10,28 @@ import { Settings, Eye, ChevronRight, Bell, HelpCircle, LogOut, ChevronLeft, Pen
 
 
 
+import { useNavigate } from 'react-router-dom';
 export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'moments' | 'cocreate' | 'about'>('moments');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const [profile, setProfile] = useState<UserProfile>({
-    name: '{profile.name}', id: '', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=me&backgroundColor=f4b6c2', followers: 128, following: 342, visitors: 89, bio: ''
+    name: '星球居民', id: 'soul_...', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=me&backgroundColor=f4b6c2', followers: 0, following: 0, visitors: 0, bio: '正在连接星球信号...'
   });
   const [moments, setMoments] = useState<MomentData[]>([]);
 
+
   useEffect(() => {
-    api.get<MeDataResponse>('/users/me').then(data => {
-        if(data.profile) setProfile(data.profile);
-        if(data.moments) setMoments(data.moments);
+    // 从后端真实的获取当前登录用户的信息以及他的过往动态
+    api.get<MeDataResponse>('/users/me')
+      .then(data => {
+        if (data.profile) setProfile(data.profile);
+        if (data.moments) setMoments(data.moments);
       })
-      .catch(err => console.error("Failed to fetch me data", err));
+      .catch(err => console.error("获取个人资料失败", err))
+      ;
   }, []);
 
 
@@ -37,8 +43,8 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
 
       {/* Top Header Actions */}
       <div className="relative z-10 px-4 pt-12 pb-4 flex justify-end gap-4 text-white">
-        <button className="bg-black/30 backdrop-blur-md p-2 rounded-full">
-          <Eye size={20} />
+        <button onClick={() => navigate('/edit-profile')} className="bg-black/30 backdrop-blur-md p-2 rounded-full active:scale-95 transition-transform text-cyan-400">
+          <PenSquare size={20} />
         </button>
         <button onClick={() => setIsSettingsOpen(true)} className="bg-black/30 backdrop-blur-md p-2 rounded-full active:scale-95 transition-transform">
           <Settings size={20} />

@@ -1,100 +1,93 @@
 import { getDb } from '../db';
+import { Prisma } from '@prisma/client';
 
 export class ChatRepository {
-  // 获取聊天列表
+  async isUserBlocked(senderId: number, receiverId: number) {
+    const res = await getDb().userBlock.findUnique({
+      where: { blockerId_blockedId: { blockerId: receiverId, blockedId: senderId } }
+    });
+    return !!res;
+  }
+
   async findChatListByUserId(userId: number) {
-    const db = getDb();
+    // 复杂查询：查询当前用户所在的私聊房间，及该房间的最新一条消息
+    const rooms = await getDb().chatRoomMember.findMany({
+      where: { userId },
+      include: {
+        room: {
+          include: {
+            members: {
+              where: { userId: { not: userId } },
+              include: { user: { select: { id: true, uuid: true, name: true, avatar: true } } }
+            },
+            messages: {
+              orderBy: { createdAt: 'desc' },
+              take: 1
+            }
+          }
+        }
+      }
+    });
 
-    // 复杂联表查询：查找我所在的聊天室、对方的信息、以及该房间最后一条消息
-    const query = `
-      WITH MyRooms AS (
-        SELECT room_id FROM chat_room_members WHERE user_id = $1
-      ),
-      LatestMessages AS (
-        SELECT
-          room_id,
-          text as last_message,
-          created_at as time,
-          ROW_NUMBER() OVER(PARTITION BY room_id ORDER BY created_at DESC) as rn
-        FROM chat_messages
-        WHERE room_id IN (SELECT room_id FROM MyRooms)
-      )
-      SELECT
-        c.id as room_id,
-        u.name,
-        u.avatar,
-        u.id as other_user_id,
-        u.uuid as other_user_uuid,
-        lm.last_message,
-        lm.time,
-        (u.uuid = 'soul_bot_001') as is_official
-      FROM chat_rooms c
-      JOIN chat_room_members crm ON c.id = crm.room_id AND crm.user_id != $1
-      JOIN users u ON crm.user_id = u.id
-      LEFT JOIN LatestMessages lm ON c.id = lm.room_id AND lm.rn = 1
-      WHERE c.id IN (SELECT room_id FROM MyRooms)
-      ORDER BY lm.time DESC ;
-    `;
-
-    const result = await db.query(query, [userId]);
-    return result.rows;
+    return rooms.map(m => {
+      const room = m.room;
+      const partner = room.members[0]?.user;
+      const lastMsg = room.messages[0];
+      return {
+        room_id: room.id,
+        name: partner?.name || '未知用户',
+        avatar: partner?.avatar,
+        other_user_id: partner?.id,
+        other_user_uuid: partner?.uuid,
+        last_message: lastMsg ? lastMsg.text : null,
+        time: lastMsg ? lastMsg.createdAt : room.createdAt,
+        is_official: partner?.uuid === 'soul_bot_001',
+        unread_count: m.unreadCount
+      };
+    }).sort((a, b) => b.time.getTime() - a.time.getTime());
   }
 
-  // 获取特定房间的消息
   async findMessagesByRoomId(roomId: number) {
-    const db = getDb();
-    const query = `
-      SELECT m.id, m.sender_id, m.text, m.created_at as time
-      FROM chat_messages m
-      WHERE m.room_id = $1
-      ORDER BY m.created_at ASC;
-    `;
-    const result = await db.query(query, [roomId]);
-    return result.rows;
+    return await getDb().chatMessage.findMany({
+      where: { roomId },
+      orderBy: { createdAt: 'asc' }
+    });
   }
 
-  // 发送消息
   async saveMessage(roomId: number, senderId: number, text: string) {
-    const db = getDb();
-    const query = `
-      INSERT INTO chat_messages (room_id, sender_id, text)
-      VALUES ($1, $2, $3)
-      RETURNING id, sender_id, text, created_at as time;
-    `;
-    const result = await db.query(query, [roomId, senderId, text]);
-    return result.rows[0];
+    return await getDb().$transaction(async (tx) => {
+      const msg = await tx.chatMessage.create({
+        data: { roomId, senderId, text }
+      });
+      await tx.chatRoom.update({
+        where: { id: roomId },
+        data: { updatedAt: new Date() }
+      });
+      return msg;
+    });
   }
 
-  // 获取或者创建房间
   async getOrCreateRoom(userId1: number, userId2: number) {
     const db = getDb();
+    // 查找是否已有共有房间
+    const existingRooms = await db.chatRoomMember.groupBy({
+      by: ['roomId'],
+      where: { userId: { in: [userId1, userId2] } },
+      having: { roomId: { _count: { equals: 2 } } }
+    });
 
-    // 检查是否已经存在这两个人的房间
-    const checkQuery = `
-      SELECT room_id
-      FROM chat_room_members
-      WHERE user_id IN ($1, $2)
-      GROUP BY room_id
-      HAVING COUNT(DISTINCT user_id) = 2;
-    `;
-    const checkResult = await db.query(checkQuery, [userId1, userId2]);
-
-    if (checkResult.rows.length > 0) {
-      return checkResult.rows[0].room_id; // 返回已有的房间ID
+    if (existingRooms.length > 0) {
+      return existingRooms[0].roomId;
     }
 
     // 创建新房间
-    const createRoomQuery = `INSERT INTO chat_rooms DEFAULT VALUES RETURNING id;`;
-    const roomResult = await db.query(createRoomQuery);
-    const roomId = roomResult.rows[0].id;
-
-    // 添加成员
-    const addMembersQuery = `
-      INSERT INTO chat_room_members (room_id, user_id)
-      VALUES ($1, $2), ($1, $3);
-    `;
-    await db.query(addMembersQuery, [roomId, userId1, userId2]);
-
-    return roomId;
+    const newRoom = await db.chatRoom.create({
+      data: {
+        members: {
+          create: [{ userId: userId1 }, { userId: userId2 }]
+        }
+      }
+    });
+    return newRoom.id;
   }
 }

@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import ChatRoom from '../components/ChatRoom';
 export interface ChatData { id: string | number; name: string; avatar: string; lastMessage: string; time: string; unread: number; isOfficial?: boolean; }
-import type { ChatResponse } from '../types';
+// import type { ChatResponse } from '../types';
 
 
 
@@ -15,26 +15,21 @@ import type { ChatResponse } from '../types';
 
 
 
-const pinnedUsers = [
-  { id: 101, name: '夏天🌿', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=summer&backgroundColor=c0aede', isOnline: true },
-  { id: 102, name: '陈子豪', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=chen&backgroundColor=b6e3f4', isOnline: true },
-  { id: 103, name: '晚风', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=wind&backgroundColor=d4fc79', isOnline: false },
-  { id: 104, name: '冰美式☕', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=coffee&backgroundColor=ffd5dc', isOnline: true },
-  { id: 105, name: '月尊🌙', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=moon&backgroundColor=ffdfbf', isOnline: false },
-];
+
 
 
 
 export default function ChatPage() {
   const [chats, setChats] = useState<ChatData[]>([]);
+  const [pinnedUsers, setPinnedUsers] = useState<any[]>([]); // 增加真实置顶联系人状态
   const [activeChat, setActiveChat] = useState<ChatData | null>(null);
   //
 
   useEffect(() => {
     // 从真实的 social 路由获取聊天列表，带上中文注释
-    api.get<ChatResponse>('/social/chat').then(data => {
+    api.get<any>('/social/chat').then(data => {
         setChats(data.chats || []);
-
+        setPinnedUsers(data.pinnedUsers || []);
       })
       .catch(err => console.error("Failed to fetch chat data", err));
   }, []);

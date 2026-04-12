@@ -5,6 +5,9 @@ import MainLayout from './layout/MainLayout';
 import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
 import Moments from './pages/Moments';
+import VoiceRooms from './pages/VoiceRooms';
+import Announcements from './pages/Announcements';
+import Banners from './pages/Banners';
 
 function App() {
   return (
@@ -45,6 +48,9 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="users" element={<Users />} />
             <Route path="moments" element={<Moments />} />
+            <Route path="voicerooms" element={<VoiceRooms />} />
+            <Route path="announcements" element={<Announcements />} />
+            <Route path="banners" element={<Banners />} />
           </Route>
         </Routes>
       </BrowserRouter>

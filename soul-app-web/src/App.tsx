@@ -6,6 +6,9 @@ const PlanetPage = React.lazy(() => import('./pages/PlanetPage'));
 const ExplorePage = React.lazy(() => import('./pages/ExplorePage'));
 const ChatPage = React.lazy(() => import('./pages/ChatPage'));
 const MePage = React.lazy(() => import('./pages/MePage'));
+const MomentDetailPage = React.lazy(() => import('./pages/MomentDetailPage'));
+const UserProfilePage = React.lazy(() => import('./pages/UserProfilePage'));
+const EditProfilePage = React.lazy(() => import('./pages/EditProfilePage'));
 const VoiceRoomPage = React.lazy(() => import('./pages/VoiceRoomPage'));
 
 const FallbackLoader = () => (
@@ -43,6 +46,9 @@ export default function App() {
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/me" element={<MePage onOpenEditor={() => setIsEditorOpen(true)} />} />
+              <Route path="/moment/:id" element={<MomentDetailPage />} />
+              <Route path="/user/:id" element={<UserProfilePage />} />
+              <Route path="/edit-profile" element={<EditProfilePage />} />
             <Route path="/voiceroom/:id" element={<VoiceRoomPage />} />
           </Routes>
           </Suspense>
