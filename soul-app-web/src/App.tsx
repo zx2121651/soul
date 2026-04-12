@@ -14,6 +14,7 @@ const VoiceRoomPage = React.lazy(() => import('./pages/VoiceRoomPage'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
 const NotificationsPage = React.lazy(() => import('./pages/NotificationsPage'));
+const UserListPage = React.lazy(() => import('./pages/UserListPage'));
 
 const FallbackLoader = () => (
   <div className="w-full h-full flex items-center justify-center bg-[#171822]">
@@ -61,6 +62,7 @@ const AppLayout = () => {
             <Route path="/me" element={<RequireAuth><MePage onOpenEditor={() => setIsEditorOpen(true)} /></RequireAuth>} />
             <Route path="/moment/:id" element={<RequireAuth><MomentDetailPage /></RequireAuth>} />
             <Route path="/user/:id" element={<RequireAuth><UserProfilePage /></RequireAuth>} />
+            <Route path="/user/:id/:type" element={<RequireAuth><UserListPage /></RequireAuth>} />
             <Route path="/edit-profile" element={<RequireAuth><EditProfilePage /></RequireAuth>} />
             <Route path="/voiceroom/:id" element={<RequireAuth><VoiceRoomPage /></RequireAuth>} />
             <Route path="/notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />

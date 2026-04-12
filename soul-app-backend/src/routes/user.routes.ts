@@ -115,8 +115,53 @@ router.post('/:id/block', authMiddleware, async (req, res, next) => {
   }
 });
 
-export default router;
 
+// ==================== 关注/粉丝列表 ====================
+router.get('/:id/followers', async (req, res, next) => {
+  try {
+    const db = require('../db').getDb();
+    const targetId = parseInt(req.params.id as string, 10);
+
+    const followersRecord = await db.userFollow.findMany({
+      where: { followingId: targetId },
+      include: {
+        follower: {
+          select: { id: true, name: true, avatar: true, bio: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const followers = followersRecord.map((f: any) => f.follower);
+    sendSuccess(res, { users: followers });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/:id/following', async (req, res, next) => {
+  try {
+    const db = require('../db').getDb();
+    const targetId = parseInt(req.params.id as string, 10);
+
+    const followingRecord = await db.userFollow.findMany({
+      where: { followerId: targetId },
+      include: {
+        following: {
+          select: { id: true, name: true, avatar: true, bio: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const following = followingRecord.map((f: any) => f.following);
+    sendSuccess(res, { users: following });
+  } catch (err) {
+    next(err);
+  }
+});
+
+export default router;
 // ==================== 他人主页资料 (User Profile) ====================
 router.get('/:id', authMiddleware, async (req, res, next) => {
   try {
