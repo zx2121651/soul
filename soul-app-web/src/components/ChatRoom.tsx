@@ -17,6 +17,8 @@ interface ChatRoomProps {
 export default function ChatRoom({ user, onBack }: ChatRoomProps) {
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
 
   const [showPlusMenu, setShowPlusMenu] = useState(false);
@@ -150,12 +152,16 @@ export default function ChatRoom({ user, onBack }: ChatRoomProps) {
                     <img src={user.avatar} alt="avatar" className="w-9 h-9 rounded-full bg-gray-800 object-cover shrink-0 shadow-sm" />
                   )}
 
-                  <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-[15px] leading-relaxed shadow-sm ${
+                  <div className={`max-w-[75%] ${msg.text.startsWith('[img]') ? 'p-0 bg-transparent' : 'px-4 py-2.5 rounded-2xl shadow-sm'} text-[15px] leading-relaxed ${
                     msg.isMe
                       ? 'bg-gradient-to-tr from-cyan-500 to-blue-500 text-white rounded-br-sm'
                       : 'bg-[#252836] text-white rounded-bl-sm'
                   }`}>
-                    {msg.text}
+                    {msg.text.startsWith('[img]') ? (
+                      <img src={msg.text.replace('[img]', '')} alt="sent image" className="max-w-[200px] max-h-[300px] rounded-xl object-cover cursor-pointer hover:opacity-90" />
+                    ) : (
+                      msg.text
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -225,13 +231,13 @@ export default function ChatRoom({ user, onBack }: ChatRoomProps) {
                 className="bg-[#1c1e2b] border-t border-white/5 shrink-0 overflow-hidden"
               >
                 <div className="p-6 flex gap-6">
-                  <div className="flex flex-col items-center gap-2 cursor-pointer group">
+                  <div className="flex flex-col items-center gap-2 cursor-pointer group" onClick={() => cameraInputRef.current?.click()}>
                     <div className="w-14 h-14 bg-[#252836] rounded-2xl flex items-center justify-center group-hover:bg-white/10 transition-colors">
                        <Camera size={24} className="text-gray-300" />
                     </div>
                     <span className="text-xs text-gray-400">拍摄</span>
                   </div>
-                  <div className="flex flex-col items-center gap-2 cursor-pointer group">
+                  <div className="flex flex-col items-center gap-2 cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
                     <div className="w-14 h-14 bg-[#252836] rounded-2xl flex items-center justify-center group-hover:bg-white/10 transition-colors">
                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-300"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                     </div>
