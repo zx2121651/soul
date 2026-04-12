@@ -290,28 +290,40 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
 
               <div className="flex-1 overflow-y-auto py-4">
                 <div className="flex flex-col space-y-1">
-                  <button className="flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors active:bg-white/10">
+                  <button
+                    onClick={() => { setIsSettingsOpen(false); navigate('/settings/account'); }}
+                    className="flex items-center justify-between w-full px-6 py-4 hover:bg-white/5 transition-colors active:bg-white/10"
+                  >
                     <div className="flex items-center gap-3 text-gray-200">
                       <Lock size={18} className="text-gray-400" />
                       <span className="text-sm font-medium">账号与安全</span>
                     </div>
                     <ChevronRight size={18} className="text-gray-500" />
                   </button>
-                  <button className="flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors active:bg-white/10">
+                  <button
+                    onClick={() => { setIsSettingsOpen(false); navigate('/settings/notifications'); }}
+                    className="flex items-center justify-between w-full px-6 py-4 hover:bg-white/5 transition-colors active:bg-white/10"
+                  >
                     <div className="flex items-center gap-3 text-gray-200">
                       <Bell size={18} className="text-gray-400" />
                       <span className="text-sm font-medium">消息通知</span>
                     </div>
                     <ChevronRight size={18} className="text-gray-500" />
                   </button>
-                  <button className="flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors active:bg-white/10">
+                  <button
+                    onClick={() => { setIsSettingsOpen(false); navigate('/settings/privacy'); }}
+                    className="flex items-center justify-between w-full px-6 py-4 hover:bg-white/5 transition-colors active:bg-white/10"
+                  >
                     <div className="flex items-center gap-3 text-gray-200">
                       <Eye size={18} className="text-gray-400" />
                       <span className="text-sm font-medium">隐私设置</span>
                     </div>
                     <ChevronRight size={18} className="text-gray-500" />
                   </button>
-                  <button className="flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors active:bg-white/10">
+                  <button
+                    onClick={() => { setIsSettingsOpen(false); navigate('/settings/help'); }}
+                    className="flex items-center justify-between w-full px-6 py-4 hover:bg-white/5 transition-colors active:bg-white/10"
+                  >
                     <div className="flex items-center gap-3 text-gray-200">
                       <HelpCircle size={18} className="text-gray-400" />
                       <span className="text-sm font-medium">帮助与反馈</span>

@@ -15,6 +15,10 @@ const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
 const NotificationsPage = React.lazy(() => import('./pages/NotificationsPage'));
 const UserListPage = React.lazy(() => import('./pages/UserListPage'));
+const SettingsAccountPage = React.lazy(() => import('./pages/SettingsAccountPage'));
+const SettingsNotificationPage = React.lazy(() => import('./pages/SettingsNotificationPage'));
+const SettingsPrivacyPage = React.lazy(() => import('./pages/SettingsPrivacyPage'));
+const SettingsHelpPage = React.lazy(() => import('./pages/SettingsHelpPage'));
 
 const FallbackLoader = () => (
   <div className="w-full h-full flex items-center justify-center bg-[#171822]">
@@ -66,6 +70,10 @@ const AppLayout = () => {
             <Route path="/edit-profile" element={<RequireAuth><EditProfilePage /></RequireAuth>} />
             <Route path="/voiceroom/:id" element={<RequireAuth><VoiceRoomPage /></RequireAuth>} />
             <Route path="/notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
+            <Route path="/settings/account" element={<RequireAuth><SettingsAccountPage /></RequireAuth>} />
+            <Route path="/settings/notifications" element={<RequireAuth><SettingsNotificationPage /></RequireAuth>} />
+            <Route path="/settings/privacy" element={<RequireAuth><SettingsPrivacyPage /></RequireAuth>} />
+            <Route path="/settings/help" element={<RequireAuth><SettingsHelpPage /></RequireAuth>} />
           </Routes>
         </Suspense>
       </div>
