@@ -15,6 +15,12 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'moments' | 'cocreate' | 'about'>('moments');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem('soul_token');
+    window.location.href = '/login';
+  };
+
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const [profile, setProfile] = useState<UserProfile>({
@@ -316,7 +322,7 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
               </div>
 
               <div className="p-6 border-t border-white/5 pb-12">
-                <button className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-red-500/10 text-red-500 text-sm font-bold hover:bg-red-500/20 transition-colors active:scale-95">
+                <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-red-500/10 text-red-500 text-sm font-bold hover:bg-red-500/20 transition-colors active:scale-95">
                   <LogOut size={16} />
                   退出登录
                 </button>
