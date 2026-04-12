@@ -19,6 +19,7 @@ const SettingsAccountPage = React.lazy(() => import('./pages/SettingsAccountPage
 const SettingsNotificationPage = React.lazy(() => import('./pages/SettingsNotificationPage'));
 const SettingsPrivacyPage = React.lazy(() => import('./pages/SettingsPrivacyPage'));
 const SettingsHelpPage = React.lazy(() => import('./pages/SettingsHelpPage'));
+const TagMomentsPage = React.lazy(() => import('./pages/TagMomentsPage'));
 
 const FallbackLoader = () => (
   <div className="w-full h-full flex items-center justify-center bg-[#171822]">
@@ -74,6 +75,7 @@ const AppLayout = () => {
             <Route path="/settings/notifications" element={<RequireAuth><SettingsNotificationPage /></RequireAuth>} />
             <Route path="/settings/privacy" element={<RequireAuth><SettingsPrivacyPage /></RequireAuth>} />
             <Route path="/settings/help" element={<RequireAuth><SettingsHelpPage /></RequireAuth>} />
+            <Route path="/tag/:tagName" element={<RequireAuth><TagMomentsPage /></RequireAuth>} />
           </Routes>
         </Suspense>
       </div>

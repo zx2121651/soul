@@ -245,7 +245,11 @@ export default function ExplorePage() {
 
             <div className="flex gap-2 mb-4">
               {post.tags.map(tag => (
-                <span key={tag} className="text-xs text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded-md">
+                <span
+                  key={tag}
+                  onClick={(e) => { e.stopPropagation(); navigate(`/tag/${tag}`); }}
+                  className="text-xs text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded-md cursor-pointer hover:bg-cyan-400/20 active:bg-cyan-400/30 transition-colors"
+                >
                   #{tag}
                 </span>
               ))}

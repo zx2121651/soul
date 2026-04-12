@@ -66,7 +66,7 @@ router.post('/:id/like', authMiddleware, async (req, res, next) => {
   }
 });
 
-export default router;
+
 
 // ==================== 瞬间详情与评论 ====================
 router.get('/:id', async (req, res, next) => {
@@ -175,3 +175,45 @@ router.post('/:id/comments', authMiddleware, async (req, res, next) => {
     next(err);
   }
 });
+
+// ==================== 按标签查询动态 ====================
+router.get('/tag/:tagName', async (req, res, next) => {
+  try {
+    const db = require('../db').getDb();
+    const tagName = req.params.tagName as string;
+
+    const rawMoments = await db.moment.findMany({
+      where: {
+        status: 'active',
+        tags: {
+          some: { tagName }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 30,
+      include: {
+        author: { select: { id: true, name: true, avatar: true } },
+        tags: { select: { tagName: true } },
+        _count: { select: { comments: true } }
+      }
+    });
+
+    const posts = rawMoments.map((m: any) => ({
+      id: m.id,
+      author: m.author,
+      content: m.content,
+      coverImage: m.url,
+      type: m.type,
+      tags: m.tags.map((t: any) => t.tagName),
+      time: m.createdAt.toISOString(),
+      likes: m.likesCount,
+      comments: m._count.comments,
+    }));
+
+    sendSuccess(res, { posts });
+  } catch (err) {
+    next(err);
+  }
+});
+
+export default router;

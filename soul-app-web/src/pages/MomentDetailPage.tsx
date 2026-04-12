@@ -124,7 +124,11 @@ export default function MomentDetailPage() {
           {moment.tags && moment.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
               {moment.tags.map((t: string) => (
-                <span key={t} className="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-medium">
+                <span
+                  key={t}
+                  onClick={(e) => { e.stopPropagation(); navigate(`/tag/${t}`); }}
+                  className="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-medium cursor-pointer hover:bg-cyan-500/20 active:scale-95 transition-all shadow-[0_0_8px_rgba(6,182,212,0.15)]"
+                >
                   #{t}
                 </span>
               ))}
