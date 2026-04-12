@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Zap, Filter, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../api/client';
 
 export default function TopBar() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isPlanetPage = location.pathname === '/planet';
   const [announcement, setAnnouncement] = useState<{ title: string; content: string; type: string } | null>(null);
 
   useEffect(() => {
@@ -31,11 +35,21 @@ export default function TopBar() {
           Soul
         </div>
 
-        {/* Filter Button */}
-        <button className="flex items-center gap-1.5 bg-white/10 backdrop-blur-xl border border-white/10 shadow-sm px-3 py-1.5 rounded-full text-sm font-medium">
-          <Filter size={16} className="text-cyan-400" />
-          <span>筛选</span>
-        </button>
+        {/* Right Action Button (Dynamic) */}
+        {isPlanetPage ? (
+          <button
+            onClick={() => navigate('/notifications')}
+            className="flex items-center justify-center w-9 h-9 bg-white/10 backdrop-blur-xl border border-white/10 shadow-sm rounded-full text-white relative active:scale-95 transition-transform"
+          >
+            <Bell size={18} />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-pink-500 rounded-full border border-[#171822] animate-pulse"></span>
+          </button>
+        ) : (
+          <button className="flex items-center gap-1.5 bg-white/10 backdrop-blur-xl border border-white/10 shadow-sm px-3 py-1.5 rounded-full text-sm font-medium">
+            <Filter size={16} className="text-cyan-400" />
+            <span>筛选</span>
+          </button>
+        )}
       </div>
 
       {/* 系统跑马灯/通知横幅 */}
