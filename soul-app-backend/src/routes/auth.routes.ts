@@ -21,10 +21,11 @@ const loginSchema = z.union([
 ]);
 
 const registerSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  username: z.string().min(3, "Username must be at least 3 chars"),
-  password: z.string().min(6, "Password must be at least 6 chars"),
-  avatar: z.string().optional(),
+  registerToken: z.string().min(1, "注册 Token 缺失"),
+  gender: z.string().min(1, "请选择性别"),
+  birthday: z.string().min(1, "请选择生日"),
+  nickname: z.string().min(2, "昵称至少2个字符").max(12, "昵称最多12个字符"),
+  avatarBase64: z.string().optional(),
   interests: z.array(z.string()).optional()
 });
 
@@ -57,6 +58,9 @@ router.post('/login', async (req, res, next) => {
 
     if ('phone' in loginData) {
       result = await authService.loginWithOtp(loginData.phone, loginData.code);
+      if (result.requiresRegistration) {
+        return sendSuccess(res, { requiresRegistration: true, registerToken: result.registerToken }, '验证成功，请完善注册信息');
+      }
     } else {
       result = await authService.login(loginData.username, loginData.password);
     }
@@ -90,13 +94,32 @@ router.post('/register', async (req, res, next) => {
     const parseRes = registerSchema.safeParse(req.body);
     if (!parseRes.success) return sendError(res, 400, parseRes.error.issues[0].message, ErrorCode.VALIDATION_ERROR);
 
-    const { name, username, password, avatar, interests } = parseRes.data;
+    const { registerToken, gender, birthday, nickname, avatarBase64, interests } = parseRes.data;
 
-    await authService.register(username, password, name, avatar, interests);
-    sendSuccess(res, null, '注册成功');
+    const result = await authService.registerWithToken(registerToken, {
+      gender,
+      birthday,
+      nickname,
+      avatar: avatarBase64,
+      interests
+    });
+
+    const { token, refreshToken, user } = result;
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 3600 * 1000 // 7 days
+    });
+
+    sendSuccess(res, { token, user }, '注册成功');
   } catch (error: any) {
-    if (error.message === 'Username already exists') {
-      return sendError(res, 409, undefined, ErrorCode.AUTH_USER_EXISTS);
+    if (error.message === 'Invalid or expired register token') {
+      return sendError(res, 401, error.message, ErrorCode.AUTH_INVALID_TOKEN);
+    }
+    if (error.message === 'User already registered') {
+      return sendError(res, 409, error.message, ErrorCode.AUTH_USER_EXISTS);
     }
     next(error);
   }
