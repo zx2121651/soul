@@ -1,16 +1,31 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../api/client';
-import { motion } from 'framer-motion';
-import { UserPlus } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { UserPlus, Mars, Venus, ChevronLeft } from 'lucide-react';
 
 export default function RegisterPage() {
+  const [step, setStep] = useState(1);
+  const [gender, setGender] = useState<'male' | 'female' | null>(null);
+  const [birthday, setBirthday] = useState('');
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const calculateAge = (birthDate: string) => {
+    if (!birthDate) return 0;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +47,13 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       // 1. 调用后端注册接口
-      await api.post('/auth/register', { name, username, password });
+      await api.post('/auth/register', {
+        name,
+        username,
+        password,
+        gender,
+        birthday
+      });
 
       // 2. 注册成功后自动登录以获取 token
       const loginData = await api.post<{ token: string }>('/auth/login', { username, password });
@@ -62,64 +83,159 @@ export default function RegisterPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-sm z-10"
       >
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-cyan-500/20 rounded-full flex items-center justify-center mb-4">
-            <UserPlus className="w-8 h-8 text-cyan-400" />
+        <div className="flex items-center justify-between mb-8 w-full">
+          {step > 1 ? (
+            <button
+              onClick={() => setStep(step - 1)}
+              className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+          ) : (
+            <div className="w-10" />
+          )}
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 bg-cyan-500/20 rounded-full flex items-center justify-center mb-2">
+              <UserPlus className="w-6 h-6 text-cyan-400" />
+            </div>
+            <h1 className="text-2xl font-bold text-white tracking-wider">
+              {step === 1 ? '基础信息' : '账户设置'}
+            </h1>
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-wider">注册 Soul</h1>
-          <p className="text-gray-400 mt-2 text-sm">构建你的星球档案</p>
+          <div className="w-10 text-cyan-400 font-medium text-sm text-right">
+            {step}/2
+          </div>
         </div>
 
-        <form onSubmit={handleRegister} className="bg-[#1c1e2b] p-6 rounded-2xl shadow-xl shadow-cyan-900/10 border border-white/5">
-          {error && (
-            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm text-center">
-              {error}
-            </div>
-          )}
+        <div className="relative min-h-[400px]">
+          <AnimatePresence mode="wait" initial={false}>
+            {step === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ x: 300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -300, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="w-full"
+              >
+                {/* Step 1 Content */}
+                <div className="bg-[#1c1e2b] p-6 rounded-2xl shadow-xl border border-white/5 space-y-8">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-4 text-center">选择你的性别</label>
+                    <div className="flex justify-center space-x-6">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setGender('male')}
+                        className={`w-28 h-28 rounded-2xl flex flex-col items-center justify-center transition-all ${
+                          gender === 'male'
+                            ? 'bg-blue-500/20 border-2 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]'
+                            : 'bg-white/5 border border-white/10 text-gray-400 hover:border-white/20'
+                        }`}
+                      >
+                        <Mars className={`w-10 h-10 mb-2 ${gender === 'male' ? 'text-blue-400' : ''}`} />
+                        <span className={`text-sm font-medium ${gender === 'male' ? 'text-blue-400' : ''}`}>男生</span>
+                      </motion.button>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">星球昵称 (Name)</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full bg-[#12141d] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
-                placeholder="你希望大家怎么称呼你"
-              />
-            </div>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setGender('female')}
+                        className={`w-28 h-28 rounded-2xl flex flex-col items-center justify-center transition-all ${
+                          gender === 'female'
+                            ? 'bg-pink-500/20 border-2 border-pink-500 shadow-[0_0_20px_rgba(236,72,153,0.3)]'
+                            : 'bg-white/5 border border-white/10 text-gray-400 hover:border-white/20'
+                        }`}
+                      >
+                        <Venus className={`w-10 h-10 mb-2 ${gender === 'female' ? 'text-pink-400' : ''}`} />
+                        <span className={`text-sm font-medium ${gender === 'female' ? 'text-pink-400' : ''}`}>女生</span>
+                      </motion.button>
+                    </div>
+                  </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">账号 (Username)</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-[#12141d] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
-                placeholder="用于登录 (至少3个字符)"
-              />
-            </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-2">你的生日</label>
+                    <input
+                      type="date"
+                      value={birthday}
+                      onChange={(e) => setBirthday(e.target.value)}
+                      className="w-full bg-[#12141d] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
+                    />
+                    {birthday && calculateAge(birthday) < 18 && (
+                      <p className="mt-2 text-red-400 text-xs">未满 18 岁禁止注册 Soul</p>
+                    )}
+                  </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">密码 (Password)</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#12141d] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
-                placeholder="设置密码 (至少6个字符)"
-              />
-            </div>
-          </div>
+                  <button
+                    onClick={() => setStep(2)}
+                    disabled={!gender || !birthday || calculateAge(birthday) < 18}
+                    className="w-full bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-[#12141d] font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/20 active:scale-[0.98]"
+                  >
+                    下一步
+                  </button>
+                </div>
+              </motion.div>
+            )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full mt-8 bg-cyan-500 hover:bg-cyan-400 text-[#12141d] font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/20 ${loading ? 'opacity-70 cursor-not-allowed' : 'active:scale-[0.98]'}`}
-          >
-            {loading ? '档案生成中...' : '立即注册'}
-          </button>
-        </form>
+            {step === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ x: 300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -300, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="w-full"
+              >
+                <form onSubmit={handleRegister} className="bg-[#1c1e2b] p-6 rounded-2xl shadow-xl border border-white/5">
+                  {error && (
+                    <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm text-center">
+                      {error}
+                    </div>
+                  )}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-1">星球昵称 (Name)</label>
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full bg-[#12141d] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
+                        placeholder="你希望大家怎么称呼你"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-1">账号 (Username)</label>
+                      <input
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        className="w-full bg-[#12141d] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
+                        placeholder="用于登录 (至少3个字符)"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-1">密码 (Password)</label>
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full bg-[#12141d] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
+                        placeholder="设置密码 (至少6个字符)"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className={`w-full mt-8 bg-cyan-500 hover:bg-cyan-400 text-[#12141d] font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/20 ${loading ? 'opacity-70 cursor-not-allowed' : 'active:scale-[0.98]'}`}
+                  >
+                    {loading ? '档案生成中...' : '立即注册'}
+                  </button>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         <div className="mt-6 text-center">
           <p className="text-gray-400 text-sm">
