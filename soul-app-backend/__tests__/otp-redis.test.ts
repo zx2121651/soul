@@ -27,6 +27,7 @@ describe('AuthService OTP with Redis', () => {
 
   it('should store OTP in Redis with 300s TTL when sending code', async () => {
     const phone = '13800138000';
+    (redis.get as jest.Mock).mockResolvedValue(null);
     await authService.sendOtp(phone);
 
     expect(redis.set).toHaveBeenCalledWith(
@@ -39,16 +40,20 @@ describe('AuthService OTP with Redis', () => {
 
   it('should overwrite old OTP and reset TTL when sending code again', async () => {
     const phone = '13800138000';
+    (redis.get as jest.Mock).mockResolvedValue(null);
 
     // First call
     await authService.sendOtp(phone);
-    const firstCallCode = (redis.set as jest.Mock).mock.calls[0][1];
+
+    // Mock redis.get to return null again for the second call (mimicking passing time/different keys)
+    (redis.get as jest.Mock).mockResolvedValue(null);
 
     // Second call
     await authService.sendOtp(phone);
 
-    expect(redis.set).toHaveBeenCalledTimes(2);
-    expect(redis.set).toHaveBeenLastCalledWith(
+    // 2 calls to set OTP + 2 calls to set minute limit = 4
+    expect(redis.set).toHaveBeenCalledTimes(4);
+    expect(redis.set).toHaveBeenCalledWith(
       `auth:otp:${phone}`,
       expect.any(String),
       'EX',

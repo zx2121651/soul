@@ -6,6 +6,8 @@ export enum ErrorCode {
   AUTH_INVALID_TOKEN = 1002,
   AUTH_INVALID_CREDENTIALS = 1003,
   AUTH_USER_EXISTS = 1004,
+  AUTH_SEND_TOO_FREQUENT = 1005,
+  AUTH_SEND_LIMIT_EXCEEDED = 1006,
 
   // Validation (2000 - 2999)
   VALIDATION_ERROR = 2001,
@@ -27,6 +29,8 @@ export const ErrorMessage: Record<ErrorCode, string> = {
   [ErrorCode.AUTH_INVALID_TOKEN]: 'Token 无效或已过期',
   [ErrorCode.AUTH_INVALID_CREDENTIALS]: '用户名或密码错误',
   [ErrorCode.AUTH_USER_EXISTS]: '用户名已存在',
+  [ErrorCode.AUTH_SEND_TOO_FREQUENT]: '发送过于频繁，请 60 秒后再试',
+  [ErrorCode.AUTH_SEND_LIMIT_EXCEEDED]: '当日短信发送次数已达上限',
   [ErrorCode.VALIDATION_ERROR]: '请求参数校验失败',
   [ErrorCode.RESOURCE_NOT_FOUND]: '请求的资源不存在',
   [ErrorCode.SMS_SEND_FAILED]: '短信发送失败',
