@@ -6,6 +6,7 @@ import type { User } from '../store/useAuthStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserPlus, Mars, Venus, ChevronLeft, Camera } from 'lucide-react';
 import { validateNickname } from '../utils/validation';
+import InterestTagCloud from '../components/InterestTagCloud';
 import Cropper from "react-cropper";
 import type { ReactCropperElement } from "react-cropper";
 import "cropperjs/dist/cropper.css";
@@ -19,6 +20,12 @@ const DEFAULT_AVATARS = [
   '/assets/avatars/avatar6.svg',
 ];
 
+const AVAILABLE_TAGS = [
+  '摇滚', '健身', '二次元', '原神', '咖啡', '旅行', '摄影', '音乐',
+  '美食', '游戏', '读书', '电影', '运动', '数码', '宠物', '潜水',
+  '滑雪', '撸铁', '国漫', '朋克', '剧本杀', '密室', '盲盒', '潮鞋'
+];
+
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
@@ -27,6 +34,16 @@ export default function RegisterPage() {
   const [avatar, setAvatar] = useState(DEFAULT_AVATARS[0]);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+
+  const handleToggleInterest = (tag: string) => {
+    setSelectedInterests(prev =>
+      prev.includes(tag)
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    );
+  };
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -106,7 +123,8 @@ export default function RegisterPage() {
         password,
         gender,
         birthday,
-        avatar
+        avatar,
+        interests: selectedInterests
       });
 
       // 2. Auto-login
@@ -151,11 +169,11 @@ export default function RegisterPage() {
               <UserPlus className="w-6 h-6 text-cyan-400" />
             </div>
             <h1 className="text-2xl font-bold text-white tracking-wider">
-              {step === 1 ? '基础信息' : step === 2 ? '灵魂花名' : step === 3 ? '选择头像' : '账号设置'}
+              {step === 1 ? '基础信息' : step === 2 ? '灵魂花名' : step === 3 ? '选择头像' : step === 4 ? '兴趣星球' : '账号设置'}
             </h1>
           </div>
           <div className="w-10 text-cyan-400 font-medium text-sm text-right">
-            {step}/4
+            {step}/5
           </div>
         </div>
 
@@ -327,6 +345,46 @@ export default function RegisterPage() {
             {step === 4 && (
               <motion.div
                 key="step4"
+                initial={{ x: 300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -300, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="w-full h-full flex flex-col"
+              >
+                <div className="bg-[#1c1e2b] p-6 rounded-2xl shadow-xl border border-white/5 flex flex-col items-center">
+                  <p className="text-gray-400 text-sm mb-2 text-center">
+                    挑选至少 3 个标签，生成你的“灵魂算法引力”
+                  </p>
+
+                  <div className="w-full h-[320px] mb-6">
+                    <InterestTagCloud
+                      tags={AVAILABLE_TAGS}
+                      selectedTags={selectedInterests}
+                      onToggleTag={handleToggleInterest}
+                    />
+                  </div>
+
+                  <div className="w-full flex justify-between items-center mb-6 px-2">
+                    <span className="text-xs text-gray-500 uppercase tracking-widest font-bold">已选择</span>
+                    <span className={`text-sm font-medium ${selectedInterests.length >= 3 ? 'text-pink-500' : 'text-cyan-400'}`}>
+                      {selectedInterests.length}/3
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => setStep(5)}
+                    disabled={selectedInterests.length < 3}
+                    className="w-full bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-[#12141d] font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/20 active:scale-[0.98]"
+                  >
+                    {selectedInterests.length < 3 ? `还需选择 ${3 - selectedInterests.length} 个` : '开启星球旅程'}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 5 && (
+              <motion.div
+                key="step5"
                 initial={{ x: 300, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: -300, opacity: 0 }}

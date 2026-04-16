@@ -24,7 +24,8 @@ const registerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   username: z.string().min(3, "Username must be at least 3 chars"),
   password: z.string().min(6, "Password must be at least 6 chars"),
-  avatar: z.string().optional()
+  avatar: z.string().optional(),
+  interests: z.array(z.string()).optional()
 });
 
 const sendCodeSchema = z.object({
@@ -89,9 +90,9 @@ router.post('/register', async (req, res, next) => {
     const parseRes = registerSchema.safeParse(req.body);
     if (!parseRes.success) return sendError(res, 400, parseRes.error.issues[0].message, ErrorCode.VALIDATION_ERROR);
 
-    const { name, username, password, avatar } = parseRes.data;
+    const { name, username, password, avatar, interests } = parseRes.data;
 
-    await authService.register(username, password, name, avatar);
+    await authService.register(username, password, name, avatar, interests);
     sendSuccess(res, null, '注册成功');
   } catch (error: any) {
     if (error.message === 'Username already exists') {
