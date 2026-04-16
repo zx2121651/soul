@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
+import { useAuthStore } from '../store/authStore';
 import { motion } from 'framer-motion';
 import { Compass } from 'lucide-react';
 
@@ -10,6 +11,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectPath = searchParams.get('redirect') || '/planet';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,10 +29,10 @@ export default function LoginPage() {
       const data = await api.post<{ token: string }>('/auth/login', { username, password });
 
       if (data && data.token) {
-        // 成功后将 token 存入 localStorage
-        localStorage.setItem('soul_token', data.token);
-        // 跳转到主页 (星球)
-        navigate('/planet');
+        // 成功后将 token 存入 store (及其持久化 localStorage)
+        useAuthStore.getState().setToken(data.token);
+        // 跳转到重定向页面或主页
+        navigate(redirectPath);
       } else {
         setError('登录失败：未收到 Token');
       }

@@ -4,6 +4,7 @@ interface AuthState {
   token: string | null;
   setToken: (token: string) => void;
   clearToken: () => void;
+  logout: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -13,6 +14,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ token });
   },
   clearToken: () => {
+    localStorage.removeItem('soul_token');
+    set({ token: null });
+  },
+  logout: () => {
     localStorage.removeItem('soul_token');
     set({ token: null });
   },
