@@ -7,7 +7,7 @@ test.describe('Register Page Nickname Validation', () => {
     await page.click('button:has-text("男生")');
     await page.fill('input[type="date"]', '2000-01-01');
     await page.click('button:has-text("下一步")');
-    await expect(page.locator('text=2/4')).toBeVisible();
+    await expect(page.locator('text=2/5')).toBeVisible();
   });
 
   test('should validate nickname length', async ({ page }) => {
@@ -61,21 +61,36 @@ test.describe('Register Page Nickname Validation', () => {
     expect(value.length).toBe(12);
   });
 
-  test('should proceed to step 4 on valid nickname and avatar', async ({ page }) => {
+  test('should proceed to step 5 on valid nickname, avatar and interests', async ({ page }) => {
     const input = page.locator('input[placeholder="专属昵称"]');
     const nextBtn = page.locator('button:has-text("下一步")');
 
-    // 'Soul小助手' contains 'Soul' which is a bad word.
     await input.fill('居民小助手');
     await nextBtn.click();
 
-    await expect(page.locator('text=3/4')).toBeVisible();
+    await expect(page.locator('text=3/5')).toBeVisible();
     await expect(page.locator('text=选择头像')).toBeVisible();
 
     // Click "Just use this" (就用这个)
     await page.click('button:has-text("就用这个")');
 
-    await expect(page.locator('text=4/4')).toBeVisible();
+    await expect(page.locator('text=4/5')).toBeVisible();
+    await expect(page.locator('text=兴趣星球')).toBeVisible();
+
+    // In a real environment, Canvas might be hard to interact with via Playwright easily
+    // but we can check for elements or use a simpler approach if we just want to verify step progression.
+    // Let's assume there are at least some tags we can click if they were rendered as HTML.
+    // Our InterestTagCloud uses @react-three/drei Html which renders as DOM.
+
+    // We need at least 3.
+    const tags = ['摇滚', '健身', '二次元'];
+    for (const tag of tags) {
+      await page.click(`button:has-text("${tag}")`, { force: true });
+    }
+
+    await page.click('button:has-text("开启星球旅程")');
+
+    await expect(page.locator('text=5/5')).toBeVisible();
     await expect(page.locator('text=账号设置')).toBeVisible();
   });
 });

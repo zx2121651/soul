@@ -26,9 +26,16 @@ export class UserRepository {
     });
   }
 
-  async createUser(uuid: string, name: string, phone: string, passwordHash: string, avatar?: string) {
+  async createUser(uuid: string, name: string, phone: string, passwordHash: string, avatar?: string, interests?: string[]) {
     return await getDb().user.create({
-      data: { uuid, phone, passwordHash, name, avatar }
+      data: {
+        uuid,
+        phone,
+        passwordHash,
+        name,
+        avatar,
+        interests: interests ? JSON.stringify(interests) : null
+      }
     });
   }
 
