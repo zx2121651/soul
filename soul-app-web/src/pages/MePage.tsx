@@ -11,14 +11,23 @@ import { Settings, Eye, ChevronRight, Bell, HelpCircle, LogOut, ChevronLeft, Pen
 
 
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/useAuthStore';
+
 export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) {
   const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
   const [activeTab, setActiveTab] = useState<'moments' | 'cocreate' | 'about'>('moments');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const [profile, setProfile] = useState<UserProfile>({
-    name: '星球居民', id: 'soul_...', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=me&backgroundColor=f4b6c2', followers: 0, following: 0, visitors: 0, bio: '正在连接星球信号...'
+    name: user?.name || '星球居民',
+    id: user?.uuid || 'soul_...',
+    avatar: user?.avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=me&backgroundColor=f4b6c2',
+    followers: 0,
+    following: 0,
+    visitors: 0,
+    bio: '正在连接星球信号...'
   });
   const [moments, setMoments] = useState<MomentData[]>([]);
 
@@ -57,7 +66,7 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
           {/* Avatar with glowing ring */}
           <div className="relative w-24 h-24 rounded-full border-4 border-[#12141d] bg-white shadow-[0_0_20px_rgba(255,255,255,0.2)]">
             <img
-              src="https://api.dicebear.com/7.x/adventurer/svg?seed=Me&backgroundColor=ffdfbf"
+              src={profile.avatar || "https://api.dicebear.com/7.x/adventurer/svg?seed=Me&backgroundColor=ffdfbf"}
               alt="My Avatar"
               className="w-full h-full rounded-full object-cover"
             />
@@ -316,7 +325,13 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
               </div>
 
               <div className="p-6 border-t border-white/5 pb-12">
-                <button className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-red-500/10 text-red-500 text-sm font-bold hover:bg-red-500/20 transition-colors active:scale-95">
+                <button
+                  onClick={() => {
+                    logout();
+                    navigate('/login');
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-red-500/10 text-red-500 text-sm font-bold hover:bg-red-500/20 transition-colors active:scale-95"
+                >
                   <LogOut size={16} />
                   退出登录
                 </button>
