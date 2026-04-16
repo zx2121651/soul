@@ -7,6 +7,7 @@ export const errorMiddleware = (err: any, req: Request, res: Response, next: Nex
 
   const statusCode = err.status || err.statusCode || 500;
   const message = err.message || '服务器内部错误';
+  const errorCode = err.errorCode || ErrorCode.SYSTEM_ERROR;
 
-  sendError(res, statusCode, message, ErrorCode.SYSTEM_ERROR);
+  sendError(res, statusCode, message, errorCode);
 };

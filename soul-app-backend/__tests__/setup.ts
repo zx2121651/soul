@@ -7,7 +7,12 @@ jest.mock('../src/redis', () => ({
   del: jest.fn(),
   on: jest.fn(),
   quit: jest.fn().mockResolvedValue('OK'),
-  status: 'ready'
+  status: 'ready',
+  multi: jest.fn().mockReturnValue({
+    incr: jest.fn().mockReturnThis(),
+    expire: jest.fn().mockReturnThis(),
+    exec: jest.fn().mockResolvedValue([])
+  })
 }));
 
 afterAll(async () => {
