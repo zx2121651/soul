@@ -13,6 +13,9 @@ export enum ErrorCode {
   // Resources (3000 - 3999)
   RESOURCE_NOT_FOUND = 3001,
 
+  // SMS (4000 - 4999)
+  SMS_SEND_FAILED = 4001,
+
   // System (5000+)
   SYSTEM_ERROR = 5000,
   SYSTEM_MISCONFIGURED = 5001,
@@ -26,6 +29,7 @@ export const ErrorMessage: Record<ErrorCode, string> = {
   [ErrorCode.AUTH_USER_EXISTS]: '用户名已存在',
   [ErrorCode.VALIDATION_ERROR]: '请求参数校验失败',
   [ErrorCode.RESOURCE_NOT_FOUND]: '请求的资源不存在',
+  [ErrorCode.SMS_SEND_FAILED]: '短信发送失败',
   [ErrorCode.SYSTEM_ERROR]: '服务器内部错误',
   [ErrorCode.SYSTEM_MISCONFIGURED]: '系统配置异常',
 };
