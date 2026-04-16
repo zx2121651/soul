@@ -3,6 +3,8 @@ import { sendSuccess, sendError } from '../utils/response';
 import { AuthService } from '../services/auth.service';
 import { z } from 'zod';
 import { ErrorCode } from '../utils/ErrorCodes';
+import { authMiddleware } from '../middlewares/auth.middleware';
+import redis from '../redis';
 
 const router = Router();
 const authService = new AuthService();
@@ -106,6 +108,26 @@ router.post('/refresh', async (req, res, next) => {
     if (error.message === 'Refresh token expired' || error.name === 'JsonWebTokenError' || error.message === 'Token revoked' || error.message === 'User not found') {
       return sendError(res, 401, 'Refresh Token 无效或已过期', ErrorCode.AUTH_INVALID_TOKEN);
     }
+    next(error);
+  }
+});
+
+router.post('/logout', authMiddleware, async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization!;
+    const token = authHeader.split(' ')[1];
+    const user = req.user!;
+
+    if (user.exp) {
+      const ttl = user.exp - Math.floor(Date.now() / 1000);
+      if (ttl > 0) {
+        await redis.set(`auth:blacklist:${token}`, 'revoked', 'EX', ttl);
+      }
+    }
+
+    res.clearCookie('refreshToken');
+    sendSuccess(res, null, '注销成功');
+  } catch (error) {
     next(error);
   }
 });
