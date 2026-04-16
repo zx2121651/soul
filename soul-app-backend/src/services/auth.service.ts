@@ -74,11 +74,18 @@ export class AuthService {
       const token = jwt.sign(
         { id: user.id, uuid: user.uuid, role: 'user' },
         secret,
+        { expiresIn: '15m' }
+      );
+
+      const refreshToken = jwt.sign(
+        { id: user.id, uuid: user.uuid, tokenVersion: user.tokenVersion },
+        secret,
         { expiresIn: '7d' }
       );
 
       return {
         token,
+        refreshToken,
         user: { id: user.id, uuid: user.uuid, name: user.name, avatar: user.avatar }
       };
     }
@@ -111,8 +118,15 @@ export class AuthService {
       { expiresIn: '15m' }
     );
 
+    const refreshToken = jwt.sign(
+      { id: user.id, uuid: user.uuid, tokenVersion: user.tokenVersion },
+      secret,
+      { expiresIn: '7d' }
+    );
+
     return {
       token,
+      refreshToken,
       user: { id: user.id, uuid: user.uuid, name: user.name, avatar: user.avatar }
     };
   }
