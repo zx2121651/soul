@@ -85,4 +85,35 @@ export class AuthService {
 
     throw new Error('Invalid credentials');
   }
+
+  async loginWithOtp(phone: string, code: string) {
+    const otpKey = `auth:otp:${phone}`;
+    const storedCode = await redis.get(otpKey);
+
+    if (!storedCode || storedCode !== code) {
+      throw new Error('Invalid OTP');
+    }
+
+    // verification successful, delete immediately
+    await redis.del(otpKey);
+
+    let user = await this.userRepo.findByPhone(phone);
+    if (!user) {
+      user = await this.userRepo.createSilentUser(phone);
+    }
+
+    const secret = process.env.JWT_SECRET;
+    if (!secret) throw new Error('System misconfiguration: missing JWT_SECRET');
+
+    const token = jwt.sign(
+      { userId: user.id, id: user.id, uuid: user.uuid, role: 'user' },
+      secret,
+      { expiresIn: '15m' }
+    );
+
+    return {
+      token,
+      user: { id: user.id, uuid: user.uuid, name: user.name, avatar: user.avatar }
+    };
+  }
 }

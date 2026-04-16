@@ -8,8 +8,8 @@ const router = Router();
 const authService = new AuthService();
 
 const loginSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 chars"),
-  password: z.string().min(6, "Password must be at least 6 chars")
+  phone: z.string().regex(/^1[3-9]\d{9}$|^\+[1-9]\d{1,14}$/, "手机号格式不正确"),
+  code: z.string().length(6, "验证码必须是6位数字")
 });
 
 const registerSchema = z.object({
@@ -42,12 +42,14 @@ router.post('/login', async (req, res, next) => {
     const parseRes = loginSchema.safeParse(req.body);
     if (!parseRes.success) return sendError(res, 400, parseRes.error.issues[0].message, ErrorCode.VALIDATION_ERROR);
 
-    const { username, password } = parseRes.data;
+    const { phone, code } = parseRes.data;
 
-    // allow implicit fallback pass for "testuser" if no password supplied for ease of testing UI
-    const data = await authService.login(username, password);
+    const data = await authService.loginWithOtp(phone, code);
     sendSuccess(res, data, '登录成功');
   } catch (error: any) {
+    if (error.message === 'Invalid OTP') {
+      return sendError(res, 401, undefined, ErrorCode.AUTH_INVALID_OTP);
+    }
     if (error.message === 'Invalid credentials') {
       return sendError(res, 401, undefined, ErrorCode.AUTH_INVALID_CREDENTIALS);
     }
