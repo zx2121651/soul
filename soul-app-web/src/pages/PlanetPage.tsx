@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import Planet3D from '../components/Planet3D';
 import type { NodeData } from '../components/Planet3D';
 import * as THREE from 'three';
+import { useAuthStore } from '../store/useAuthStore';
 
 import BottomActionCards from '../components/BottomActionCards';
 import type { UserProfileData } from '../components/UserProfileModal';
@@ -17,7 +18,7 @@ import UserProfileModal from '../components/UserProfileModal';
 
 
 export default function PlanetPage() {
-
+  const { user } = useAuthStore();
   const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(null);
   const [isRadarOpen, setRadarOpen] = useState(false);
   const [nodes, setNodes] = useState<NodeData[]>([]);
@@ -32,7 +33,7 @@ export default function PlanetPage() {
         newNodes.push({
           id: 0,
           position: new THREE.Vector3(0, 0, SPHERE_RADIUS * 1.05),
-          name: "自己",
+          name: user?.name || "自己",
           match: 100,
           color: "#ffffff",
           isSelf: true,
@@ -69,7 +70,7 @@ export default function PlanetPage() {
 
         setNodes(newNodes);
       });
-  }, []);
+  }, [user?.name]);
 
 
   const handleNodeClick = (node: NodeData) => {

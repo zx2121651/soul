@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore } from '../store/useAuthStore';
+import type { User } from '../store/useAuthStore';
 import { motion } from 'framer-motion';
 import { Compass } from 'lucide-react';
 
@@ -26,15 +27,15 @@ export default function LoginPage() {
     setLoading(true);
     try {
       // 调用后端登录接口
-      const data = await api.post<{ token: string }>('/auth/login', { username, password });
+      const data = await api.post<{ token: string, user: User }>('/auth/login', { username, password });
 
-      if (data && data.token) {
-        // 成功后将 token 存入 store (及其持久化 localStorage)
-        useAuthStore.getState().setToken(data.token);
+      if (data && data.token && data.user) {
+        // 成功后将 token 和 user 存入 store
+        useAuthStore.getState().login(data.token, data.user);
         // 跳转到重定向页面或主页
         navigate(redirectPath);
       } else {
-        setError('登录失败：未收到 Token');
+        setError('登录失败：未收到 Token 或用户信息');
       }
     } catch (err: unknown) {
       setError((err as Error).message || '登录失败，请检查账号和密码');
