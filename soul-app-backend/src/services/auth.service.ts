@@ -49,7 +49,7 @@ export class AuthService {
     await this.smsService.sendCode(phone, code);
   }
 
-  async register(username: string, passwordRaw: string, name: string) {
+  async register(username: string, passwordRaw: string, name: string, avatar?: string) {
     const existing = await this.userRepo.findByUsername(username);
     if (existing) throw new Error('Username already exists');
 
@@ -59,7 +59,7 @@ export class AuthService {
     // generate random uuid
     const uuid = crypto.randomUUID();
 
-    const user = await this.userRepo.createUser(uuid, name, username, hash);
+    const user = await this.userRepo.createUser(uuid, name, username, hash, avatar);
     return user;
   }
 

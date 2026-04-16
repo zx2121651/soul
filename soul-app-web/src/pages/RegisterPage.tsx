@@ -1,19 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../api/client';
+import { useAuthStore } from '../store/useAuthStore';
+import type { User } from '../store/useAuthStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UserPlus, Mars, Venus, ChevronLeft } from 'lucide-react';
+import { UserPlus, Mars, Venus, ChevronLeft, Camera } from 'lucide-react';
 import { validateNickname } from '../utils/validation';
+import Cropper from "react-cropper";
+import type { ReactCropperElement } from "react-cropper";
+import "cropperjs/dist/cropper.css";
+
+const DEFAULT_AVATARS = [
+  '/assets/avatars/avatar1.svg',
+  '/assets/avatars/avatar2.svg',
+  '/assets/avatars/avatar3.svg',
+  '/assets/avatars/avatar4.svg',
+  '/assets/avatars/avatar5.svg',
+  '/assets/avatars/avatar6.svg',
+];
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
   const [birthday, setBirthday] = useState('');
   const [name, setName] = useState('');
+  const [avatar, setAvatar] = useState(DEFAULT_AVATARS[0]);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Cropper states
+  const [image, setImage] = useState<string | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
+  const cropperRef = useRef<ReactCropperElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const navigate = useNavigate();
 
   const nicknameError = validateNickname(name);
@@ -28,6 +50,27 @@ export default function RegisterPage() {
       age--;
     }
     return age;
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImage(reader.result as string);
+        setShowCropper(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCrop = () => {
+    const cropper = cropperRef.current?.cropper;
+    if (cropper) {
+      setAvatar(cropper.getCroppedCanvas().toDataURL());
+      setShowCropper(false);
+      setImage(null);
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -56,24 +99,23 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      // 1. 调用后端注册接口
+      // 1. Register
       await api.post('/auth/register', {
         name,
         username,
         password,
         gender,
-        birthday
+        birthday,
+        avatar
       });
 
-      // 2. 注册成功后自动登录以获取 token
-      const loginData = await api.post<{ token: string }>('/auth/login', { username, password });
+      // 2. Auto-login
+      const loginData = await api.post<{ token: string; user: User }>('/auth/login', { username, password });
 
       if (loginData && loginData.token) {
-        localStorage.setItem('soul_token', loginData.token);
-        // 跳转到主页
+        useAuthStore.getState().login(loginData.token, loginData.user);
         navigate('/planet');
       } else {
-        // 如果自动登录失败，跳转到登录页手动登录
         navigate('/login');
       }
     } catch (err: unknown) {
@@ -109,11 +151,11 @@ export default function RegisterPage() {
               <UserPlus className="w-6 h-6 text-cyan-400" />
             </div>
             <h1 className="text-2xl font-bold text-white tracking-wider">
-              {step === 1 ? '基础信息' : step === 2 ? '灵魂花名' : '账号设置'}
+              {step === 1 ? '基础信息' : step === 2 ? '灵魂花名' : step === 3 ? '选择头像' : '账号设置'}
             </h1>
           </div>
           <div className="w-10 text-cyan-400 font-medium text-sm text-right">
-            {step}/3
+            {step}/4
           </div>
         </div>
 
@@ -128,7 +170,6 @@ export default function RegisterPage() {
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                 className="w-full"
               >
-                {/* Step 1 Content */}
                 <div className="bg-[#1c1e2b] p-6 rounded-2xl shadow-xl border border-white/5 space-y-8">
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-4 text-center">选择你的性别</label>
@@ -237,6 +278,61 @@ export default function RegisterPage() {
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                 className="w-full"
               >
+                <div className="bg-[#1c1e2b] p-6 rounded-2xl shadow-xl border border-white/5 flex flex-col items-center">
+                  <div className="relative mb-6 group">
+                    <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-cyan-500/50 group-hover:border-cyan-500 transition-colors">
+                      <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+                    </div>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute bottom-0 right-0 w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center text-[#12141d] shadow-lg hover:bg-cyan-400 transition-colors"
+                    >
+                      <Camera className="w-4 h-4" />
+                    </button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4 mb-8">
+                    {DEFAULT_AVATARS.map((src, index) => (
+                      <motion.button
+                        key={index}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setAvatar(src)}
+                        className={`w-14 h-14 rounded-xl overflow-hidden border-2 transition-all ${
+                          avatar === src ? 'border-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]' : 'border-transparent opacity-60 hover:opacity-100'
+                        }`}
+                      >
+                        <img src={src} alt={`Default ${index}`} className="w-full h-full object-cover" />
+                      </motion.button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => setStep(4)}
+                    className="w-full bg-cyan-500 hover:bg-cyan-400 text-[#12141d] font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/20 active:scale-[0.98]"
+                  >
+                    就用这个
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 4 && (
+              <motion.div
+                key="step4"
+                initial={{ x: 300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -300, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="w-full"
+              >
                 <form onSubmit={handleRegister} className="bg-[#1c1e2b] p-6 rounded-2xl shadow-xl border border-white/5">
                   {error && (
                     <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm text-center">
@@ -287,6 +383,61 @@ export default function RegisterPage() {
           </p>
         </div>
       </motion.div>
+
+      {/* Cropper Overlay */}
+      <AnimatePresence>
+        {showCropper && image && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4"
+          >
+            <div className="w-full max-w-md bg-[#1c1e2b] rounded-2xl overflow-hidden shadow-2xl">
+              <div className="p-4 border-b border-white/5 flex justify-between items-center">
+                <h3 className="text-white font-medium">裁剪头像</h3>
+                <button
+                  onClick={() => { setShowCropper(false); setImage(null); }}
+                  className="text-gray-400 hover:text-white"
+                >
+                  取消
+                </button>
+              </div>
+
+              <div className="aspect-square bg-black overflow-hidden">
+                <Cropper
+                  src={image}
+                  style={{ height: '100%', width: '100%' }}
+                  initialAspectRatio={1}
+                  aspectRatio={1}
+                  guides={true}
+                  ref={cropperRef}
+                  viewMode={1}
+                  background={false}
+                  responsive={true}
+                  autoCropArea={1}
+                  checkOrientation={false}
+                />
+              </div>
+
+              <div className="p-4 flex gap-4">
+                <button
+                  onClick={() => { setShowCropper(false); setImage(null); }}
+                  className="flex-1 px-4 py-2 rounded-xl bg-white/5 text-white hover:bg-white/10 transition-colors"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={handleCrop}
+                  className="flex-1 px-4 py-2 rounded-xl bg-cyan-500 text-[#12141d] font-bold hover:bg-cyan-400 transition-colors"
+                >
+                  确定
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
