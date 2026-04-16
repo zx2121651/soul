@@ -31,6 +31,9 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
+  // Refresh Token 版本，用于拉黑 Token 或 强制登出
+  tokenVersion   Int       @default(0)
+
   // --- 关系映射 (Relations) ---
   moments        Moment[]             // 该用户发布的瞬间动态
   likes          MomentLike[]         // 该用户的点赞记录

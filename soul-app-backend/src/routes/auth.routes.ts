@@ -44,8 +44,16 @@ router.post('/login', async (req, res, next) => {
 
     const { phone, code } = parseRes.data;
 
-    const data = await authService.loginWithOtp(phone, code);
-    sendSuccess(res, data, '登录成功');
+    const { token, refreshToken, user } = await authService.loginWithOtp(phone, code);
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 3600 * 1000 // 7 days
+    });
+
+    sendSuccess(res, { token, user }, '登录成功');
   } catch (error: any) {
     if (error.message === 'Invalid OTP') {
       return sendError(res, 401, undefined, ErrorCode.AUTH_INVALID_OTP);
