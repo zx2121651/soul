@@ -2,9 +2,16 @@ import { UserRepository } from '../repositories/user.repository';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { SmsService } from './SmsService';
 
 export class AuthService {
   private userRepo = new UserRepository();
+  private smsService = new SmsService();
+
+  async sendOtp(phone: string) {
+    const code = crypto.randomInt(100000, 999999).toString();
+    await this.smsService.sendCode(phone, code);
+  }
 
   async register(username: string, passwordRaw: string, name: string) {
     const existing = await this.userRepo.findByUsername(username);

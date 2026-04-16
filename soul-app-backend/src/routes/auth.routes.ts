@@ -18,6 +18,25 @@ const registerSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 chars")
 });
 
+const sendCodeSchema = z.object({
+  phone: z.string().regex(/^1[3-9]\d{9}$|^\+[1-9]\d{1,14}$/, "手机号格式不正确")
+});
+
+router.post('/send-code', async (req, res, next) => {
+  try {
+    const parseRes = sendCodeSchema.safeParse(req.body);
+    if (!parseRes.success) {
+      return sendError(res, 400, parseRes.error.issues[0].message, ErrorCode.VALIDATION_ERROR);
+    }
+
+    const { phone } = parseRes.data;
+    await authService.sendOtp(phone);
+    sendSuccess(res, null, '验证码发送成功');
+  } catch (error: any) {
+    next(error);
+  }
+});
+
 router.post('/login', async (req, res, next) => {
   try {
     const parseRes = loginSchema.safeParse(req.body);
