@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { SmsService } from './SmsService';
+import redis from '../redis';
 
 export class AuthService {
   private userRepo = new UserRepository();
@@ -10,6 +11,11 @@ export class AuthService {
 
   async sendOtp(phone: string) {
     const code = crypto.randomInt(100000, 999999).toString();
+
+    // Store in Redis with 5 minutes expiration
+    const key = `auth:otp:${phone}`;
+    await redis.set(key, code, 'EX', 300);
+
     await this.smsService.sendCode(phone, code);
   }
 
