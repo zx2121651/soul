@@ -130,4 +130,41 @@ export class AuthService {
       user: { id: user.id, uuid: user.uuid, name: user.name, avatar: user.avatar }
     };
   }
+
+  async refreshToken(tokenStr: string) {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) throw new Error('System misconfiguration: missing JWT_SECRET');
+
+    try {
+      const payload = jwt.verify(tokenStr, secret) as any;
+
+      const user = await this.userRepo.findByUuid(payload.uuid);
+      if (!user) throw new Error('User not found');
+
+      // Check token version for revocation
+      if (user.tokenVersion !== payload.tokenVersion) {
+        throw new Error('Token revoked');
+      }
+
+      const token = jwt.sign(
+        { userId: user.id, id: user.id, uuid: user.uuid, role: 'user' },
+        secret,
+        { expiresIn: '15m' }
+      );
+
+      // Rotate refresh token
+      const newRefreshToken = jwt.sign(
+        { id: user.id, uuid: user.uuid, tokenVersion: user.tokenVersion },
+        secret,
+        { expiresIn: '7d' }
+      );
+
+      return { token, refreshToken: newRefreshToken };
+    } catch (error: any) {
+      if (error.name === 'TokenExpiredError') {
+        throw new Error('Refresh token expired');
+      }
+      throw error;
+    }
+  }
 }
