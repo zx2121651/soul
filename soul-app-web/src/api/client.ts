@@ -1,64 +1,69 @@
+import axios from 'axios';
+import { useAuthStore } from '../store/authStore';
+
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   code: number;
   message: string;
   data: T;
 }
 
-export async function apiClient<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = `${BASE_URL}${endpoint}`;
-
-  const token = localStorage.getItem('soul_token');
-  const headers: Record<string, string> = {
+const apiClient = axios.create({
+  baseURL: BASE_URL,
+  timeout: 10000,
+  headers: {
     'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string> || {}),
-  };
+  },
+});
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+// 白名单路径
+const whitelist = ['/auth/login', '/auth/register', '/auth/send-code'];
+
+apiClient.interceptors.request.use((config) => {
+  const isWhitelisted = whitelist.some(path => config.url?.includes(path));
+
+  if (!isWhitelisted) {
+    const token = useAuthStore.getState().token;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
 
-  // Add AbortController for timeout (default 10s)
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), 10000);
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
 
-  try {
-    const response = await fetch(url, { ...options, headers, signal: controller.signal });
-    clearTimeout(id);
+apiClient.interceptors.response.use((response) => {
+  const result: ApiResponse = response.data;
 
-    if (response.status === 401 || response.status === 403) {
+  if (result.code !== 0) {
+    console.error(`API Error [${response.config.url}]:`, result.message);
+    throw new Error(result.message);
+  }
+
+  return response;
+}, (error) => {
+  if (error.response) {
+    if (error.response.status === 401 || error.response.status === 403) {
       console.error('Unauthorized! Need to re-login.');
-      localStorage.removeItem('soul_token');
+      useAuthStore.getState().clearToken();
       window.location.href = '/login';
-      throw new Error('Unauthorized');
     }
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: ApiResponse<T> = await response.json();
-
-    if (result.code !== 0) {
-      console.error(`API Error [${endpoint}]:`, result.message);
-      throw new Error(result.message);
-    }
-
-    return result.data;
-  } catch (error: any) {
-    clearTimeout(id);
-    if (error.name === 'AbortError') {
-      console.error(`API Error [${endpoint}]: Request timeout`);
-      throw new Error('网络请求超时，请稍后重试');
-    }
-    throw error;
+  } else if (error.code === 'ECONNABORTED') {
+    console.error(`API Error: Request timeout`);
+    throw new Error('网络请求超时，请稍后重试');
   }
-}
+
+  return Promise.reject(error);
+});
+
+export { apiClient };
 
 export const api = {
-  get: <T>(endpoint: string) => apiClient<T>(endpoint, { method: 'GET' }),
-  post: <T>(endpoint: string, body?: any) => apiClient<T>(endpoint, { method: 'POST', body: JSON.stringify(body) }),
-  put: <T>(endpoint: string, body?: any) => apiClient<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
-  delete: <T>(endpoint: string) => apiClient<T>(endpoint, { method: 'DELETE' }),
+  get: <T>(url: string, config = {}) => apiClient.get<ApiResponse<T>>(url, config).then(res => res.data.data),
+  post: <T>(url: string, data?: unknown, config = {}) => apiClient.post<ApiResponse<T>>(url, data, config).then(res => res.data.data),
+  put: <T>(url: string, data?: unknown, config = {}) => apiClient.put<ApiResponse<T>>(url, data, config).then(res => res.data.data),
+  delete: <T>(url: string, config = {}) => apiClient.delete<ApiResponse<T>>(url, config).then(res => res.data.data),
 };
