@@ -9,15 +9,22 @@ import redis from '../redis';
 const router = Router();
 const authService = new AuthService();
 
-const loginSchema = z.object({
-  phone: z.string().regex(/^1[3-9]\d{9}$|^\+[1-9]\d{1,14}$/, "手机号格式不正确"),
-  code: z.string().length(6, "验证码必须是6位数字")
-});
+const loginSchema = z.union([
+  z.object({
+    phone: z.string().regex(/^1[3-9]\d{9}$|^\+[1-9]\d{1,14}$/, "手机号格式不正确"),
+    code: z.string().length(6, "验证码必须是6位数字")
+  }),
+  z.object({
+    username: z.string().min(3),
+    password: z.string().min(6)
+  })
+]);
 
 const registerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   username: z.string().min(3, "Username must be at least 3 chars"),
-  password: z.string().min(6, "Password must be at least 6 chars")
+  password: z.string().min(6, "Password must be at least 6 chars"),
+  avatar: z.string().optional()
 });
 
 const sendCodeSchema = z.object({
@@ -44,9 +51,16 @@ router.post('/login', async (req, res, next) => {
     const parseRes = loginSchema.safeParse(req.body);
     if (!parseRes.success) return sendError(res, 400, parseRes.error.issues[0].message, ErrorCode.VALIDATION_ERROR);
 
-    const { phone, code } = parseRes.data;
+    const loginData = parseRes.data;
+    let result;
 
-    const { token, refreshToken, user } = await authService.loginWithOtp(phone, code);
+    if ('phone' in loginData) {
+      result = await authService.loginWithOtp(loginData.phone, loginData.code);
+    } else {
+      result = await authService.login(loginData.username, loginData.password);
+    }
+
+    const { token, refreshToken, user } = result;
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -75,9 +89,9 @@ router.post('/register', async (req, res, next) => {
     const parseRes = registerSchema.safeParse(req.body);
     if (!parseRes.success) return sendError(res, 400, parseRes.error.issues[0].message, ErrorCode.VALIDATION_ERROR);
 
-    const { name, username, password } = parseRes.data;
+    const { name, username, password, avatar } = parseRes.data;
 
-    await authService.register(username, password, name);
+    await authService.register(username, password, name, avatar);
     sendSuccess(res, null, '注册成功');
   } catch (error: any) {
     if (error.message === 'Username already exists') {
