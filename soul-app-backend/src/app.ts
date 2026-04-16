@@ -1,11 +1,13 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import apiRoutes from './routes';
 import { errorMiddleware } from './middlewares/error.middleware';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Soul backend is running' });

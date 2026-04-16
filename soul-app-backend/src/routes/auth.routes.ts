@@ -85,4 +85,29 @@ router.post('/register', async (req, res, next) => {
   }
 });
 
+router.post('/refresh', async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      return sendError(res, 401, '未提供 Refresh Token', ErrorCode.AUTH_UNAUTHORIZED);
+    }
+
+    const { token, refreshToken: newRefreshToken } = await authService.refreshToken(refreshToken);
+
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 3600 * 1000 // 7 days
+    });
+
+    sendSuccess(res, { accessToken: token }, 'Token 续期成功');
+  } catch (error: any) {
+    if (error.message === 'Refresh token expired' || error.name === 'JsonWebTokenError' || error.message === 'Token revoked' || error.message === 'User not found') {
+      return sendError(res, 401, 'Refresh Token 无效或已过期', ErrorCode.AUTH_INVALID_TOKEN);
+    }
+    next(error);
+  }
+});
+
 export default router;
