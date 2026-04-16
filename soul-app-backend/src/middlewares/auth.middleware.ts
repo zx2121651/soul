@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { sendError } from '../utils/response';
 import { ErrorCode } from '../utils/ErrorCodes';
+import redis from '../redis';
 
 
 export interface SoulJwtPayload extends JwtPayload {
@@ -18,7 +19,7 @@ declare global {
   }
 }
 
-export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -34,6 +35,13 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
 
   try {
     const decoded = jwt.verify(token, secret) as SoulJwtPayload;
+
+    // Check if token is blacklisted
+    const isBlacklisted = await redis.get(`auth:blacklist:${token}`);
+    if (isBlacklisted) {
+      return sendError(res, 401, 'Token 已失效', ErrorCode.AUTH_INVALID_TOKEN);
+    }
+
     req.user = decoded;
     next();
   } catch (error) {
