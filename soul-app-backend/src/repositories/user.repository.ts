@@ -1,9 +1,29 @@
 import { getDb } from '../db';
 import { Prisma } from '@prisma/client';
+import crypto from 'crypto';
 
 export class UserRepository {
   async findByUsername(phone: string) {
     return await getDb().user.findUnique({ where: { phone } });
+  }
+
+  async findByPhone(phone: string) {
+    return await getDb().user.findUnique({ where: { phone } });
+  }
+
+  async createSilentUser(phone: string) {
+    const name = `居民_${crypto.randomInt(1000, 9999)}`;
+    const avatar = `https://api.dicebear.com/7.x/identicon/svg?seed=${phone}`;
+    const uuid = crypto.randomUUID();
+    return await getDb().user.create({
+      data: {
+        uuid,
+        phone,
+        name,
+        avatar,
+        passwordHash: 'silent_login_placeholder'
+      }
+    });
   }
 
   async createUser(uuid: string, name: string, phone: string, passwordHash: string) {
