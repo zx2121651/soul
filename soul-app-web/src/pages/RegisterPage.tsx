@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../api/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserPlus, Mars, Venus, ChevronLeft } from 'lucide-react';
+import { validateNickname } from '../utils/validation';
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
@@ -14,6 +15,8 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const nicknameError = validateNickname(name);
 
   const calculateAge = (birthDate: string) => {
     if (!birthDate) return 0;
@@ -35,6 +38,13 @@ export default function RegisterPage() {
       setError('请填写完整的注册信息');
       return;
     }
+
+    if (nicknameError) {
+      setError(nicknameError);
+      setStep(2);
+      return;
+    }
+
     if (username.length < 3) {
       setError('账号至少需要3个字符');
       return;
@@ -99,11 +109,11 @@ export default function RegisterPage() {
               <UserPlus className="w-6 h-6 text-cyan-400" />
             </div>
             <h1 className="text-2xl font-bold text-white tracking-wider">
-              {step === 1 ? '基础信息' : '账户设置'}
+              {step === 1 ? '基础信息' : step === 2 ? '灵魂花名' : '账号设置'}
             </h1>
           </div>
           <div className="w-10 text-cyan-400 font-medium text-sm text-right">
-            {step}/2
+            {step}/3
           </div>
         </div>
 
@@ -186,6 +196,47 @@ export default function RegisterPage() {
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                 className="w-full"
               >
+                <div className="bg-[#1c1e2b] p-6 rounded-2xl shadow-xl border border-white/5 flex flex-col items-center">
+                  <div className="w-full mb-8">
+                    <label className="block text-sm font-medium text-gray-400 mb-4 text-center">输入你的专属昵称...</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        maxLength={12}
+                        className={`w-full bg-transparent border-b-2 ${nicknameError ? 'border-red-500' : 'border-white/10 focus:border-cyan-500'} text-3xl text-center py-4 text-white focus:outline-none transition-colors`}
+                        placeholder="专属昵称"
+                        autoFocus
+                      />
+                      <div className="absolute right-0 bottom-2 text-xs text-gray-500">
+                        {name.length}/12
+                      </div>
+                    </div>
+                    {nicknameError && (
+                      <p className="mt-4 text-red-500 text-sm text-center">{nicknameError}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setStep(3)}
+                    disabled={!!nicknameError || !name}
+                    className="w-full bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-[#12141d] font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/20 active:scale-[0.98]"
+                  >
+                    下一步
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ x: 300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -300, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="w-full"
+              >
                 <form onSubmit={handleRegister} className="bg-[#1c1e2b] p-6 rounded-2xl shadow-xl border border-white/5">
                   {error && (
                     <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm text-center">
@@ -193,16 +244,6 @@ export default function RegisterPage() {
                     </div>
                   )}
                   <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-1">星球昵称 (Name)</label>
-                      <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="w-full bg-[#12141d] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
-                        placeholder="你希望大家怎么称呼你"
-                      />
-                    </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-400 mb-1">账号 (Username)</label>
                       <input
