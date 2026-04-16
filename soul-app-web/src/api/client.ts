@@ -109,8 +109,8 @@ apiClient.interceptors.response.use((response) => {
       return apiClient(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError, null);
-      useAuthStore.getState().clearToken();
-      window.location.href = '/login';
+      useAuthStore.getState().logout();
+      window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;
@@ -120,8 +120,9 @@ apiClient.interceptors.response.use((response) => {
   // 处理其他 401/403 情况（如 refresh 接口本身返回 401，或者 refresh 之后依然 401）
   if (error.response && (error.response.status === 401 || error.response.status === 403)) {
     console.error('Unauthorized! Need to re-login.');
-    useAuthStore.getState().clearToken();
-    window.location.href = '/login';
+    processQueue(error, null);
+    useAuthStore.getState().logout();
+    window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
   } else if (error.code === 'ECONNABORTED') {
     console.error(`API Error: Request timeout`);
     return Promise.reject(new Error('网络请求超时，请稍后重试'));
