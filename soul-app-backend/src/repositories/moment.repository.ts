@@ -305,6 +305,43 @@ export class MomentRepository {
   }
 
   /**
+   * 游标分页：获取指定用户的动态列表
+   */
+  async findUserMomentsWithCursor(userId: number, viewerId: number, limit: number = 10, cursor?: number) {
+    const db = getDb();
+
+    const include: any = {
+      author: {
+        select: { id: true, name: true, avatar: true }
+      },
+      tags: {
+        select: { tagName: true }
+      },
+      _count: {
+        select: { comments: true, likes: true }
+      }
+    };
+
+    if (viewerId) {
+      include.likes = {
+        where: { userId: viewerId },
+        select: { userId: true }
+      };
+    }
+
+    const moments = await db.moment.findMany({
+      where: { authorId: userId, status: 'active' },
+      take: limit + 1, // 多取一条用于判断是否有下一页
+      cursor: cursor ? { id: cursor } : undefined,
+      skip: cursor ? 1 : 0,
+      orderBy: { id: 'desc' }, // 时间倒序，也是 ID 降序
+      include
+    });
+
+    return moments;
+  }
+
+  /**
    * 生产级：基于 Cursor 的分页查询广场动态 (Prisma Include 与 聚合 COUNT)
    */
   async findAllWithInteractions(viewerId: number, limit: number = 20, lastId: number = 0) {

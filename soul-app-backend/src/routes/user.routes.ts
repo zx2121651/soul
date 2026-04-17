@@ -3,9 +3,11 @@ import { sendSuccess, sendError } from '../utils/response';
 import { ErrorCode } from '../utils/ErrorCodes';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { UserService } from '../services/user.service';
+import { MomentService } from '../services/moment.service';
 
 const router = Router();
 const userService = new UserService();
+const momentService = new MomentService();
 
 // --- Real DB Implementation ---
 router.get('/me', authMiddleware, async (req, res, next) => {
@@ -118,6 +120,21 @@ router.post('/:id/block', authMiddleware, async (req, res, next) => {
 });
 
 export default router;
+
+// ==================== 用户发布的动态 (User Moments with Pagination) ====================
+router.get('/:id/moments', authMiddleware, async (req, res, next) => {
+  try {
+    const userId = parseInt(req.params.id as string, 10);
+    const limit = parseInt(req.query.limit as string, 10) || 10;
+    const cursor = req.query.cursor ? parseInt(req.query.cursor as string, 10) : undefined;
+    const viewerId = req.user?.id || 0;
+
+    const data = await momentService.getUserMomentsWithPagination(userId, viewerId, limit, cursor);
+    sendSuccess(res, data);
+  } catch (err) {
+    next(err);
+  }
+});
 
 // ==================== 他人主页资料 (User Profile) ====================
 router.get('/:id', authMiddleware, async (req, res, next) => {

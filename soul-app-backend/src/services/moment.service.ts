@@ -251,4 +251,37 @@ export class MomentService {
     }
     return { success: true };
   }
+
+  /**
+   * 获取指定用户的动态列表（游标分页）
+   */
+  async getUserMomentsWithPagination(userId: number, viewerId: number, limit: number = 10, cursor?: number) {
+    const rawMoments = await this.momentRepo.findUserMomentsWithCursor(userId, viewerId, limit, cursor);
+
+    let nextCursor: number | null = null;
+    let moments = rawMoments;
+
+    if (rawMoments.length > limit) {
+      moments = rawMoments.slice(0, limit);
+      nextCursor = moments[moments.length - 1].id;
+    }
+
+    const momentsDto = moments.map((m: any) => ({
+      id: m.id,
+      author: m.author,
+      text: m.content,
+      image: m.url,
+      type: m.type,
+      tags: m.tags.map((t: any) => t.tagName),
+      time: m.createdAt.toISOString(),
+      initialLikes: m._count.likes,
+      isLiked: m.likes && m.likes.length > 0,
+      comments: m._count.comments,
+    }));
+
+    return {
+      moments: momentsDto,
+      nextCursor
+    };
+  }
 }
