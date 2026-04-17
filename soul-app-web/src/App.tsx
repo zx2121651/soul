@@ -25,10 +25,12 @@ const FallbackLoader = () => (
   </div>
 );
 
+import { useAuthStore } from './store/useAuthStore';
+
 // 受保护的路由高阶组件：检查本地是否存在 token
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const token = localStorage.getItem('soul_token');
-  if (!token) {
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  if (!isAuthenticated) {
     // 拦截到登录页
     return <Navigate to="/login" replace />;
   }
