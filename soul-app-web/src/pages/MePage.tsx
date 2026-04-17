@@ -4,9 +4,12 @@ import { api } from '../api/client';
 import type { MeDataResponse, UserProfile, MomentData } from '../types';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, Eye, ChevronRight, Bell, HelpCircle, LogOut, ChevronLeft, PenSquare, Lock } from 'lucide-react';
+import { Settings, Eye, ChevronRight, Bell, HelpCircle, LogOut, ChevronLeft, PenSquare, Lock, Loader2 } from 'lucide-react';
 import UserProfileHeader from '../components/profile/UserProfileHeader';
 import ProfileStatsBar from '../components/profile/ProfileStatsBar';
+import MomentCard from '../components/MomentCard';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInView } from 'react-intersection-observer';
 
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
@@ -34,19 +37,45 @@ export default function MePage({ onOpenEditor, hideTopBar }: { onOpenEditor?: ()
     visitors: 0,
     bio: '正在连接星球信号...'
   });
-  const [moments, setMoments] = useState<MomentData[]>([]);
 
+  const { ref, inView } = useInView();
 
   useEffect(() => {
-    // 从后端真实的获取当前登录用户的信息以及他的过往动态
+    // 从后端真实的获取当前登录用户的信息
     api.get<MeDataResponse>('/users/me')
       .then(data => {
         if (data.profile) setProfile(data.profile);
-        if (data.moments) setMoments(data.moments);
       })
       .catch(err => console.error("获取个人资料失败", err))
       ;
   }, []);
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status
+  } = useInfiniteQuery({
+    queryKey: ['my-moments', user?.id],
+    queryFn: async ({ pageParam }) => {
+      const res = await api.get<{ moments: any[], nextCursor: number | null }>(
+        `/users/${user?.id}/moments?limit=10${pageParam ? `&cursor=${pageParam}` : ''}`
+      );
+      return res;
+    },
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    enabled: !!user?.id && activeTab === 'moments',
+  });
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const allMoments = data?.pages.flatMap(page => page.moments) || [];
 
 
   return (
@@ -111,7 +140,7 @@ export default function MePage({ onOpenEditor, hideTopBar }: { onOpenEditor?: ()
         {/* Stats */}
         <div className="mt-6 pb-6 border-b border-white/10">
           <ProfileStatsBar
-            momentsCount={moments.length}
+            momentsCount={allMoments.length}
             followingCount={profile.following || 0}
             followersCount={profile.followers || 0}
             userId={user?.uuid}
@@ -165,26 +194,55 @@ export default function MePage({ onOpenEditor, hideTopBar }: { onOpenEditor?: ()
                animate={{ opacity: 1, y: 0 }}
                exit={{ opacity: 0, y: -10 }}
                transition={{ duration: 0.2 }}
-               className="grid grid-cols-3 gap-1"
              >
-                {moments.map((moment) => (
-                  <div
-                    key={moment.id}
-                    onClick={() => moment.type === 'image' && setSelectedImage(moment.url || null)}
-                    className={`aspect-square bg-[#1c1e2b] relative overflow-hidden group ${moment.type === 'image' ? 'cursor-pointer' : ''} ${moment.type === 'text' ? 'flex items-center justify-center p-2 text-center text-[10px] text-white bg-gradient-to-br from-[#8E5E99] to-[#4A235A]' : ''}`}
-                  >
-                     {moment.type === 'image' && (
-                       <img src={moment.url} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" alt="moment" />
-                     )}
-                     {moment.type === 'text' && moment.content}
+                {allMoments.length === 0 && status === 'success' ? (
+                  <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="w-32 h-32 mb-6 opacity-40 grayscale">
+                      <img src="/assets/avatars/avatar_1.svg" alt="empty" className="w-full h-full object-contain" />
+                    </div>
+                    <p className="text-gray-500 text-sm font-medium">“这颗星球上还没有留下足迹”</p>
+                    <button
+                      onClick={onOpenEditor}
+                      className="mt-6 bg-cyan-500/10 text-cyan-400 px-6 py-2 rounded-full text-xs font-bold border border-cyan-500/20 active:scale-95 transition-transform"
+                    >
+                      发布第一条瞬间
+                    </button>
                   </div>
-                ))}
+                ) : (
+                  <>
+                    <div className="columns-2 gap-3 space-y-3">
+                      {allMoments.map((moment) => (
+                        <MomentCard
+                          key={moment.id}
+                          id={moment.id}
+                          type={moment.type}
+                          text={moment.text}
+                          image={moment.image}
+                          initialLikes={moment.initialLikes}
+                          isLiked={moment.isLiked}
+                          comments={moment.comments}
+                          time={moment.time}
+                        />
+                      ))}
+                    </div>
 
-                {/* Add Moment Button */}
-                <div onClick={onOpenEditor} className="aspect-square bg-[#1c1e2b] relative overflow-hidden flex flex-col items-center justify-center gap-2 p-2 text-center text-xs text-white border border-dashed border-white/20 cursor-pointer hover:bg-white/5 transition-colors active:scale-95">
-                   <span className="text-gray-500 text-2xl">+</span>
-                   <span className="text-gray-500">发布瞬间</span>
-                </div>
+                    {/* Loading & Intersection Observer Anchor */}
+                    <div ref={ref} className="py-8 flex justify-center items-center">
+                      {isFetchingNextPage ? (
+                        <div className="flex items-center gap-2 text-cyan-500/60 text-xs font-medium animate-pulse">
+                          <Loader2 size={16} className="animate-spin" />
+                          正在同步星际数据...
+                        </div>
+                      ) : hasNextPage ? (
+                        <div className="h-4" />
+                      ) : allMoments.length > 0 ? (
+                        <div className="text-gray-600 text-[10px] tracking-widest uppercase">--- 已到达星系边缘 ---</div>
+                      ) : null}
+                    </div>
+                  </>
+                )}
+
+                {/* Add Moment Floating Action (Optional, since we have the button in BottomNavBar) */}
              </motion.div>
            )}
 
