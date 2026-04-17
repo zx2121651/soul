@@ -4,6 +4,7 @@ import { AuthService } from '../services/auth.service';
 import { z } from 'zod';
 import { ErrorCode } from '../utils/ErrorCodes';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import { smsRateLimiter, loginRateLimiter } from '../middlewares/rateLimiter';
 import redis from '../redis';
 
 const router = Router();
@@ -33,7 +34,7 @@ const sendCodeSchema = z.object({
   phone: z.string().regex(/^1[3-9]\d{9}$|^\+[1-9]\d{1,14}$/, "手机号格式不正确")
 });
 
-router.post('/send-code', async (req, res, next) => {
+router.post('/send-code', smsRateLimiter, async (req, res, next) => {
   try {
     const parseRes = sendCodeSchema.safeParse(req.body);
     if (!parseRes.success) {
@@ -48,7 +49,7 @@ router.post('/send-code', async (req, res, next) => {
   }
 });
 
-router.post('/login', async (req, res, next) => {
+router.post('/login', loginRateLimiter, async (req, res, next) => {
   try {
     const parseRes = loginSchema.safeParse(req.body);
     if (!parseRes.success) return sendError(res, 400, parseRes.error.issues[0].message, ErrorCode.VALIDATION_ERROR);
