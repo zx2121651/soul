@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, Eye, ChevronRight, Bell, HelpCircle, LogOut, ChevronLeft, PenSquare, Lock } from 'lucide-react';
 import UserProfileHeader from '../components/profile/UserProfileHeader';
+import ProfileStatsBar from '../components/profile/ProfileStatsBar';
 
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
@@ -108,19 +109,13 @@ export default function MePage({ onOpenEditor, hideTopBar }: { onOpenEditor?: ()
 
 
         {/* Stats */}
-        <div className="flex gap-8 mt-6 pb-6 border-b border-white/10">
-          <div className="flex flex-col items-center">
-             <span className="text-white font-bold text-lg">{profile.followers}</span>
-             <span className="text-gray-500 text-xs">关注</span>
-          </div>
-          <div className="flex flex-col items-center">
-             <span className="text-white font-bold text-lg">{profile.following}</span>
-             <span className="text-gray-500 text-xs">粉丝</span>
-          </div>
-          <div className="flex flex-col items-center">
-             <span className="text-white font-bold text-lg">{profile.visitors}</span>
-             <span className="text-gray-500 text-xs">访客</span>
-          </div>
+        <div className="mt-6 pb-6 border-b border-white/10">
+          <ProfileStatsBar
+            momentsCount={moments.length}
+            followingCount={profile.following || 0}
+            followersCount={profile.followers || 0}
+            userId={user?.uuid}
+          />
         </div>
       </div>
 
