@@ -23,3 +23,15 @@ export class RateLimitException extends Error {
     this.errorCode = errorCode;
   }
 }
+
+export class InvalidOtpException extends Error {
+  public statusCode: number;
+  public errorCode: ErrorCode;
+
+  constructor(message: string) {
+    super(message);
+    this.name = 'InvalidOtpException';
+    this.statusCode = 401;
+    this.errorCode = ErrorCode.AUTH_INVALID_OTP;
+  }
+}

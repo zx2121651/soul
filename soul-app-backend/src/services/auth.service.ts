@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import { getDb } from '../db';
 import { SmsService } from './SmsService';
 import redis from '../redis';
-import { RateLimitException } from '../utils/exceptions';
+import { RateLimitException, InvalidOtpException } from '../utils/exceptions';
 import { ErrorCode, ErrorMessage } from '../utils/ErrorCodes';
 
 export class AuthService {
@@ -99,7 +99,7 @@ export class AuthService {
     const storedCode = await redis.get(otpKey);
 
     if (!storedCode || storedCode !== code) {
-      throw new Error('Invalid OTP');
+      throw new InvalidOtpException(ErrorMessage[ErrorCode.AUTH_INVALID_OTP]);
     }
 
     // verification successful, delete immediately
