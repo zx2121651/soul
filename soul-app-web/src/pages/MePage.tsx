@@ -5,16 +5,20 @@ import type { MeDataResponse, UserProfile, MomentData } from '../types';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, Eye, ChevronRight, Bell, HelpCircle, LogOut, ChevronLeft, PenSquare, Lock } from 'lucide-react';
-
-
-
-
+import UserProfileHeader from '../components/profile/UserProfileHeader';
 
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 
-export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) {
+export default function MePage({ onOpenEditor, hideTopBar }: { onOpenEditor?: () => void, hideTopBar?: (hide: boolean) => void }) {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (hideTopBar) hideTopBar(true);
+    return () => {
+      if (hideTopBar) hideTopBar(false);
+    };
+  }, [hideTopBar]);
   const { user, logout } = useAuthStore();
   const [activeTab, setActiveTab] = useState<'moments' | 'cocreate' | 'about'>('moments');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -47,48 +51,41 @@ export default function MePage({ onOpenEditor }: { onOpenEditor?: () => void }) 
   return (
     <div className="w-full h-full bg-[#12141d] overflow-y-auto no-scrollbar pb-24 relative">
 
-      {/* Background Cover */}
-      <div className="absolute top-0 w-full h-64 bg-gradient-to-b from-[#4A8F85]/60 to-[#12141d] z-0"></div>
+      {/* Background Cover Area */}
+      <div className="relative z-0">
+        <UserProfileHeader
+          name={profile.name}
+          avatar={profile.avatar}
+          bio={profile.bio}
+          coverImage={profile.coverImage}
+        />
 
-      {/* Top Header Actions */}
-      <div className="relative z-10 px-4 pt-12 pb-4 flex justify-end gap-4 text-white">
-        <button onClick={() => navigate('/edit-profile')} className="bg-black/30 backdrop-blur-md p-2 rounded-full active:scale-95 transition-transform text-cyan-400">
-          <PenSquare size={20} />
-        </button>
-        <button onClick={() => setIsSettingsOpen(true)} className="bg-black/30 backdrop-blur-md p-2 rounded-full active:scale-95 transition-transform">
-          <Settings size={20} />
-        </button>
-      </div>
+        {/* Top Header Actions */}
+        <div className="absolute top-0 right-0 z-20 px-4 pt-12 pb-4 flex justify-end gap-4 text-white">
+          <button onClick={() => navigate('/edit-profile')} className="bg-black/30 backdrop-blur-md p-2 rounded-full active:scale-95 transition-transform text-cyan-400">
+            <PenSquare size={20} />
+          </button>
+          <button onClick={() => setIsSettingsOpen(true)} className="bg-black/30 backdrop-blur-md p-2 rounded-full active:scale-95 transition-transform">
+            <Settings size={20} />
+          </button>
+        </div>
 
-      {/* Profile Info */}
-      <div className="relative z-10 px-6 mt-4">
-        <div className="flex items-center justify-between">
-          {/* Avatar with glowing ring */}
-          <div className="relative w-24 h-24 rounded-full border-4 border-[#12141d] bg-white shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-            <img
-              src={profile.avatar || "https://api.dicebear.com/7.x/adventurer/svg?seed=Me&backgroundColor=ffdfbf"}
-              alt="My Avatar"
-              className="w-full h-full rounded-full object-cover"
-            />
-            {/* VIP or Status Badge */}
-            <div className="absolute bottom-0 right-0 bg-[#F5B041] p-1 rounded-full border-2 border-[#12141d]">
-              <div className="w-3 h-3 bg-white rounded-full"></div>
-            </div>
-          </div>
-
-          <button className="flex items-center gap-2 bg-[#1c1e2b] px-4 py-2 rounded-full text-white text-sm font-medium border border-white/10 mt-6">
+        {/* Edit Button Overlay */}
+        <div className="absolute top-[170px] right-6 z-20">
+          <button className="flex items-center gap-2 bg-[#1c1e2b] px-4 py-2 rounded-full text-white text-sm font-medium border border-white/10">
              <PenSquare size={16} />
              编辑主页
           </button>
         </div>
+      </div>
 
-        {/* Name and Tags */}
-
-        <div className="mt-4">
-          <h2 className="text-white text-2xl font-bold mb-2 flex items-center gap-2">
-            {profile.name}
+      {/* Profile Info */}
+      <div className="relative z-10 px-6">
+        {/* VIP and Tags */}
+        <div className="mt-2">
+          <div className="flex items-center gap-2 mb-3">
             <span className="bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[10px] px-1.5 py-0.5 rounded font-black tracking-widest italic shadow-sm transform -skew-x-6">VIP</span>
-          </h2>
+          </div>
 
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="flex items-center gap-1 bg-[#8E5E99]/20 text-[#D7BDE2] px-2 py-1 rounded-md font-medium border border-[#8E5E99]/40">

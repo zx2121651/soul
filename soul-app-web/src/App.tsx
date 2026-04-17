@@ -38,10 +38,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 // 页面包裹布局组件 (包含导航栏等公用UI)
-const MainLayout = ({ children, onOpenEditor }: { children: React.ReactNode, onOpenEditor: () => void }) => {
+const MainLayout = ({ children, onOpenEditor, showTopBar }: { children: React.ReactNode, onOpenEditor: () => void, showTopBar: boolean }) => {
   return (
     <>
-      <TopBar />
+      {showTopBar && <TopBar />}
       <div className="flex-1 overflow-hidden relative">
         <Suspense fallback={<FallbackLoader />}>
           {children}
@@ -54,6 +54,7 @@ const MainLayout = ({ children, onOpenEditor }: { children: React.ReactNode, onO
 
 export default function App() {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [showTopBar, setShowTopBar] = useState(true);
 
   // 注释掉了之前的开发者模式一键自动登录机制
   // useEffect(() => {
@@ -75,15 +76,15 @@ export default function App() {
           {/* 受保护的主应用路由体系 */}
           <Route path="/*" element={
             <ProtectedRoute>
-              <MainLayout onOpenEditor={() => setIsEditorOpen(true)}>
+              <MainLayout onOpenEditor={() => setIsEditorOpen(true)} showTopBar={showTopBar}>
                 <Routes>
                   <Route path="/" element={<Navigate to="/planet" replace />} />
                   <Route path="/planet" element={<PlanetPage />} />
                   <Route path="/explore" element={<ExplorePage />} />
                   <Route path="/chat" element={<ChatPage />} />
-                  <Route path="/me" element={<MePage onOpenEditor={() => setIsEditorOpen(true)} />} />
+                  <Route path="/me" element={<MePage onOpenEditor={() => setIsEditorOpen(true)} hideTopBar={(hide) => setShowTopBar(!hide)} />} />
                   <Route path="/moment/:id" element={<MomentDetailPage />} />
-                  <Route path="/user/:id" element={<UserProfilePage />} />
+                  <Route path="/user/:id" element={<UserProfilePage hideTopBar={(hide) => setShowTopBar(!hide)} />} />
                   <Route path="/edit-profile" element={<EditProfilePage />} />
                   <Route path="/voiceroom/:id" element={<VoiceRoomPage />} />
                 </Routes>
