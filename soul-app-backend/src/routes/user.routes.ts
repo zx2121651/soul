@@ -10,8 +10,10 @@ const userService = new UserService();
 // --- Real DB Implementation ---
 router.get('/me', authMiddleware, async (req, res, next) => {
   try {
-    const userUuid = req.user?.uuid || 'soul_123456';
-    const data = await userService.getMeProfile(userUuid);
+    const userId = req.user?.id;
+    if (!userId) return sendError(res, 401, '未授权');
+
+    const data = await userService.getMeProfile(userId);
     sendSuccess(res, data);
   } catch (error: any) {
     if (error.message === 'User not found') return sendError(res, 404, undefined, ErrorCode.RESOURCE_NOT_FOUND);

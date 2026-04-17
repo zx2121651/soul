@@ -43,6 +43,22 @@ export class UserRepository {
     return await getDb().user.findUnique({ where: { uuid } });
   }
 
+  async findProfileById(id: number) {
+    return await getDb().user.findUnique({
+      where: { id },
+      select: {
+        uuid: true,
+        phone: true,
+        name: true,
+        avatar: true,
+        bio: true,
+        interests: true,
+        followersCount: true,
+        followingCount: true
+      }
+    });
+  }
+
   // 聚合查询排行榜，根据粉丝数降序
   async getLeaderboard(limit = 10) {
     return await getDb().user.findMany({
