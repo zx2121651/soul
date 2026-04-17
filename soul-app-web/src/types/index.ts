@@ -9,6 +9,7 @@ export interface UserProfile {
   gender?: 'male' | 'female';
   age?: number;
   isOnline?: boolean;
+  coverImage?: string;
 }
 
 export interface MomentData {

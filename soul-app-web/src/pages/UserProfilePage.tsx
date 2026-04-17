@@ -2,11 +2,19 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import PageHeader from '../components/PageHeader';
+import UserProfileHeader from '../components/profile/UserProfileHeader';
 import { MessageSquare, UserPlus, UserCheck, MoreHorizontal } from 'lucide-react';
 import type { UserProfile, MomentData } from '../types';
 
-export default function UserProfilePage() {
+export default function UserProfilePage({ hideTopBar }: { hideTopBar?: (hide: boolean) => void }) {
   const { id } = useParams<{ id: string }>();
+
+  useEffect(() => {
+    if (hideTopBar) hideTopBar(true);
+    return () => {
+      if (hideTopBar) hideTopBar(false);
+    };
+  }, [hideTopBar]);
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -78,22 +86,24 @@ export default function UserProfilePage() {
   return (
     <div className="w-full h-full bg-[#12141d] flex flex-col relative overflow-hidden">
       {/* 顶部背景图与导航 */}
-      <div className="absolute top-0 w-full h-64 bg-gradient-to-b from-[#A1C4FD]/40 to-[#12141d] z-0 pointer-events-none"></div>
-      <PageHeader title="" rightAction={<MoreHorizontal size={20} />} transparent={true} />
+      <div className="relative z-0">
+        <UserProfileHeader
+          name={profile.name}
+          avatar={profile.avatar}
+          bio={profile.bio}
+          coverImage={profile.coverImage}
+        />
+        <div className="absolute top-0 w-full z-20 pointer-events-none">
+          <PageHeader title="" rightAction={<div className="pointer-events-auto"><MoreHorizontal size={20} /></div>} transparent={true} />
+        </div>
+      </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar relative z-10 -mt-10">
-        {/* 头部资料区 */}
-        <div className="px-6 pt-10 pb-6 flex flex-col items-center">
-          <div className="w-24 h-24 rounded-full overflow-hidden border-[3px] border-[#12141d] bg-gray-800 shadow-xl mb-4">
-             <img src={profile.avatar} alt="avatar" className="w-full h-full object-cover" />
-          </div>
-
-          <h2 className="text-2xl font-black text-white tracking-wide flex items-center gap-2">
-            {profile.name}
+      <div className="flex-1 overflow-y-auto no-scrollbar relative z-10">
+        {/* 头部资料区补充内容 (ID, 统计, 按钮) */}
+        <div className="px-6 pb-6">
+          <div className="flex items-center gap-2 mb-4">
             <span className="text-xs bg-white/10 px-2 py-0.5 rounded-full font-medium text-gray-300">ID: {id}</span>
-          </h2>
-
-          <p className="text-sm text-cyan-200 mt-2">{profile.bio || '这个人很神秘，什么都没写'}</p>
+          </div>
 
           <div className="flex items-center gap-6 mt-6">
             <div className="text-center">
