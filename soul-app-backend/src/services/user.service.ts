@@ -5,11 +5,11 @@ export class UserService {
   private userRepo = new UserRepository();
   private momentRepo = new MomentRepository();
 
-  async getMeProfile(uuid: string) {
-    const user = await this.userRepo.findByUuid(uuid);
+  async getMeProfile(userId: number) {
+    const user = await this.userRepo.findProfileById(userId);
     if (!user) throw new Error('User not found');
 
-    const rawMoments = await this.momentRepo.findByUserId(user.id, user.id);
+    const rawMoments = await this.momentRepo.findByUserId(userId, userId);
     const moments = rawMoments.map((m: any) => ({
       id: m.id,
       text: m.content,
@@ -19,15 +19,21 @@ export class UserService {
       comments: 0
     }));
 
+    let interests: string[] = [];
+    if (user.interests) {
+      try {
+        interests = JSON.parse(user.interests);
+      } catch (e) {
+        interests = [];
+      }
+    }
+
     return {
       profile: {
-        name: user.name,
+        ...user,
+        interests,
+        // Keep compatibility with front-end if needed, but the primary goal is clear structure
         id: user.uuid,
-        avatar: user.avatar,
-        followers: user.followersCount || Math.floor(Math.random() * 500),
-        following: user.followingCount || Math.floor(Math.random() * 300),
-        visitors: user.visitorsCount || Math.floor(Math.random() * 100),
-        bio: user.bio
       },
       moments
     };

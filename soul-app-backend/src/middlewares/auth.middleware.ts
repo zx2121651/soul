@@ -45,6 +45,6 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     req.user = decoded;
     next();
   } catch (error) {
-    return sendError(res, 403, undefined, ErrorCode.AUTH_INVALID_TOKEN);
+    return sendError(res, 401, undefined, ErrorCode.AUTH_INVALID_TOKEN);
   }
 };
