@@ -17,6 +17,10 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 .DS_Store
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
 *.suo
 *.ntvs*
 *.njsproj

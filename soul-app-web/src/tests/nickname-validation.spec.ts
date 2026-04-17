@@ -2,12 +2,35 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Register Page Nickname Validation', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:5173/register');
-    // Step 1: Fill basic info
+    // Mock API for registration flow
+    await page.route('**/api/auth/send-code', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ code: 0, data: null }) });
+    });
+    await page.route('**/api/auth/login', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ code: 0, data: { requiresRegistration: true, registerToken: 'mock' } }) });
+    });
+
+    await page.goto('/register');
+
+    // Step 1: Phone
+    await page.fill('input[type="tel"]', '13800000000');
+    await page.click('button:has-text("获取验证码")');
+
+    // Step 2: OTP
+    const otpInputs = page.locator('input[type="text"]');
+    for (let i = 0; i < 6; i++) {
+      await otpInputs.nth(i).fill('1');
+    }
+
+    // Step 3: Basic info
+    await expect(page.locator('h1')).toContainText('基础信息');
     await page.click('button:has-text("男生")');
     await page.fill('input[type="date"]', '2000-01-01');
     await page.click('button:has-text("下一步")');
-    await expect(page.locator('text=2/5')).toBeVisible();
+
+    // Should be at Step 4 now
+    await expect(page.locator('text=4/6')).toBeVisible();
+    await expect(page.locator('h1')).toContainText('灵魂花名');
   });
 
   test('should validate nickname length', async ({ page }) => {
@@ -20,9 +43,6 @@ test.describe('Register Page Nickname Validation', () => {
     await expect(nextBtn).toBeDisabled();
 
     // Valid
-    await input.fill('souluser');
-    // Note: 'souluser' contains 'soul', so it might fail restricted words.
-    // Let's use 'myuser123'
     await input.fill('myuser123');
     await expect(page.locator('text=昵称长度需在 2-12 个字符之间')).not.toBeVisible();
     await expect(nextBtn).toBeEnabled();
@@ -61,36 +81,28 @@ test.describe('Register Page Nickname Validation', () => {
     expect(value.length).toBe(12);
   });
 
-  test('should proceed to step 5 on valid nickname, avatar and interests', async ({ page }) => {
+  test('should proceed to step 6 on valid nickname, avatar and interests', async ({ page }) => {
     const input = page.locator('input[placeholder="专属昵称"]');
     const nextBtn = page.locator('button:has-text("下一步")');
 
     await input.fill('居民小助手');
     await nextBtn.click();
 
-    await expect(page.locator('text=3/5')).toBeVisible();
-    await expect(page.locator('text=选择头像')).toBeVisible();
+    await expect(page.locator('text=5/6')).toBeVisible();
+    await expect(page.locator('h1')).toContainText('选择头像');
 
-    // Click "Just use this" (就用这个)
-    await page.click('button:has-text("就用这个")');
+    // Click "Next step" (下一步) - used to be "Just use this"
+    await page.click('button:has-text("下一步")');
 
-    await expect(page.locator('text=4/5')).toBeVisible();
-    await expect(page.locator('text=兴趣星球')).toBeVisible();
+    await expect(page.locator('text=6/6')).toBeVisible();
+    await expect(page.locator('h1')).toContainText('兴趣星球');
 
-    // In a real environment, Canvas might be hard to interact with via Playwright easily
-    // but we can check for elements or use a simpler approach if we just want to verify step progression.
-    // Let's assume there are at least some tags we can click if they were rendered as HTML.
-    // Our InterestTagCloud uses @react-three/drei Html which renders as DOM.
-
-    // We need at least 3.
+    // Select at least 3
     const tags = ['摇滚', '健身', '二次元'];
     for (const tag of tags) {
       await page.click(`button:has-text("${tag}")`, { force: true });
     }
 
-    await page.click('button:has-text("开启星球旅程")');
-
-    await expect(page.locator('text=5/5')).toBeVisible();
-    await expect(page.locator('text=账号设置')).toBeVisible();
+    await expect(page.locator('button:has-text("开启星球旅程")')).toBeEnabled();
   });
 });

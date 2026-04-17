@@ -4,9 +4,12 @@ import { api } from '../api/client';
 import { useAuthStore } from '../store/useAuthStore';
 import type { User } from '../store/useAuthStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UserPlus, Mars, Venus, ChevronLeft, Camera } from 'lucide-react';
+import { UserPlus, Mars, Venus, ChevronLeft, Camera, Send } from 'lucide-react';
 import { validateNickname } from '../utils/validation';
 import InterestTagCloud from '../components/InterestTagCloud';
+import PhoneInput from '../components/common/PhoneInput';
+import OtpInput from '../components/common/OtpInput';
+import { useCountdown } from '../hooks/useCountdown';
 import Cropper from "react-cropper";
 import type { ReactCropperElement } from "react-cropper";
 import "cropperjs/dist/cropper.css";
@@ -28,13 +31,15 @@ const AVAILABLE_TAGS = [
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
+  const [phone, setPhone] = useState('');
+  const [registerToken, setRegisterToken] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
   const [birthday, setBirthday] = useState('');
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState(DEFAULT_AVATARS[0]);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+
+  const { count, isCounting, start: startCountdown } = useCountdown(60);
 
   const handleToggleInterest = (tag: string) => {
     setSelectedInterests(prev =>
@@ -69,6 +74,44 @@ export default function RegisterPage() {
     return age;
   };
 
+  const handleSendCode = async () => {
+    if (!phone || phone.length < 11) {
+      setError('请输入正确的手机号');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    try {
+      await api.post('/auth/send-code', { phone });
+      startCountdown();
+      setStep(2);
+    } catch (err: any) {
+      setError(err.message || '发送验证码失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (code: string) => {
+    setError('');
+    setLoading(true);
+    try {
+      const result = await api.post<any>('/auth/login', { phone, code });
+      if (result.requiresRegistration) {
+        setRegisterToken(result.registerToken);
+        setStep(3);
+      } else if (result.token) {
+        // User already registered, just login
+        useAuthStore.getState().login(result.token, result.user);
+        navigate('/planet');
+      }
+    } catch (err: any) {
+      setError(err.message || '验证失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -90,58 +133,53 @@ export default function RegisterPage() {
     }
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRegister = async () => {
     setError('');
 
-    if (!name || !username || !password) {
+    if (!name || !registerToken) {
       setError('请填写完整的注册信息');
       return;
     }
 
     if (nicknameError) {
       setError(nicknameError);
-      setStep(2);
-      return;
-    }
-
-    if (username.length < 3) {
-      setError('账号至少需要3个字符');
-      return;
-    }
-    if (password.length < 6) {
-      setError('密码至少需要6个字符');
+      setStep(4);
       return;
     }
 
     setLoading(true);
     try {
-      // 1. Register
-      await api.post('/auth/register', {
-        name,
-        username,
-        password,
+      // Register with token
+      const result = await api.post<{ token: string; user: User }>('/auth/register', {
+        registerToken,
         gender,
         birthday,
-        avatar,
+        nickname: name,
+        avatarBase64: avatar.startsWith('data:') ? avatar : undefined,
         interests: selectedInterests
       });
 
-      // 2. Auto-login
-      const loginData = await api.post<{ token: string; user: User }>('/auth/login', { username, password });
-
-      if (loginData && loginData.token) {
-        useAuthStore.getState().login(loginData.token, loginData.user);
+      if (result && result.token) {
+        useAuthStore.getState().login(result.token, result.user);
         navigate('/planet');
       } else {
         navigate('/login');
       }
     } catch (err: unknown) {
-      setError((err as Error).message || '注册失败，该账号可能已被占用');
+      setError((err as Error).message || '注册失败');
     } finally {
       setLoading(false);
     }
   };
+
+  const stepTitles = [
+    '手机号',
+    '验证码',
+    '基础信息',
+    '灵魂花名',
+    '选择头像',
+    '兴趣星球'
+  ];
 
   return (
     <div className="w-full h-screen bg-[#12141d] flex flex-col items-center justify-center p-6 relative overflow-hidden">
@@ -169,11 +207,11 @@ export default function RegisterPage() {
               <UserPlus className="w-6 h-6 text-cyan-400" />
             </div>
             <h1 className="text-2xl font-bold text-white tracking-wider">
-              {step === 1 ? '基础信息' : step === 2 ? '灵魂花名' : step === 3 ? '选择头像' : step === 4 ? '兴趣星球' : '账号设置'}
+              {stepTitles[step - 1]}
             </h1>
           </div>
           <div className="w-10 text-cyan-400 font-medium text-sm text-right">
-            {step}/5
+            {step}/6
           </div>
         </div>
 
@@ -182,6 +220,71 @@ export default function RegisterPage() {
             {step === 1 && (
               <motion.div
                 key="step1"
+                initial={{ x: 300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -300, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="w-full"
+              >
+                <div className="bg-[#1c1e2b] p-6 rounded-2xl shadow-xl border border-white/5 space-y-6">
+                  {error && (
+                    <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm text-center">
+                      {error}
+                    </div>
+                  )}
+                  <p className="text-gray-400 text-sm text-center">请输入您的手机号以开始注册</p>
+                  <PhoneInput
+                    value={phone}
+                    onChange={setPhone}
+                    placeholder="请输入手机号"
+                  />
+                  <button
+                    onClick={handleSendCode}
+                    disabled={phone.length < 11 || loading}
+                    className="w-full bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-[#12141d] font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/20 active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    {loading ? '发送中...' : '获取验证码'}
+                    <Send size={18} />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ x: 300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -300, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="w-full"
+              >
+                <div className="bg-[#1c1e2b] p-6 rounded-2xl shadow-xl border border-white/5 space-y-6 text-center">
+                  {error && (
+                    <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm text-center">
+                      {error}
+                    </div>
+                  )}
+                  <p className="text-gray-400 text-sm">
+                    验证码已发送至 <span className="text-white">+86 {phone}</span>
+                  </p>
+                  <div className="flex justify-center">
+                    <OtpInput onComplete={handleVerifyOtp} />
+                  </div>
+                  <button
+                    disabled={isCounting || loading}
+                    onClick={handleSendCode}
+                    className="text-cyan-400 hover:text-cyan-300 text-sm transition-colors"
+                  >
+                    {isCounting ? `${count}秒后可重发` : '重新发送验证码'}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 3 && (
+              <motion.div
+                key="step3"
                 initial={{ x: 300, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: -300, opacity: 0 }}
@@ -236,7 +339,7 @@ export default function RegisterPage() {
                   </div>
 
                   <button
-                    onClick={() => setStep(2)}
+                    onClick={() => setStep(4)}
                     disabled={!gender || !birthday || calculateAge(birthday) < 18}
                     className="w-full bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-[#12141d] font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/20 active:scale-[0.98]"
                   >
@@ -246,9 +349,9 @@ export default function RegisterPage() {
               </motion.div>
             )}
 
-            {step === 2 && (
+            {step === 4 && (
               <motion.div
-                key="step2"
+                key="step4"
                 initial={{ x: 300, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: -300, opacity: 0 }}
@@ -277,7 +380,7 @@ export default function RegisterPage() {
                     )}
                   </div>
                   <button
-                    onClick={() => setStep(3)}
+                    onClick={() => setStep(5)}
                     disabled={!!nicknameError || !name}
                     className="w-full bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-[#12141d] font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/20 active:scale-[0.98]"
                   >
@@ -287,9 +390,9 @@ export default function RegisterPage() {
               </motion.div>
             )}
 
-            {step === 3 && (
+            {step === 5 && (
               <motion.div
-                key="step3"
+                key="step5"
                 initial={{ x: 300, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: -300, opacity: 0 }}
@@ -333,18 +436,18 @@ export default function RegisterPage() {
                   </div>
 
                   <button
-                    onClick={() => setStep(4)}
+                    onClick={() => setStep(6)}
                     className="w-full bg-cyan-500 hover:bg-cyan-400 text-[#12141d] font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/20 active:scale-[0.98]"
                   >
-                    就用这个
+                    下一步
                   </button>
                 </div>
               </motion.div>
             )}
 
-            {step === 4 && (
+            {step === 6 && (
               <motion.div
-                key="step4"
+                key="step6"
                 initial={{ x: 300, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: -300, opacity: 0 }}
@@ -372,61 +475,13 @@ export default function RegisterPage() {
                   </div>
 
                   <button
-                    onClick={() => setStep(5)}
-                    disabled={selectedInterests.length < 3}
-                    className="w-full bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-[#12141d] font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/20 active:scale-[0.98]"
+                    onClick={handleRegister}
+                    disabled={selectedInterests.length < 3 || loading}
+                    className={`w-full bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-[#12141d] font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/20 ${loading ? 'opacity-70' : 'active:scale-[0.98]'}`}
                   >
-                    {selectedInterests.length < 3 ? `还需选择 ${3 - selectedInterests.length} 个` : '开启星球旅程'}
+                    {loading ? '档案生成中...' : (selectedInterests.length < 3 ? `还需选择 ${3 - selectedInterests.length} 个` : '开启星球旅程')}
                   </button>
                 </div>
-              </motion.div>
-            )}
-
-            {step === 5 && (
-              <motion.div
-                key="step5"
-                initial={{ x: 300, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -300, opacity: 0 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="w-full"
-              >
-                <form onSubmit={handleRegister} className="bg-[#1c1e2b] p-6 rounded-2xl shadow-xl border border-white/5">
-                  {error && (
-                    <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm text-center">
-                      {error}
-                    </div>
-                  )}
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-1">账号 (Username)</label>
-                      <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        className="w-full bg-[#12141d] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
-                        placeholder="用于登录 (至少3个字符)"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-1">密码 (Password)</label>
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-[#12141d] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
-                        placeholder="设置密码 (至少6个字符)"
-                      />
-                    </div>
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className={`w-full mt-8 bg-cyan-500 hover:bg-cyan-400 text-[#12141d] font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/20 ${loading ? 'opacity-70 cursor-not-allowed' : 'active:scale-[0.98]'}`}
-                  >
-                    {loading ? '档案生成中...' : '立即注册'}
-                  </button>
-                </form>
               </motion.div>
             )}
           </AnimatePresence>
