@@ -2,6 +2,7 @@ import { UserRepository } from '../repositories/user.repository';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { getDb } from '../db';
 import { SmsService } from './SmsService';
 import redis from '../redis';
 import { RateLimitException } from '../utils/exceptions';
@@ -104,13 +105,19 @@ export class AuthService {
     // verification successful, delete immediately
     await redis.del(otpKey);
 
-    let user = await this.userRepo.findByPhone(phone);
-    if (!user) {
-      user = await this.userRepo.createSilentUser(phone);
-    }
-
     const secret = process.env.JWT_SECRET;
     if (!secret) throw new Error('System misconfiguration: missing JWT_SECRET');
+
+    let user = await this.userRepo.findByPhone(phone);
+    if (!user) {
+      // New user: Issue a temporary register token
+      const registerToken = jwt.sign(
+        { phone, type: 'register' },
+        secret,
+        { expiresIn: '5m' }
+      );
+      return { requiresRegistration: true, registerToken };
+    }
 
     const token = jwt.sign(
       { userId: user.id, id: user.id, uuid: user.uuid, role: 'user' },
@@ -125,10 +132,83 @@ export class AuthService {
     );
 
     return {
+      requiresRegistration: false,
       token,
       refreshToken,
       user: { id: user.id, uuid: user.uuid, name: user.name, avatar: user.avatar }
     };
+  }
+
+  async registerWithToken(registerToken: string, data: { gender: string, birthday: string, nickname: string, avatar?: string, interests?: string[] }) {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) throw new Error('System misconfiguration: missing JWT_SECRET');
+
+    let payload: any;
+    try {
+      payload = jwt.verify(registerToken, secret);
+      if (payload.type !== 'register') throw new Error('Invalid token type');
+    } catch (err) {
+      throw new Error('Invalid or expired register token');
+    }
+
+    const { phone } = payload;
+    const { gender, birthday, nickname, avatar, interests } = data;
+
+    const db = getDb();
+
+    return await db.$transaction(async (tx: any) => {
+      // 1. Check if user already exists (parallel check just in case)
+      const existing = await tx.user.findUnique({ where: { phone } });
+      if (existing) throw new Error('User already registered');
+
+      // 2. Create User
+      const uuid = crypto.randomUUID();
+      const salt = await bcrypt.genSalt(10);
+      const defaultPassword = crypto.randomBytes(16).toString('hex');
+      const passwordHash = await bcrypt.hash(defaultPassword, salt);
+
+      const user = await tx.user.create({
+        data: {
+          uuid,
+          phone,
+          passwordHash,
+          name: nickname,
+          gender,
+          birthday,
+          avatar,
+          interests: interests ? JSON.stringify(interests) : null
+        }
+      });
+
+      // 3. Create initial welcome moment
+      await tx.moment.create({
+        data: {
+          authorId: user.id,
+          type: 'text',
+          content: '我来到了 Soul，大家快来找我玩',
+          status: 'active'
+        }
+      });
+
+      // 4. Generate tokens
+      const token = jwt.sign(
+        { userId: user.id, id: user.id, uuid: user.uuid, role: 'user' },
+        secret,
+        { expiresIn: '15m' }
+      );
+
+      const refreshToken = jwt.sign(
+        { id: user.id, uuid: user.uuid, tokenVersion: user.tokenVersion },
+        secret,
+        { expiresIn: '7d' }
+      );
+
+      return {
+        token,
+        refreshToken,
+        user: { id: user.id, uuid: user.uuid, name: user.name, avatar: user.avatar }
+      };
+    });
   }
 
   async refreshToken(tokenStr: string) {
