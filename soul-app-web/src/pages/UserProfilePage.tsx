@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import UserProfileHeader from '../components/profile/UserProfileHeader';
+import ProfileStatsBar from '../components/profile/ProfileStatsBar';
 import { MessageSquare, UserPlus, UserCheck, MoreHorizontal } from 'lucide-react';
 import type { UserProfile, MomentData } from '../types';
 
@@ -105,16 +106,13 @@ export default function UserProfilePage({ hideTopBar }: { hideTopBar?: (hide: bo
             <span className="text-xs bg-white/10 px-2 py-0.5 rounded-full font-medium text-gray-300">ID: {id}</span>
           </div>
 
-          <div className="flex items-center gap-6 mt-6">
-            <div className="text-center">
-              <div className="text-white font-bold text-lg">{profile.following}</div>
-              <div className="text-gray-500 text-xs mt-1">关注</div>
-            </div>
-            <div className="w-px h-6 bg-white/10"></div>
-            <div className="text-center">
-              <div className="text-white font-bold text-lg">{(profile.followers || 0)}</div>
-              <div className="text-gray-500 text-xs mt-1">粉丝</div>
-            </div>
+          <div className="mt-6">
+            <ProfileStatsBar
+              momentsCount={moments.length}
+              followingCount={profile.following || 0}
+              followersCount={profile.followers || 0}
+              userId={id}
+            />
           </div>
 
           {/* 互动按钮 */}
