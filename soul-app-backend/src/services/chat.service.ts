@@ -26,7 +26,7 @@ export class ChatService {
       avatar: c.avatar,
       lastMessage: c.last_message || '暂无消息',
       time: c.time ? new Date(c.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '',
-      unread: Math.floor(Math.random() * 3),
+      unread: c.unread_count,
       isOfficial: c.is_official
     }));
 

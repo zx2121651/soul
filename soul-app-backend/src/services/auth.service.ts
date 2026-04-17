@@ -190,7 +190,49 @@ export class AuthService {
         }
       });
 
-      // 4. Generate tokens
+      // 4. Initialize system welcome message
+      // Ensure official assistant exists
+      const assistant = await tx.user.upsert({
+        where: { id: 1 },
+        update: {
+          name: 'Soul 官方小助手',
+          uuid: 'soul_bot_001'
+        },
+        create: {
+          id: 1,
+          uuid: 'soul_bot_001',
+          phone: '00000000000', // placeholder
+          passwordHash: 'official_assistant_placeholder',
+          name: 'Soul 官方小助手',
+          avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=soul&backgroundColor=c0aede',
+          bio: '为你解答一切疑惑',
+          status: 'active'
+        }
+      });
+
+      // Create chat room
+      const room = await tx.chatRoom.create({
+        data: {
+          members: {
+            create: [
+              { userId: assistant.id, unreadCount: 0 },
+              { userId: user.id, unreadCount: 1 }
+            ]
+          }
+        }
+      });
+
+      // Create welcome message
+      await tx.chatMessage.create({
+        data: {
+          roomId: room.id,
+          senderId: assistant.id,
+          text: '欢迎来到 Soul！去 3D 星球匹配你的第一位灵魂伴侣吧~',
+          isRead: false
+        }
+      });
+
+      // 5. Generate tokens
       const token = jwt.sign(
         { userId: user.id, id: user.id, uuid: user.uuid, role: 'user' },
         secret,

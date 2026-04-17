@@ -14,7 +14,14 @@ describe('Auth Registration Transaction Integration', () => {
     // Clean up test user and their moments
     const user = await db.user.findUnique({ where: { phone } });
     if (user) {
+      // Find chat rooms user belongs to
+      const memberships = await db.chatRoomMember.findMany({ where: { userId: user.id } });
+      const roomIds = memberships.map(m => m.roomId);
+
       await db.moment.deleteMany({ where: { authorId: user.id } });
+      await db.chatMessage.deleteMany({ where: { roomId: { in: roomIds } } });
+      await db.chatRoomMember.deleteMany({ where: { roomId: { in: roomIds } } });
+      await db.chatRoom.deleteMany({ where: { id: { in: roomIds } } });
       await db.user.delete({ where: { phone } });
     }
   });
@@ -62,13 +69,40 @@ describe('Auth Registration Transaction Integration', () => {
     // 3. Verify database
     const user = await db.user.findUnique({
       where: { phone },
-      include: { moments: true }
+      include: {
+        moments: true,
+        chatMemberships: {
+          include: {
+            room: {
+              include: {
+                messages: true,
+                members: {
+                  include: { user: true }
+                }
+              }
+            }
+          }
+        }
+      }
     });
     expect(user).toBeDefined();
     expect(user?.gender).toBe('male');
     expect(user?.birthday).toBe('1995-01-01');
     expect(user?.moments.length).toBe(1);
     expect(user?.moments[0].content).toBe('我来到了 Soul，大家快来找我玩');
+
+    // 4. Verify welcome message
+    expect(user?.chatMemberships.length).toBe(1);
+    const membership = user?.chatMemberships[0];
+    expect(membership?.unreadCount).toBe(1);
+
+    const room = membership?.room;
+    expect(room?.messages.length).toBe(1);
+    expect(room?.messages[0].text).toBe('欢迎来到 Soul！去 3D 星球匹配你的第一位灵魂伴侣吧~');
+
+    const assistant = room?.members.find(m => m.userId === 1);
+    expect(assistant).toBeDefined();
+    expect(assistant?.user.name).toBe('Soul 官方小助手');
   });
 
   it('should reject registration with invalid token', async () => {
