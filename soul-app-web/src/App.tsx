@@ -1,6 +1,17 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import React, { Suspense } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // Lazy load pages
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
@@ -62,9 +73,10 @@ export default function App() {
   // }, []);
 
   return (
-    <BrowserRouter>
-      <div className="w-full h-screen bg-[#171822] overflow-hidden text-white font-sans selection:bg-cyan-500/30 selection:text-cyan-100 flex flex-col relative antialiased">
-        <Routes>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <div className="w-full h-screen bg-[#171822] overflow-hidden text-white font-sans selection:bg-cyan-500/30 selection:text-cyan-100 flex flex-col relative antialiased">
+          <Routes>
           {/* 公开路由 (登录/注册) */}
           <Route path="/login" element={
             <Suspense fallback={<FallbackLoader />}><LoginPage /></Suspense>
@@ -91,14 +103,15 @@ export default function App() {
               </MainLayout>
             </ProtectedRoute>
           } />
-        </Routes>
+          </Routes>
 
-        {/* 全局组件：发布瞬间 */}
-        <PostMomentEditor
-          isOpen={isEditorOpen}
-          onClose={() => setIsEditorOpen(false)}
-        />
-      </div>
-    </BrowserRouter>
+          {/* 全局组件：发布瞬间 */}
+          <PostMomentEditor
+            isOpen={isEditorOpen}
+            onClose={() => setIsEditorOpen(false)}
+          />
+        </div>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 }
