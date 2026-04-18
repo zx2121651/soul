@@ -7,6 +7,7 @@ import socialRoutes from './social.routes';
 import mockRoutes from './mock.routes';
 import voiceroomRoutes from './voiceroom.routes';
 import adminRoutes from './admin.routes';
+import debugRoutes from './debug.routes';
 
 const router = Router();
 
@@ -17,6 +18,7 @@ router.use('/moments', momentRoutes);
 router.use('/voicerooms', voiceroomRoutes);
 
 router.use('/admin', adminRoutes);
+router.use('/debug', debugRoutes);
 
 // Other domains
 router.use('/', contentRoutes); // /planet, /explore, /feed

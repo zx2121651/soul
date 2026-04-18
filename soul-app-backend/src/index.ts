@@ -1,10 +1,8 @@
 import app from './app';
-import dotenv from 'dotenv';
+import { config } from './utils/config';
 import { initDb } from './db';
 
-dotenv.config();
-
-const PORT = process.env.PORT || 3001;
+const PORT = config.PORT;
 
 initDb().then(() => {
   app.listen(PORT, () => {
