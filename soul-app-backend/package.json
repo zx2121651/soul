@@ -17,6 +17,7 @@
   "dependencies": {
     "@alicloud/sms-sdk": "^1.1.6",
     "@prisma/client": "^5.11.0",
+    "ali-oss": "^6.23.0",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -33,6 +34,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/ali-oss": "^6.23.3",
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
