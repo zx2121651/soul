@@ -3,6 +3,7 @@ import { config } from '../utils/config';
 
 export interface IOssProvider {
   uploadBuffer(buffer: Buffer, fileName: string, mimeType: string): Promise<string>;
+  getPresignedUrl(objectKey: string, mimeType: string, expires?: number): Promise<{ uploadUrl: string, publicUrl: string }>;
 }
 
 export class AliyunOssProvider implements IOssProvider {
@@ -37,6 +38,23 @@ export class AliyunOssProvider implements IOssProvider {
       throw new Error(`Failed to upload to Aliyun OSS: ${error.message}`);
     }
   }
+
+  async getPresignedUrl(objectKey: string, mimeType: string, expires: number = 300): Promise<{ uploadUrl: string; publicUrl: string }> {
+    try {
+      const uploadUrl = this.client.signatureUrl(objectKey, {
+        method: 'PUT',
+        'Content-Type': mimeType,
+        expires,
+      });
+
+      const publicUrl = this.client.generateObjectUrl(objectKey);
+
+      return { uploadUrl, publicUrl };
+    } catch (error: any) {
+      console.error('Aliyun OSS generate presigned URL failed:', error);
+      throw new Error(`Failed to generate presigned URL: ${error.message}`);
+    }
+  }
 }
 
 export class MockOssProvider implements IOssProvider {
@@ -45,6 +63,14 @@ export class MockOssProvider implements IOssProvider {
     // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 300));
     return `https://mock-oss.com/${fileName}`;
+  }
+
+  async getPresignedUrl(objectKey: string, mimeType: string, expires: number = 300): Promise<{ uploadUrl: string; publicUrl: string }> {
+    console.log(`[Mock OSS] Generating presigned URL for ${objectKey} (${mimeType}), expires in ${expires}s`);
+    return {
+      uploadUrl: `https://mock-oss.com/${objectKey}?signature=mock-signature&expires=${Date.now() + expires * 1000}`,
+      publicUrl: `https://mock-oss.com/${objectKey}`,
+    };
   }
 }
 
@@ -69,6 +95,10 @@ export class OssService {
 
   async uploadBuffer(buffer: Buffer, fileName: string, mimeType: string): Promise<string> {
     return this.provider.uploadBuffer(buffer, fileName, mimeType);
+  }
+
+  async getPresignedUrl(objectKey: string, mimeType: string, expires?: number): Promise<{ uploadUrl: string; publicUrl: string }> {
+    return this.provider.getPresignedUrl(objectKey, mimeType, expires);
   }
 }
 
