@@ -2,6 +2,7 @@ import { Router } from 'express';
 import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import momentRoutes from './moment.routes';
+import uploadRoutes from './upload.routes';
 import contentRoutes from './content.routes';
 import socialRoutes from './social.routes';
 import mockRoutes from './mock.routes';
@@ -15,6 +16,7 @@ const router = Router();
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/moments', momentRoutes);
+router.use('/upload', uploadRoutes);
 router.use('/voicerooms', voiceroomRoutes);
 
 router.use('/admin', adminRoutes);
