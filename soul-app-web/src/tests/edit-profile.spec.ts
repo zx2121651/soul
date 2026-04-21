@@ -40,7 +40,28 @@ test.describe('Edit Profile', () => {
       });
     });
 
-    await page.route('**/api/users/me/profile', async (route) => {
+    await page.route('**/api/users/me', async (route) => {
+      if (route.request().method() === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 0,
+            message: 'success',
+            data: {
+              profile: {
+                id: 'test-uuid',
+                name: 'OriginalName',
+                avatar: '/assets/avatars/avatar1.svg',
+                bio: 'Original Bio'
+              },
+              moments: []
+            }
+          })
+        });
+        return;
+      }
+
       const payload = route.request().postDataJSON();
       expect(payload.name).toBe('NewName');
       expect(payload.bio).toBe('New Bio');

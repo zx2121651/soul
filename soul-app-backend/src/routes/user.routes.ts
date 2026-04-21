@@ -4,8 +4,39 @@ import { ErrorCode } from '../utils/ErrorCodes';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { UserService } from '../services/user.service';
 import { MomentService } from '../services/moment.service';
+import { z } from 'zod';
 
 const router = Router();
+
+const BAD_WORDS = [
+  'admin', '官方', 'soul', 'system', '管理员', '操', '艹',
+  'guanfang', 'guanliyuan', 'caonima', 'nima', 'shabi', 'sb'
+];
+
+const profileUpdateSchema = z.object({
+  name: z.string()
+    .min(2, '昵称长度需在 2-12 个字符之间')
+    .max(12, '昵称长度需在 2-12 个字符之间')
+    .regex(/^[a-zA-Z0-9\u4e00-\u9fa5]+$/, '昵称只能包含中英文和数字')
+    .refine(val => !BAD_WORDS.some(word => val.toLowerCase().includes(word.toLowerCase())), {
+      message: '昵称包含不合适的内容'
+    })
+    .optional(),
+  bio: z.string().max(100, '签名长度不能超过 100 个字符').optional(),
+  avatar: z.string().url('头像地址格式不正确').refine(val => {
+    // 允许 Mock OSS 域名或阿里云 OSS 域名
+    // 在实际生产环境中，这应该从环境变量中获取
+    const allowedDomains = ['mock-oss.com', 'aliyuncs.com'];
+    try {
+      const url = new URL(val);
+      return allowedDomains.some(domain => url.hostname.includes(domain));
+    } catch {
+      return false;
+    }
+  }, {
+    message: '非法的头像上传域名'
+  }).optional()
+});
 const userService = new UserService();
 const momentService = new MomentService();
 
@@ -23,12 +54,39 @@ router.get('/me', authMiddleware, async (req, res, next) => {
   }
 });
 
+router.put('/me', authMiddleware, async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return sendError(res, 401, '未授权');
+
+    // 1. Zod Validation
+    const validation = profileUpdateSchema.safeParse(req.body);
+    if (!validation.success) {
+      return sendError(res, 400, validation.error.errors[0].message, ErrorCode.VALIDATION_ERROR);
+    }
+
+    const { name, bio, avatar } = validation.data;
+
+    // 2. Persistence
+    const data = await userService.updateProfile(userId, { name, bio, avatar });
+    sendSuccess(res, data, '个人资料已更新');
+  } catch (error: any) {
+    next(error);
+  }
+});
+
+// Alias for compatibility if needed, but we'll focus on /me as requested
 router.put('/me/profile', authMiddleware, async (req, res, next) => {
   try {
     const userId = req.user?.id;
     if (!userId) return sendError(res, 401, '未授权');
 
-    const { name, bio, avatar } = req.body;
+    const validation = profileUpdateSchema.safeParse(req.body);
+    if (!validation.success) {
+      return sendError(res, 400, validation.error.errors[0].message, ErrorCode.VALIDATION_ERROR);
+    }
+
+    const { name, bio, avatar } = validation.data;
     const data = await userService.updateProfile(userId, { name, bio, avatar });
     sendSuccess(res, data, '个人资料已更新');
   } catch (error: any) {
