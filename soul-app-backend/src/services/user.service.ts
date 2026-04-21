@@ -39,6 +39,27 @@ export class UserService {
     };
   }
 
+  async updateProfile(userId: number, data: { name?: string; bio?: string; avatar?: string }) {
+    const updatedUser = await this.userRepo.updateProfile(userId, data);
+
+    let interests: string[] = [];
+    if (updatedUser.interests) {
+      try {
+        interests = JSON.parse(updatedUser.interests);
+      } catch (e) {
+        interests = [];
+      }
+    }
+
+    return {
+      profile: {
+        ...updatedUser,
+        interests,
+        id: updatedUser.uuid,
+      }
+    };
+  }
+
   async followUser(followerUuid: string, targetId: number) {
     const user = await this.userRepo.findByUuid(followerUuid);
     if (!user) throw new Error('User not found');

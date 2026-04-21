@@ -59,6 +59,23 @@ export class UserRepository {
     });
   }
 
+  async updateProfile(userId: number, data: { name?: string; bio?: string; avatar?: string }) {
+    return await getDb().user.update({
+      where: { id: userId },
+      data,
+      select: {
+        uuid: true,
+        phone: true,
+        name: true,
+        avatar: true,
+        bio: true,
+        interests: true,
+        followersCount: true,
+        followingCount: true
+      }
+    });
+  }
+
   // 聚合查询排行榜，根据粉丝数降序
   async getLeaderboard(limit = 10) {
     return await getDb().user.findMany({

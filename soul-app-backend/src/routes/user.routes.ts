@@ -23,7 +23,18 @@ router.get('/me', authMiddleware, async (req, res, next) => {
   }
 });
 
-router.put('/me/profile', authMiddleware, (req, res) => sendSuccess(res, req.body, '个人资料已更新'));
+router.put('/me/profile', authMiddleware, async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return sendError(res, 401, '未授权');
+
+    const { name, bio, avatar } = req.body;
+    const data = await userService.updateProfile(userId, { name, bio, avatar });
+    sendSuccess(res, data, '个人资料已更新');
+  } catch (error: any) {
+    next(error);
+  }
+});
 
 
 
