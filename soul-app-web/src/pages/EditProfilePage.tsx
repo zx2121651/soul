@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import PageHeader from '../components/PageHeader';
@@ -12,6 +12,21 @@ export default function EditProfilePage() {
   const [bio, setBio] = useState('');
   const [avatar, setAvatar] = useState('');
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string') {
+        setAvatar(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+    if(e.target) e.target.value = '';
+  };
 
   useEffect(() => {
     api.get<MeDataResponse>('/users/me').then(data => {
@@ -54,13 +69,23 @@ export default function EditProfilePage() {
 
       <div className="flex-1 overflow-y-auto px-6 py-8">
         <div className="flex flex-col items-center mb-10">
-          <div className="w-24 h-24 rounded-full overflow-hidden border-[3px] border-[#1c1e2b] bg-gray-800 shadow-xl mb-4 relative">
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleAvatarChange}
+            className="hidden"
+          />
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="w-24 h-24 rounded-full overflow-hidden border-[3px] border-[#1c1e2b] bg-gray-800 shadow-xl mb-4 relative cursor-pointer active:scale-95 transition-transform"
+          >
              <img src={avatar} alt="avatar" className="w-full h-full object-cover" />
-             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                <span className="text-white text-xs font-bold">更换</span>
              </div>
           </div>
-          <p className="text-gray-500 text-xs">点击更换头像 (暂不可用)</p>
+          <p className="text-gray-500 text-xs" onClick={() => fileInputRef.current?.click()}>点击更换头像</p>
         </div>
 
         <div className="space-y-6">

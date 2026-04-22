@@ -96,12 +96,12 @@ export default function UserProfilePage() {
           <p className="text-sm text-cyan-200 mt-2">{profile.bio || '这个人很神秘，什么都没写'}</p>
 
           <div className="flex items-center gap-6 mt-6">
-            <div className="text-center">
+            <div className="text-center cursor-pointer active:opacity-70 transition-opacity" onClick={() => navigate(`/user/${id}/following`)}>
               <div className="text-white font-bold text-lg">{profile.following}</div>
               <div className="text-gray-500 text-xs mt-1">关注</div>
             </div>
             <div className="w-px h-6 bg-white/10"></div>
-            <div className="text-center">
+            <div className="text-center cursor-pointer active:opacity-70 transition-opacity" onClick={() => navigate(`/user/${id}/followers`)}>
               <div className="text-white font-bold text-lg">{(profile.followers || 0)}</div>
               <div className="text-gray-500 text-xs mt-1">粉丝</div>
             </div>

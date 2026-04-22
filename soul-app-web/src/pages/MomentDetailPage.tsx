@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import PageHeader from '../components/PageHeader';
@@ -12,6 +12,12 @@ export default function MomentDetailPage() {
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleReply = (authorName: string) => {
+    setNewComment(`回复 @${authorName}: `);
+    inputRef.current?.focus();
+  };
 
   const fetchDetail = async () => {
     try {
@@ -124,7 +130,11 @@ export default function MomentDetailPage() {
           {moment.tags && moment.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
               {moment.tags.map((t: string) => (
-                <span key={t} className="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-medium">
+                <span
+                  key={t}
+                  onClick={(e) => { e.stopPropagation(); navigate(`/tag/${t}`); }}
+                  className="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-medium cursor-pointer hover:bg-cyan-500/20 active:scale-95 transition-all shadow-[0_0_8px_rgba(6,182,212,0.15)]"
+                >
                   #{t}
                 </span>
               ))}
@@ -172,9 +182,9 @@ export default function MomentDetailPage() {
                   >
                     <img src={c.author.avatar} alt="avatar" className="w-full h-full object-cover" />
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 cursor-pointer" onClick={() => handleReply(c.author.name)}>
                     <div className="flex items-baseline justify-between mb-1">
-                      <span className="text-gray-400 text-xs font-medium" onClick={(e) => { e.stopPropagation(); navigate(`/user/${c.author.id}`); }}>
+                      <span className="text-gray-400 text-xs font-medium hover:underline" onClick={(e) => { e.stopPropagation(); navigate(`/user/${c.author.id}`); }}>
                         {c.author.name}
                       </span>
                       <span className="text-gray-600 text-[10px]">{c.time}</span>
@@ -191,6 +201,7 @@ export default function MomentDetailPage() {
       {/* 底部吸底发送评论栏 */}
       <div className="absolute bottom-0 w-full bg-[#1c1e2b]/95 backdrop-blur-xl border-t border-white/5 p-3 flex gap-3 items-center z-10 pb-6">
         <input
+          ref={inputRef}
           type="text"
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}

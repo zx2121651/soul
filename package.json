@@ -1,0 +1,24 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "这是一个基于 **TypeScript** 的全栈社交 App 原型。项目采用 **Monorepo** 形态，包含前端 React 单页应用与后端 Node.js RESTful API。",
+  "main": "patch_chatroom.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zx2121651/soul.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/zx2121651/soul/issues"
+  },
+  "homepage": "https://github.com/zx2121651/soul#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1"
+  }
+}

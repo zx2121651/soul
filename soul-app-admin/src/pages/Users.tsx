@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Card, Button, message, Popconfirm, Tag, Avatar, Typography, Segmented, Drawer, Descriptions, List, Image } from 'antd';
-import { UserOutlined, CheckCircleOutlined, StopOutlined } from '@ant-design/icons';
+import { UserOutlined, CheckCircleOutlined, StopOutlined, EyeOutlined } from '@ant-design/icons';
 import { api } from '../api/client';
 
 const { Title } = Typography;

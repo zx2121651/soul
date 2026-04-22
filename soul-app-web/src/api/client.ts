@@ -30,7 +30,9 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
     if (response.status === 401 || response.status === 403) {
       console.error('Unauthorized! Need to re-login.');
       localStorage.removeItem('soul_token');
-      // window.location.href = '/login';
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+        window.location.href = '/login';
+      }
       throw new Error('Unauthorized');
     }
 

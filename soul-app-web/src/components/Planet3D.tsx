@@ -61,7 +61,7 @@ const UserNode = ({ node, onClick }: { node: NodeData; onClick?: () => void }) =
           </div>
         </Html>
         <group ref={textRef}>
-          <Text position={[0, -0.7, 0]} fontSize={0.2} color="#ffffff" font="https://fonts.gstatic.com/ea/notosanssc/v1/NotoSansSC-Regular.otf" anchorX="center" anchorY="middle" outlineWidth={0.01} outlineColor="#000">
+          <Text position={[0, -0.7, 0]} fontSize={0.2} color="#ffffff"  anchorX="center" anchorY="middle" outlineWidth={0.01} outlineColor="#000">
             {node.name}
           </Text>
         </group>
@@ -84,7 +84,7 @@ const UserNode = ({ node, onClick }: { node: NodeData; onClick?: () => void }) =
       </mesh>
       <group ref={textRef}>
         <animated.group>
-          <Text position={[0, 0.18, 0]} fontSize={0.16} color="white" font="https://fonts.gstatic.com/ea/notosanssc/v1/NotoSansSC-Regular.otf" anchorX="center" anchorY="middle" fillOpacity={opacity.get() as any} outlineWidth={0.015} outlineColor="#171822">
+          <Text position={[0, 0.18, 0]} fontSize={0.16} color="white"  anchorX="center" anchorY="middle" fillOpacity={opacity.get() as any} outlineWidth={0.015} outlineColor="#171822">
             {node.name}
           </Text>
           <Text position={[0, -0.15, 0]} fontSize={0.12} color={node.color} anchorX="center" anchorY="middle" fillOpacity={opacity.get() as any}>

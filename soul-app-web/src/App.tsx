@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { bootstrapApp } from './utils/bootstrap';
 import React, { Suspense } from 'react';
+
 const PlanetPage = React.lazy(() => import('./pages/PlanetPage'));
 const ExplorePage = React.lazy(() => import('./pages/ExplorePage'));
 const ChatPage = React.lazy(() => import('./pages/ChatPage'));
@@ -10,6 +11,15 @@ const MomentDetailPage = React.lazy(() => import('./pages/MomentDetailPage'));
 const UserProfilePage = React.lazy(() => import('./pages/UserProfilePage'));
 const EditProfilePage = React.lazy(() => import('./pages/EditProfilePage'));
 const VoiceRoomPage = React.lazy(() => import('./pages/VoiceRoomPage'));
+const LoginPage = React.lazy(() => import('./pages/LoginPage'));
+const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
+const NotificationsPage = React.lazy(() => import('./pages/NotificationsPage'));
+const UserListPage = React.lazy(() => import('./pages/UserListPage'));
+const SettingsAccountPage = React.lazy(() => import('./pages/SettingsAccountPage'));
+const SettingsNotificationPage = React.lazy(() => import('./pages/SettingsNotificationPage'));
+const SettingsPrivacyPage = React.lazy(() => import('./pages/SettingsPrivacyPage'));
+const SettingsHelpPage = React.lazy(() => import('./pages/SettingsHelpPage'));
+const TagMomentsPage = React.lazy(() => import('./pages/TagMomentsPage'));
 
 const FallbackLoader = () => (
   <div className="w-full h-full flex items-center justify-center bg-[#171822]">
@@ -21,46 +31,74 @@ import BottomNavBar from './components/BottomNavBar';
 import TopBar from './components/TopBar';
 import PostMomentEditor from './components/PostMomentEditor';
 
-export default function App() {
+// AuthGuard 路由守卫
+const RequireAuth = ({ children }: { children: React.ReactElement }) => {
+  const token = localStorage.getItem('soul_token');
+  const location = useLocation();
+
+  if (!token) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  return children;
+};
+
+// 避免在登录注册页显示导航栏
+const AppLayout = () => {
+  const location = useLocation();
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const hideNavs = ['/login', '/register'].includes(location.pathname);
 
+  return (
+    <div className="w-full h-screen bg-[#171822] overflow-hidden text-white font-sans selection:bg-cyan-500/30 selection:text-cyan-100 flex flex-col relative antialiased">
+      {!hideNavs && <TopBar />}
 
+      <div className="flex-1 overflow-hidden relative">
+        <Suspense fallback={<FallbackLoader />}>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
 
-  // Bootstrap Environment (Dev Auth)
+            <Route path="/" element={<Navigate to="/planet" replace />} />
+
+            {/* 需要登录访问的页面 */}
+            <Route path="/planet" element={<RequireAuth><PlanetPage /></RequireAuth>} />
+            <Route path="/explore" element={<RequireAuth><ExplorePage /></RequireAuth>} />
+            <Route path="/chat" element={<RequireAuth><ChatPage /></RequireAuth>} />
+            <Route path="/me" element={<RequireAuth><MePage onOpenEditor={() => setIsEditorOpen(true)} /></RequireAuth>} />
+            <Route path="/moment/:id" element={<RequireAuth><MomentDetailPage /></RequireAuth>} />
+            <Route path="/user/:id" element={<RequireAuth><UserProfilePage /></RequireAuth>} />
+            <Route path="/user/:id/:type" element={<RequireAuth><UserListPage /></RequireAuth>} />
+            <Route path="/edit-profile" element={<RequireAuth><EditProfilePage /></RequireAuth>} />
+            <Route path="/voiceroom/:id" element={<RequireAuth><VoiceRoomPage /></RequireAuth>} />
+            <Route path="/notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
+            <Route path="/settings/account" element={<RequireAuth><SettingsAccountPage /></RequireAuth>} />
+            <Route path="/settings/notifications" element={<RequireAuth><SettingsNotificationPage /></RequireAuth>} />
+            <Route path="/settings/privacy" element={<RequireAuth><SettingsPrivacyPage /></RequireAuth>} />
+            <Route path="/settings/help" element={<RequireAuth><SettingsHelpPage /></RequireAuth>} />
+            <Route path="/tag/:tagName" element={<RequireAuth><TagMomentsPage /></RequireAuth>} />
+          </Routes>
+        </Suspense>
+      </div>
+
+      {!hideNavs && <BottomNavBar onOpenEditor={() => setIsEditorOpen(true)} />}
+
+      <PostMomentEditor
+        isOpen={isEditorOpen}
+        onClose={() => setIsEditorOpen(false)}
+      />
+    </div>
+  );
+};
+
+export default function App() {
+  // Bootstrap Environment (Dev Auth modified)
   useEffect(() => {
     bootstrapApp();
   }, []);
 
-
-
   return (
     <BrowserRouter>
-      <div className="w-full h-screen bg-[#171822] overflow-hidden text-white font-sans selection:bg-cyan-500/30 selection:text-cyan-100 flex flex-col relative antialiased">
-
-        <TopBar />
-        <div className="flex-1 overflow-hidden relative">
-          <Suspense fallback={<FallbackLoader />}>
-          <Routes>
-            <Route path="/" element={<Navigate to="/planet" replace />} />
-            <Route path="/planet" element={<PlanetPage />} />
-            <Route path="/explore" element={<ExplorePage />} />
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/me" element={<MePage onOpenEditor={() => setIsEditorOpen(true)} />} />
-              <Route path="/moment/:id" element={<MomentDetailPage />} />
-              <Route path="/user/:id" element={<UserProfilePage />} />
-              <Route path="/edit-profile" element={<EditProfilePage />} />
-            <Route path="/voiceroom/:id" element={<VoiceRoomPage />} />
-          </Routes>
-          </Suspense>
-        </div>
-
-        <BottomNavBar onOpenEditor={() => setIsEditorOpen(true)} />
-
-        <PostMomentEditor
-          isOpen={isEditorOpen}
-          onClose={() => setIsEditorOpen(false)}
-        />
-      </div>
+      <AppLayout />
     </BrowserRouter>
   );
 }

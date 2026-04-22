@@ -229,6 +229,25 @@ router.delete('/voice-rooms/:id', async (req, res) => {
   }
 });
 
+// 管理员监听进入语音房
+router.post('/voice-rooms/:id/monitor', async (req, res) => {
+  try {
+    const db = getDb();
+    const roomId = req.params.id; // 'room_1', etc or ID
+
+    const { generateToken } = require('../utils/livekit');
+    const token = generateToken(roomId, 'Admin_Monitor', true);
+
+    sendSuccess(res, {
+      token,
+      serverUrl: process.env.LIVEKIT_WS_URL || 'wss://soul-app-livekit-mock.com',
+      isOwner: true
+    });
+  } catch (err) {
+    sendError(res, 500, '监听接入失败');
+  }
+});
+
 // ==================== 系统广播 (Announcements) ====================
 // 获取系统广播(通知)列表
 router.get('/announcements', async (req, res) => {
