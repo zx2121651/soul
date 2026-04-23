@@ -132,7 +132,7 @@ export default function EditProfilePage() {
     setLoading(true);
     setError('');
     try {
-      const result = await api.put<{ profile: UserProfile }>('/users/me/profile', { name, bio, avatar });
+      const result = await api.put<{ profile: UserProfile }>('/users/me', { name, bio, avatar });
 
       // Update local store
       updateUser({
