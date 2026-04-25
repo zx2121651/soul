@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, apiClient } from '../api/client';
+import { api } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import type { MeDataResponse, UserProfile } from '../types';
 import { Check, Camera, Loader2 } from 'lucide-react';

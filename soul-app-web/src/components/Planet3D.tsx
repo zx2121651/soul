@@ -132,8 +132,8 @@ interface Planet3DProps { onNodeClick?: (node: NodeData) => void; nodes?: NodeDa
 
 export default function Planet3D({ onNodeClick, nodes = [] }: Planet3DProps) {
   return (
-    <div className="w-full h-full absolute inset-0 z-0 bg-transparent">
-      <Canvas camera={{ position: [0, 0, 8], fov: 55 }}>
+    <div className="w-full h-full absolute inset-0 z-0 bg-transparent pointer-events-auto">
+      <Canvas camera={{ position: [0, 0, 8], fov: 55 }} style={{ pointerEvents: 'auto' }}>
         {/* Deep blue/black background color */}
         <color attach="background" args={['#171822']} />
         {/* Fog to hide back nodes and create depth */}

@@ -7,7 +7,7 @@ test('capture planet page UI changes', async ({ page }) => {
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ nodes: [
-        { id: "1", isSelf: true, avatar: "", position: [0,0,0], size: 1, name: "test" }
+        { id: "1", isSelf: true, avatar: "/assets/avatars/avatar1.svg", position: [0,0,0], size: 1, name: "test", color: "#FF9A9E", phase: 0, speed: 1, amplitude: 1, match: 100 }
       ] })
     });
   });
