@@ -61,7 +61,7 @@ const UserNode = ({ node, onClick }: { node: NodeData; onClick?: () => void }) =
           </div>
         </Html>
         <group ref={textRef}>
-          <Text position={[0, -0.7, 0]} fontSize={0.2} color="#ffffff" font="https://fonts.gstatic.com/ea/notosanssc/v1/NotoSansSC-Regular.otf" anchorX="center" anchorY="middle" outlineWidth={0.01} outlineColor="#000">
+          <Text position={[0, -0.7, 0]} fontSize={0.2} color="#ffffff" anchorX="center" anchorY="middle" outlineWidth={0.01} outlineColor="#000">
             {node.name}
           </Text>
         </group>
@@ -84,7 +84,7 @@ const UserNode = ({ node, onClick }: { node: NodeData; onClick?: () => void }) =
       </mesh>
       <group ref={textRef}>
         <animated.group>
-          <Text position={[0, 0.18, 0]} fontSize={0.16} color="white" font="https://fonts.gstatic.com/ea/notosanssc/v1/NotoSansSC-Regular.otf" anchorX="center" anchorY="middle" fillOpacity={opacity.get() as any} outlineWidth={0.015} outlineColor="#171822">
+          <Text position={[0, 0.18, 0]} fontSize={0.16} color="white" anchorX="center" anchorY="middle" fillOpacity={opacity.get() as any} outlineWidth={0.015} outlineColor="#171822">
             {node.name}
           </Text>
           <Text position={[0, -0.15, 0]} fontSize={0.12} color={node.color} anchorX="center" anchorY="middle" fillOpacity={opacity.get() as any}>
@@ -132,8 +132,8 @@ interface Planet3DProps { onNodeClick?: (node: NodeData) => void; nodes?: NodeDa
 
 export default function Planet3D({ onNodeClick, nodes = [] }: Planet3DProps) {
   return (
-    <div className="w-full h-full absolute inset-0 z-0 bg-transparent pointer-events-auto">
-      <Canvas camera={{ position: [0, 0, 8], fov: 55 }} style={{ pointerEvents: 'auto' }}>
+    <div className="w-full h-full absolute inset-0 z-0 bg-transparent">
+      <Canvas camera={{ position: [0, 0, 8], fov: 55 }}>
         {/* Deep blue/black background color */}
         <color attach="background" args={['#171822']} />
         {/* Fog to hide back nodes and create depth */}

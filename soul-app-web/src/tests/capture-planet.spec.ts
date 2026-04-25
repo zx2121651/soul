@@ -6,9 +6,10 @@ test('capture planet page UI changes', async ({ page }) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ nodes: [
-        { id: "1", isSelf: true, avatar: "/assets/avatars/avatar1.svg", position: [0,0,0], size: 1, name: "test", color: "#FF9A9E", phase: 0, speed: 1, amplitude: 1, match: 100 }
-      ] })
+      body: JSON.stringify({ code: 0, message: "ok", data: { nodes: [
+        { id: "1", isSelf: true, avatar: "/assets/avatars/avatar1.svg", position: [0,0,0], size: 1, name: "test", color: "#FF9A9E", phase: 0, speed: 1, amplitude: 1, match: 100 },
+        { id: "2", isSelf: false, avatar: "/assets/avatars/avatar2.svg", position: [1,1,1], size: 1, name: "test2", color: "#A1C4FD", phase: 1, speed: 1.5, amplitude: 1, match: 90 }
+      ] } })
     });
   });
 
@@ -16,7 +17,7 @@ test('capture planet page UI changes', async ({ page }) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ latest: null })
+      body: JSON.stringify({ code: 0, message: "ok", data: { latest: null } })
     });
   });
 
@@ -31,7 +32,7 @@ test('capture planet page UI changes', async ({ page }) => {
     localStorage.setItem('soul-auth-storage', JSON.stringify({
       state: {
         accessToken: "fake-token",
-        user: { id: 1, uuid: "1", name: "test", avatar: "" },
+        user: { id: 1, uuid: "1", name: "test", avatar: "/assets/avatars/avatar1.svg" },
         isAuthenticated: true
       },
       version: 0
@@ -46,6 +47,9 @@ test('capture planet page UI changes', async ({ page }) => {
 
   // Wait a bit for animations to settle and components to mount
   await page.waitForTimeout(3000);
+
+  // Take screenshot for visual validation
+  await page.screenshot({ path: 'planet-screenshot.png' });
 
   // Assert TopBar changes
   await expect(page.locator('text=灵魂测试')).toBeVisible();
