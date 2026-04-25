@@ -102,14 +102,14 @@ export default function BottomActionCards({ onMatchClick }: { onMatchClick?: () 
           <span className="absolute inset-0 rounded-full border-2 border-[#3BBCA2] animate-ping opacity-60"></span>
         </motion.button>
 
-        {/* Floating "Incoming call~" badge for the second card */}
+        {/* Floating "收到来电~" badge for the second card */}
         <motion.div
           initial={{ y: 5 }}
           animate={{ y: -5 }}
           transition={{ repeat: Infinity, repeatType: "reverse", duration: 1.5 }}
           className="absolute left-[160px] top-0 bg-[#407e74] text-white text-xs px-3 py-1.5 rounded-full whitespace-nowrap shadow-lg flex items-center z-50"
         >
-          Incoming call~
+          收到来电~
           {/* Triangle pointer pointing down */}
           <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-[#407e74]"></div>
         </motion.div>

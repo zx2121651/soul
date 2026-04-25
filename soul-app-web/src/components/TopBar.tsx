@@ -8,7 +8,7 @@ export default function TopBar() {
 
   useEffect(() => {
     // 获取最新系统广播
-    api.get<{ latest: any }>('/announcements')
+    api.get<{ latest: { title: string; content: string; type: string } | null }>('/announcements')
       .then(data => {
         if (data.latest) {
           setAnnouncement(data.latest);
@@ -23,12 +23,12 @@ export default function TopBar() {
         {/* Planet Boost Button */}
         <button className="flex items-center gap-1.5 bg-white/10 backdrop-blur-xl border border-white/10 shadow-sm px-3 py-1.5 rounded-full text-sm font-medium">
           <Zap size={16} className="text-cyan-400 fill-cyan-400" />
-          <span>星球加速</span>
+          <span>灵魂测试</span>
         </button>
 
-        {/* Soul Logo placeholder */}
-        <div className="text-2xl font-bold tracking-widest text-cyan-200">
-          Soul
+        {/* Online users text */}
+        <div className="text-sm font-medium text-white/90">
+          当前 1,234,567 人在线
         </div>
 
         {/* Filter Button */}
