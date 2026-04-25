@@ -1,7 +1,7 @@
 
 
 import { api } from '../api/client';
-import type { MeDataResponse, UserProfile, MomentData } from '../types';
+import type { MeDataResponse, UserProfile } from '../types';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, Eye, ChevronRight, Bell, HelpCircle, LogOut, ChevronLeft, PenSquare, Lock, Loader2 } from 'lucide-react';

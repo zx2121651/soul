@@ -147,11 +147,13 @@ test.describe('Edit Profile', () => {
     const fileChooser = await fileChooserPromise;
 
     // Create a valid small PNG image buffer
-    const buffer = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const imageBuffer = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
     await fileChooser.setFiles([{
         name: 'test.png',
         mimeType: 'image/png',
-        buffer
+        buffer: imageBuffer
     }]);
 
     // Cropper should appear
