@@ -19,9 +19,9 @@ export default function TopBar() {
 
   return (
     <>
-      <div className="absolute top-0 w-full px-4 pt-12 pb-4 flex justify-between items-center z-50 text-white">
+      <div className="absolute top-0 w-full px-4 pt-12 pb-4 flex justify-between items-center z-50 text-white pointer-events-none">
         {/* Planet Boost Button */}
-        <button className="flex items-center gap-1.5 bg-white/10 backdrop-blur-xl border border-white/10 shadow-sm px-3 py-1.5 rounded-full text-sm font-medium">
+        <button className="flex items-center gap-1.5 bg-white/10 backdrop-blur-xl border border-white/10 shadow-sm px-3 py-1.5 rounded-full text-sm font-medium pointer-events-auto">
           <Zap size={16} className="text-cyan-400 fill-cyan-400" />
           <span>灵魂测试</span>
         </button>
@@ -32,7 +32,7 @@ export default function TopBar() {
         </div>
 
         {/* Filter Button */}
-        <button className="flex items-center gap-1.5 bg-white/10 backdrop-blur-xl border border-white/10 shadow-sm px-3 py-1.5 rounded-full text-sm font-medium">
+        <button className="flex items-center gap-1.5 bg-white/10 backdrop-blur-xl border border-white/10 shadow-sm px-3 py-1.5 rounded-full text-sm font-medium pointer-events-auto">
           <Filter size={16} className="text-cyan-400" />
           <span>筛选</span>
         </button>

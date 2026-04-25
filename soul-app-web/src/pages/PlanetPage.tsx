@@ -35,9 +35,9 @@ export default function PlanetPage() {
 
       {/* Mid-right vertical banner */}
       {!isLoading && (
-        <div className="absolute right-0 top-[40%] -translate-y-1/2 z-30 flex items-center justify-center">
+        <div className="absolute right-0 top-[40%] -translate-y-1/2 z-30 flex items-center justify-center pointer-events-none">
           <div
-            className="bg-[#1f212c]/90 backdrop-blur-md border border-white/5 rounded-l-xl py-6 px-2 text-white/90 text-[10px] font-medium tracking-widest cursor-pointer hover:bg-[#2a2c3a]/90 transition-colors shadow-lg flex flex-col items-center leading-loose"
+            className="bg-[#1f212c]/90 backdrop-blur-md border border-white/5 rounded-l-xl py-6 px-2 text-white/90 text-[10px] font-medium tracking-widest cursor-pointer hover:bg-[#2a2c3a]/90 transition-colors shadow-lg flex flex-col items-center leading-loose pointer-events-auto"
           >
             <span>同</span>
             <span>城</span>

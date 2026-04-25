@@ -84,15 +84,15 @@ export default function BottomActionCards({ onMatchClick }: { onMatchClick?: () 
 
 
   return (
-    <div className="absolute bottom-[80px] w-full z-40 px-4">
+    <div className="absolute bottom-[80px] w-full z-40 px-4 pointer-events-none">
       {/* Container for absolute floating elements that relate to the scroll area */}
-      <div className="relative w-full mb-3 h-8">
+      <div className="relative w-full mb-3 h-8 pointer-events-none">
         {/* Radar Button (Right aligned, floating above cards) */}
         <motion.button
           onClick={onMatchClick}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="absolute right-2 -top-16 w-14 h-14 rounded-full bg-gradient-to-tr from-[#146a67] to-[#3BBCA2] flex items-center justify-center border border-white/20 shadow-[0_4px_20px_rgba(59,188,162,0.4)] z-50"
+          className="absolute right-2 -top-16 w-14 h-14 rounded-full bg-gradient-to-tr from-[#146a67] to-[#3BBCA2] flex items-center justify-center border border-white/20 shadow-[0_4px_20px_rgba(59,188,162,0.4)] z-50 pointer-events-auto"
         >
           {/* Radar target circles */}
           <div className="w-6 h-6 rounded-full border border-white/80 flex items-center justify-center">
@@ -116,7 +116,7 @@ export default function BottomActionCards({ onMatchClick }: { onMatchClick?: () 
       </div>
 
       {/* Horizontal Scroll Area */}
-      <div className="flex overflow-x-auto gap-3 pb-2 snap-x snap-mandatory no-scrollbar">
+      <div className="flex overflow-x-auto gap-3 pb-2 snap-x snap-mandatory no-scrollbar pointer-events-auto">
         {cards.map((card, index) => (
           <motion.div
             key={card.id}
